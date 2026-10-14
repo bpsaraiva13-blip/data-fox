@@ -2,14 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAcervo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class Box extends Model
 {
+    use BelongsToAcervo;
+
     protected $guarded = ['id', 'created_by'];
 
     protected static function booted(): void
@@ -47,6 +51,27 @@ class Box extends Model
         }
 
         return $query->orderBy('name');
+    }
+
+    /** Caixas do acervo e caixas de outros acervos vinculadas a ele. */
+    public function scopeToAcervo(Builder $q, int $acervoId): void
+    {
+        $q->where(fn (Builder $w) => $w->where('boxes.acervo_id', $acervoId)
+            ->orWhereIn('boxes.id', DB::table('box_links')->select('box_id')->where('acervo_id', $acervoId)));
+    }
+
+    /** Acervos (além do dono) onde esta caixa também aparece. */
+    public function linkedAcervos(): BelongsToMany
+    {
+        return $this->belongsToMany(Acervo::class, 'box_links')->withPivot('created_by')->withTimestamps();
+    }
+
+    /** A caixa veio de outro acervo (vínculo)? */
+    public function isLinkedHere(?Acervo $acervo = null): bool
+    {
+        $acervo ??= Acervo::current();
+
+        return $acervo && (int) $this->acervo_id !== (int) $acervo->id;
     }
 
     public function items(): HasMany

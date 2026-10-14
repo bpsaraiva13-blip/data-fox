@@ -10,8 +10,13 @@ use Illuminate\Support\Str;
 /** Cartão de compartilhamento da peça (JPEG; PNG quando pedido para copiar). */
 class ShareImageController extends Controller
 {
-    public function __invoke(Request $request, Item $item)
+    public function __invoke(Request $request, int $item)
     {
+        $item = Item::withoutGlobalScope('acervo')->findOrFail($item);
+        abort_unless(\App\Support\ItemAccess::canSee($request->user(), $item), 404);
+        if ($request->boolean('download')) {
+            \App\Models\AccessLog::log('share', $item);
+        }
         $jpg = ShareCard::image($item->load('tags'), $request->integer('foto'), $request->boolean('tombo', true), $request->boolean('tags', true));
         $name = Str::slug(($item->code ?: 'peca').'-'.$item->title, '-').'.jpg';
 

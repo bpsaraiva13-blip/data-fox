@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAcervo;
 use App\Observers\ItemObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,9 +17,16 @@ use Illuminate\Support\Facades\DB;
 #[ObservedBy(ItemObserver::class)]
 class Item extends Model
 {
-    use SoftDeletes;
+    use BelongsToAcervo, SoftDeletes;
 
     protected $guarded = ['id', 'code', 'created_by', 'updated_by'];
+
+    /** Peças do acervo e peças das caixas vinculadas a ele. */
+    public function scopeToAcervo(Builder $q, int $acervoId): void
+    {
+        $q->where(fn (Builder $w) => $w->where('items.acervo_id', $acervoId)
+            ->orWhereIn('items.box_id', DB::table('box_links')->select('box_id')->where('acervo_id', $acervoId)));
+    }
 
     protected function casts(): array
     {
@@ -28,6 +36,9 @@ class Item extends Model
             'ai_keywords' => 'array',
             'ai_analyzed_at' => 'datetime',
             'merged_from' => 'array',
+            'status_date' => 'date',
+            'showcase' => 'boolean',
+            'transferred_from' => 'array',
         ];
     }
 
@@ -61,18 +72,35 @@ class Item extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function movements(): HasMany
+    {
+        return $this->hasMany(Movement::class)->latest('date')->latest('id');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ItemAttachment::class)->latest();
+    }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(ItemCollection::class, 'collection_item', 'item_id', 'collection_id');
+    }
+
     public function activities(): HasMany
     {
         return $this->hasMany(ActivityLog::class)->latest('created_at');
     }
 
     /** Próximo Nº de tombo do ano: ACV-2026-0001 (com lock para evitar colisão). */
-    public static function nextCode(): string
+    public static function nextCode(?int $acervoId = null): string
     {
         $prefix = config('acervo.code_prefix').'-'.now()->year.'-';
+        $acervoId ??= Acervo::current()?->id;
 
-        return DB::transaction(function () use ($prefix) {
-            $last = static::withTrashed()
+        return DB::transaction(function () use ($prefix, $acervoId) {
+            $last = static::withTrashed()->withoutGlobalScope('acervo')
+                ->when($acervoId, fn ($q) => $q->where('acervo_id', $acervoId))
                 ->where('code', 'like', $prefix.'%')
                 ->lockForUpdate()
                 ->orderByDesc('code')
@@ -123,7 +151,7 @@ class Item extends Model
             ->map(fn ($n) => Tag::normalize($n))
             ->filter()
             ->unique()
-            ->map(fn ($n) => Tag::firstOrCreate(['name' => $n])->id);
+            ->map(fn ($n) => Tag::withoutGlobalScope('acervo')->firstOrCreate(['acervo_id' => $this->acervo_id, 'name' => $n])->id);
 
         $this->tags()->sync($ids);
     }

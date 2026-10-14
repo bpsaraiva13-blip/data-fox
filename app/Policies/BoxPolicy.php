@@ -5,12 +5,12 @@ namespace App\Policies;
 use App\Models\Box;
 use App\Models\User;
 
-/** Leitura para todos os usuários ativos; alterações só para administradores e editores. */
+/** Leitura para quem participa do acervo aberto; alterações para administradores e editores dele. */
 class BoxPolicy
 {
-    public function viewAny(User $user): bool { return true; }
+    public function viewAny(User $user): bool { return $user->canBrowse(); }
 
-    public function view(User $user, Box $record): bool { return true; }
+    public function view(User $user, Box $record): bool { return $user->canBrowse(); }
 
     public function create(User $user): bool { return $user->canEdit(); }
 
@@ -24,7 +24,7 @@ class BoxPolicy
 
     public function restoreAny(User $user): bool { return $user->canEdit(); }
 
-    public function forceDelete(User $user, Box $record): bool { return $user->isAdmin(); }
+    public function forceDelete(User $user, Box $record): bool { return $user->isAcervoAdmin(); }
 
-    public function forceDeleteAny(User $user): bool { return $user->isAdmin(); }
+    public function forceDeleteAny(User $user): bool { return $user->isAcervoAdmin(); }
 }

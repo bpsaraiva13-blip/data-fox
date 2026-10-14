@@ -103,7 +103,7 @@ class CuratorAI
 
         $item->tags()->syncWithoutDetaching(
             collect($r['tags'] ?? [])->map(fn ($t) => \App\Models\Tag::normalize($t))->filter()->unique()
-                ->map(fn ($n) => \App\Models\Tag::firstOrCreate(['name' => $n])->id)
+                ->map(fn ($n) => \App\Models\Tag::withoutGlobalScope('acervo')->firstOrCreate(['acervo_id' => $item->acervo_id, 'name' => $n])->id)
         );
 
         return $item;

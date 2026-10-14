@@ -22,6 +22,14 @@ return [
 
     'conditions' => ['Excelente', 'Muito bom', 'Bom', 'Regular', 'Precisa de restauro'],
 
+    // Backup automático diário (data.json + fotos), compatível com "datafox:import"
+    'backup' => [
+        'disk' => env('ACERVO_BACKUP_DISK') ?: env('ACERVO_DISK') ?: env('FILESYSTEM_DISK', 's3'),
+        'dir' => 'backups',
+        'keep' => (int) env('ACERVO_BACKUP_KEEP', 14),   // quantos arquivos manter por acervo
+        'remind_after_days' => 7,
+    ],
+
     'box_colors' => ['#2A6A5C', '#97752A', '#8A4B3A', '#4A5E8C', '#6E4A7E', '#3F7A3A', '#9A3F5C', '#5A5A5A'],
 
     'ai' => [

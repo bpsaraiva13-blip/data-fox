@@ -8,9 +8,9 @@ use App\Models\User;
 /** Histórico é somente leitura. */
 class ActivityLogPolicy
 {
-    public function viewAny(User $user): bool { return true; }
+    public function viewAny(User $user): bool { return $user->canBrowse(); }
 
-    public function view(User $user, ActivityLog $record): bool { return true; }
+    public function view(User $user, ActivityLog $record): bool { return $user->canBrowse(); }
 
     public function create(User $user): bool { return false; }
 

@@ -146,12 +146,14 @@ class ItemResource extends Resource
                             ->createOptionModalHeading('Nova caixa'),
                         TextInput::make('value')->label('Valor estimado')->numeric()->prefix('R$')->minValue(0),
                         TagsInput::make('tag_names')->label('Tags')->columnSpanFull()
-                            ->suggestions(fn () => Tag::orderBy('name')->pluck('name')->all())
+                            ->suggestions(fn () => Tag::orderBy('name')->pluck('name')->unique()->values()->all())
                             ->splitKeys(['Tab', ',', ' ']),
                         Textarea::make('description')->label('Descrição')->rows(4)->columnSpanFull(),
                         TextInput::make('provenance')->label('Procedência'),
                         DatePicker::make('acquired_at')->label('Data de aquisição')->native(false)->displayFormat('d/m/Y'),
                         Textarea::make('notes')->label('Observações internas')->rows(2)->columnSpanFull(),
+                        \Filament\Forms\Components\Toggle::make('showcase')->label('Mostrar na vitrine')->columnSpanFull()
+                            ->helperText('Aparece na vitrine sem caixa, local, valor nem observações internas.'),
                     ]),
             ]),
         ]);
@@ -160,7 +162,8 @@ class ItemResource extends Resource
     public static function boxFields(): array
     {
         return [
-            TextInput::make('name')->label('Nome')->required()->unique(Box::class, 'name', ignoreRecord: true)
+            TextInput::make('name')->label('Nome')->required()
+                ->unique(Box::class, 'name', ignoreRecord: true, modifyRuleUsing: fn ($rule) => $rule->where('acervo_id', \App\Models\Acervo::current()?->id))
                 ->placeholder('Caixa A1 — Porcelanas'),
             TextInput::make('location')->label('Local físico')->placeholder('Depósito, estante 2, prateleira 3'),
             ColorPicker::make('color')->label('Cor')->default(config('acervo.box_colors')[0]),
@@ -249,6 +252,10 @@ class ItemResource extends Resource
                     TextEntry::make('material')->label('Material')->placeholder('—'),
                     TextEntry::make('dimensions')->label('Dimensões')->placeholder('—'),
                     TextEntry::make('condition')->label('Estado')->badge()->placeholder('—'),
+                    TextEntry::make('status')->label('Situação')->badge()
+                        ->formatStateUsing(fn ($state, Item $record) => (['loaned' => 'Emprestada', 'sold' => 'Vendida'][$state] ?? 'No acervo').($record->status_person ? ' · '.$record->status_person : ''))
+                        ->color(fn ($state) => ['loaned' => 'warning', 'sold' => 'danger'][$state] ?? 'success'),
+                    TextEntry::make('collections.name')->label('Coleções')->badge()->color('gray')->placeholder('—'),
                     TextEntry::make('box.name')->label('Caixa')->placeholder('Sem caixa')
                         ->helperText(fn (Item $record) => $record->box?->location),
                     TextEntry::make('value')->label('Valor estimado')->money('BRL', locale: 'pt_BR')->placeholder('—'),
@@ -316,6 +323,11 @@ class ItemResource extends Resource
                     TextColumn::make('era')->color('gray')->placeholder('—')
                         ->description(fn (Item $r) => ($r->box?->name ?? 'Sem caixa').' · por '.($r->creator?->name ?? '—')),
                     TextColumn::make('tags.name')->badge()->prefix('#')->limitList(4)->color('gray'),
+                    TextColumn::make('status')->badge()
+                        ->getStateUsing(fn (Item $record) => in_array($record->status, ['loaned', 'sold'], true) ? $record->status : null)
+                        ->formatStateUsing(fn ($state) => ['loaned' => 'Emprestada', 'sold' => 'Vendida'][$state] ?? '')
+                        ->color(fn ($state) => $state === 'sold' ? 'danger' : 'warning')
+                        ->tooltip(fn (Item $record) => $record->status_person),
                     TextColumn::make('ai_status')->badge()
                         ->getStateUsing(fn (Item $record) => in_array($record->ai_status, ['pending', 'running', 'failed'], true) ? $record->ai_status : null)
                         ->formatStateUsing(fn (string $state) => ['pending' => 'IA na fila', 'running' => 'IA analisando…', 'failed' => 'IA falhou', 'done' => 'IA concluída', 'none' => ''][$state] ?? $state)
@@ -327,8 +339,11 @@ class ItemResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('box_id')->label('Caixa')->relationship('box', 'name', fn (Builder $q) => $q->naturalOrder())->searchable()->preload(),
-                SelectFilter::make('batch')->label('Lote')->options(fn () => Item::whereNotNull('batch')->distinct()->orderByDesc('batch')->limit(50)->pluck('batch', 'batch')),
+                SelectFilter::make('batch')->label('Lote')->options(fn () => Item::whereNotNull('batch')->groupBy('batch')->orderByRaw('max(items.created_at) desc')->limit(50)->pluck('batch', 'batch')),
                 SelectFilter::make('category')->label('Categoria')->options(array_combine(config('acervo.categories'), config('acervo.categories'))),
+                SelectFilter::make('status')->label('Situação')->options(['available' => 'No acervo', 'loaned' => 'Emprestada', 'sold' => 'Vendida']),
+                SelectFilter::make('collections')->label('Coleção')->relationship('collections', 'name')->multiple()->preload(),
+                \Filament\Tables\Filters\TernaryFilter::make('showcase')->label('Na vitrine'),
                 SelectFilter::make('condition')->label('Estado')->options(array_combine(config('acervo.conditions'), config('acervo.conditions'))),
                 SelectFilter::make('tags')->label('Tags')->relationship('tags', 'name')->multiple()->searchable()->preload(),
                 SelectFilter::make('created_by')->label('Cadastrado por')->relationship('creator', 'name')->searchable()->preload(),
@@ -344,6 +359,7 @@ class ItemResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    \App\Support\TransferForm::bulkAction(),
                     BulkAction::make('move')->label('Mover para caixa')->icon(Heroicon::OutlinedArchiveBoxArrowDown)
                         ->schema([Select::make('box_id')->label('Caixa')->options(fn () => Box::naturalOrder()->pluck('name', 'id'))->placeholder('Sem caixa')])
                         ->action(function (Collection $records, array $data) {
@@ -387,6 +403,22 @@ class ItemResource extends Resource
                             });
                             Notification::make()->title($records->count().' peça(s) na fila da IA')->success()->send();
                         })->deselectRecordsAfterCompletion(),
+                    BulkAction::make('collection')->label('Adicionar à coleção')->icon(Heroicon::OutlinedStar)
+                        ->schema([
+                            Select::make('collection_id')->label('Coleção')->options(fn () => \App\Models\ItemCollection::orderBy('name')->pluck('name', 'id'))->searchable()
+                                ->createOptionForm([TextInput::make('name')->label('Nome')->required()])
+                                ->createOptionUsing(fn (array $data) => \App\Models\ItemCollection::create($data)->id)->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            \App\Models\ItemCollection::findOrFail($data['collection_id'])->items()->syncWithoutDetaching($records->pluck('id'));
+                            Notification::make()->title($records->count().' peça(s) adicionada(s) à coleção')->success()->send();
+                        })->deselectRecordsAfterCompletion(),
+                    BulkAction::make('showcase')->label('Mostrar na vitrine')->icon(Heroicon::OutlinedEye)
+                        ->action(fn (Collection $records) => $records->each->update(['showcase' => true]))->deselectRecordsAfterCompletion(),
+                    BulkAction::make('labels')->label('Etiquetas QR (PDF)')->icon(Heroicon::OutlinedQrCode)
+                        ->action(fn (Collection $records) => redirect()->route('pdf.labels', ['ids' => $records->pluck('id')->implode(',')])),
+                    BulkAction::make('catalog')->label('Catálogo em PDF')->icon(Heroicon::OutlinedDocumentText)
+                        ->action(fn (Collection $records) => redirect()->route('pdf.catalog', ['ids' => $records->pluck('id')->implode(','), 'titulo' => 'Seleção de peças'])),
                     BulkAction::make('csv')->label('Exportar CSV')->icon(Heroicon::OutlinedArrowDownTray)
                         ->action(fn (Collection $records) => static::exportCsv($records)),
                     DeleteBulkAction::make(),
@@ -401,6 +433,7 @@ class ItemResource extends Resource
 
     protected static function exportCsv(Collection $records)
     {
+        \App\Models\AccessLog::log('export', null, 'CSV com '.$records->count().' peça(s)');
         $records->load(['box', 'tags', 'creator']);
 
         return response()->streamDownload(function () use ($records) {
@@ -414,9 +447,23 @@ class ItemResource extends Resource
         }, 'acervo-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    /** Respeita as caixas permitidas para a pessoa neste acervo. */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        \App\Support\ItemAccess::restrict($query);
+
+        return $query;
+    }
+
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [RelationManagers\AttachmentsRelationManager::class, RelationManagers\MovementsRelationManager::class];
     }
 
     public static function getPages(): array

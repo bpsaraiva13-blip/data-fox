@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAcervo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
@@ -9,7 +11,18 @@ use Illuminate\Support\Str;
 
 class Tag extends Model
 {
+    use BelongsToAcervo;
+
     protected $guarded = ['id'];
+
+    /** Tags do acervo e as das peças de caixas vinculadas a ele (para aparecerem na ficha). */
+    public function scopeToAcervo(Builder $q, int $acervoId): void
+    {
+        $q->where(fn (Builder $w) => $w->where('tags.acervo_id', $acervoId)
+            ->orWhereIn('tags.id', DB::table('item_tag')->select('item_tag.tag_id')
+                ->join('items', 'items.id', '=', 'item_tag.item_id')
+                ->whereIn('items.box_id', DB::table('box_links')->select('box_id')->where('acervo_id', $acervoId))));
+    }
 
     public function items(): BelongsToMany
     {
@@ -32,7 +45,7 @@ class Tag extends Model
 
         return DB::transaction(function () use ($newName) {
             $count = $this->items()->count();
-            $target = static::where('name', $newName)->first();
+            $target = static::where('acervo_id', $this->acervo_id)->where('name', $newName)->first();
 
             if (! $target) {
                 $old = $this->name;

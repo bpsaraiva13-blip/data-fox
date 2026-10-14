@@ -12,7 +12,12 @@ class ItemObserver
 
     public function creating(Item $item): void
     {
-        $item->code ??= Item::nextCode();
+        // numa caixa vinculada, a peça pertence ao acervo dono da caixa
+        if ($item->box_id && ($home = Box::withoutGlobalScope('acervo')->whereKey($item->box_id)->value('acervo_id'))) {
+            $item->acervo_id = $home;
+        }
+        $item->acervo_id ??= \App\Models\Acervo::current()?->id;
+        $item->code ??= Item::nextCode($item->acervo_id);
         $item->created_by ??= auth()->id();
         $item->updated_by = auth()->id();
     }
@@ -28,10 +33,33 @@ class ItemObserver
     public function updating(Item $item): void
     {
         $item->updated_by = auth()->id();
+
+        // mudou para uma caixa de outro acervo (vinculada) ou saiu dela: a peça passa a ser desse acervo
+        if ($item->isDirty('box_id') && ! $item->isDirty('acervo_id')) {
+            $to = $item->box_id
+                ? Box::withoutGlobalScope('acervo')->whereKey($item->box_id)->value('acervo_id')
+                : (\App\Models\Acervo::current()?->id ?? $item->acervo_id);
+            if ($to && (int) $to !== (int) $item->acervo_id) {
+                $item->acervo_id = $to;
+                if (Item::withTrashed()->withoutGlobalScope('acervo')->where('acervo_id', $to)->where('code', $item->code)->whereKeyNot($item->id)->exists()) {
+                    $item->code = Item::nextCode($to);
+                }
+                // tags são de cada acervo: recriadas no destino depois de salvar
+                self::$retag[$item->id] = $item->tags()->pluck('name')->all();
+            }
+        }
     }
+
+    /** @var array<int, string[]> */
+    private static array $retag = [];
 
     public function updated(Item $item): void
     {
+        if (array_key_exists($item->id, self::$retag)) {
+            $item->syncTagNames(self::$retag[$item->id]);
+            unset(self::$retag[$item->id]);
+        }
+
         $changed = array_intersect(array_keys($item->getChanges()), self::TRACKED);
         if (! $changed) {
             return;

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToAcervo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivityLog extends Model
 {
+    use BelongsToAcervo;
+
     public const UPDATED_AT = null;
 
     protected $guarded = ['id'];
@@ -16,9 +19,10 @@ class ActivityLog extends Model
         return ['changes' => 'array'];
     }
 
-    public static function record(string $type, ?int $itemId, string $label, ?array $changes = null): self
+    public static function record(string $type, ?int $itemId, string $label, ?array $changes = null, ?int $acervoId = null): self
     {
         return static::create([
+            'acervo_id' => $acervoId ?? Acervo::current()?->id ?? ($itemId ? Item::withoutGlobalScopes()->whereKey($itemId)->value('acervo_id') : null),
             'type' => $type,
             'item_id' => $itemId,
             'label' => $label,

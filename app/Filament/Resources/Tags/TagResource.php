@@ -62,4 +62,10 @@ class TagResource extends Resource
     {
         return ['index' => ManageTags::route('/')];
     }
+
+    /** Só as tags do próprio acervo (as de caixas vinculadas são geridas no acervo de origem). */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('tags.acervo_id', \App\Models\Acervo::current()?->id);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Acervo;
 use App\Models\ActivityLog;
 use App\Models\Box;
 use App\Models\Item;
@@ -26,6 +27,7 @@ class ImportBackup extends Command
     protected $signature = 'datafox:import
         {file : Caminho do .zip (local ou "disco:caminho", ex.: s3:imports/backup.zip)}
         {--user= : E-mail do usuário que fica como autor quando o nome original não corresponde a ninguém}
+        {--acervo= : Nome ou slug do acervo de destino (é criado se não existir; padrão: o primeiro acervo)}
         {--dry-run : Só mostra o que seria importado}';
 
     protected $description = 'Importa peças, caixas, tags, histórico e fotos de um backup .zip do Data Fox';
@@ -59,6 +61,10 @@ class ImportBackup extends Command
             return self::FAILURE;
         }
 
+        $acervo = $this->acervo($fallback, $data);
+        $aid = $acervo->id;
+        $this->info("Acervo de destino: {$acervo->name} ({$acervo->slug})");
+
         $people = $data['people'] ?? [];
         $userFor = function (?string $oldId) use ($people, $fallback) {
             $name = $people[$oldId] ?? null;
@@ -79,11 +85,12 @@ class ImportBackup extends Command
         // Caixas
         $boxMap = [];
         foreach ($data['boxes'] ?? [] as $b) {
-            $box = Box::where('import_ref', $b['id'])->first() ?? Box::where('name', $b['name'])->first();
+            $box = Box::withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('import_ref', $b['id'])->first()
+                ?? Box::withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('name', $b['name'])->first();
             if (! $box) {
                 [$uid] = $userFor($b['createdBy'] ?? null);
                 $box = new Box(['name' => $b['name'], 'location' => ($b['location'] ?? null) ?: null, 'color' => $b['color'] ?? null]);
-                $box->forceFill(['import_ref' => $b['id'], 'created_by' => $uid, 'created_at' => $b['createdAt'] ?? now()])->save();
+                $box->forceFill(['acervo_id' => $aid, 'import_ref' => $b['id'], 'created_by' => $uid, 'created_at' => $b['createdAt'] ?? now()])->save();
             }
             $boxMap[$b['id']] = $box->id;
         }
@@ -95,7 +102,7 @@ class ImportBackup extends Command
         $failed = 0;
         foreach ($items as $i) {
             $bar->advance();
-            if ($existing = Item::withTrashed()->where('import_ref', $i['id'])->first()) {
+            if ($existing = Item::withTrashed()->withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('import_ref', $i['id'])->first()) {
                 $itemMap[$i['id']] = $existing->id;
 
                 continue;
@@ -104,7 +111,7 @@ class ImportBackup extends Command
                 [$createdBy] = $userFor($i['createdBy'] ?? null);
                 [$updatedBy] = $userFor($i['updatedBy'] ?? ($i['createdBy'] ?? null));
                 $code = $i['code'] ?? null;
-                if ($code && Item::withTrashed()->where('code', $code)->exists()) {
+                if ($code && Item::withTrashed()->withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('code', $code)->exists()) {
                     $code = null; // conflito: recebe um tombo novo
                 }
 
@@ -122,9 +129,12 @@ class ImportBackup extends Command
                     'ai_status' => isset($i['ai']) ? 'done' : 'none',
                     'batch' => $i['batch'] ?? null,
                     'merged_from' => $i['mergedFrom'] ?? null,
+                    'status' => in_array($i['status'] ?? '', ['available', 'loaned', 'sold'], true) ? $i['status'] : 'available',
+                    'showcase' => (bool) ($i['showcase'] ?? false),
                 ]);
                 $item->forceFill([
-                    'code' => $code ?? Item::nextCode(),
+                    'acervo_id' => $aid,
+                    'code' => $code ?? Item::nextCode($aid),
                     'import_ref' => $i['id'],
                     'created_by' => $createdBy, 'updated_by' => $updatedBy,
                     'created_at' => $i['createdAt'] ?? now(), 'updated_at' => $i['updatedAt'] ?? ($i['createdAt'] ?? now()),
@@ -156,11 +166,12 @@ class ImportBackup extends Command
         // Histórico
         $acts = 0;
         foreach ($data['activity'] ?? [] as $a) {
-            if (ActivityLog::where('import_ref', $a['id'])->exists()) {
+            if (ActivityLog::withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('import_ref', $a['id'])->exists()) {
                 continue;
             }
             [$uid, $name] = $userFor($a['by'] ?? null);
             ActivityLog::forceCreate([
+                'acervo_id' => $aid,
                 'type' => $a['type'] ?? 'update',
                 'item_id' => $itemMap[$a['itemId'] ?? ''] ?? null,
                 'label' => Str::limit((string) ($a['label'] ?? ''), 250),
@@ -171,12 +182,29 @@ class ImportBackup extends Command
             ]);
             $acts++;
         }
-        ActivityLog::forceCreate(['type' => 'create', 'label' => 'Importou backup com '.count($itemMap).' peça(s)', 'user_id' => $fallback->id, 'user_name' => $fallback->name, 'created_at' => now()]);
+        ActivityLog::forceCreate(['acervo_id' => $aid, 'type' => 'create', 'label' => 'Importou backup com '.count($itemMap).' peça(s)', 'user_id' => $fallback->id, 'user_name' => $fallback->name, 'created_at' => now()]);
 
         $zip->close();
         $this->info(sprintf('Concluído: %d peças, %d caixas, %d registros de atividade%s.', count($itemMap), count($boxMap), $acts, $failed ? ", {$failed} com falha" : ''));
 
         return $failed ? self::FAILURE : self::SUCCESS;
+    }
+
+    /** Acervo de destino: --acervo (nome ou slug, criado se preciso) ou o primeiro existente. */
+    private function acervo(User $owner, array $data): Acervo
+    {
+        $want = $this->option('acervo');
+        $acervo = $want
+            ? Acervo::where('slug', $want)->orWhere('name', $want)->first()
+            : Acervo::orderBy('id')->first();
+        if (! $acervo) {
+            $acervo = Acervo::create(['name' => $want ?: ($data['acervo'] ?? 'Acervo principal'), 'owner_id' => $owner->id]);
+        }
+        if (! $acervo->members()->whereKey($owner->id)->exists()) {
+            $acervo->members()->attach($owner->id, ['role' => 'admin', 'status' => 'active']);
+        }
+
+        return $acervo;
     }
 
     /** Baixa o zip de um disco (ex.: "s3:imports/x.zip") para um arquivo temporário, se preciso. */

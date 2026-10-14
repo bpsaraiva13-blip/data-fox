@@ -66,7 +66,7 @@ class PhotoManager
         return ItemPhoto::query()
             ->whereNotNull('hash')
             ->when($exceptItemId, fn ($q) => $q->where('item_id', '!=', $exceptItemId))
-            ->whereHas('item')
+            ->whereHas('item', fn ($q) => \App\Support\ItemAccess::restrict($q))
             ->with('item.box')
             ->get()
             ->map(fn (ItemPhoto $p) => ['item' => $p->item, 'photo' => $p, 'score' => ImageSignature::similarity($sig, $p->hash, $p->color)])
