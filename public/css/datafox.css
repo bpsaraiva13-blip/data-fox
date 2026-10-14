@@ -1,0 +1,102 @@
+/* Data Fox — identidade visual sobre o Filament: fundo off-white quente, cartões brancos
+   arredondados e verde-floresta apenas nos destaques. */
+:root {
+  --df-bg: #F3F2EC; --df-surface: #FFFFFF; --df-surface-2: #EEEDE6; --df-ink: #15211A; --df-muted: #6D756F;
+  --df-line: rgba(21, 33, 26, .08); --df-green: #1F4D36; --df-mint: #DCEAD6; --df-sage: #8DB898;
+  --df-ok: #2F7A4C; --df-warn: #A8710E; --df-danger: #B6423A;
+}
+.dark {
+  --df-bg: #121412; --df-surface: #1A1D1B; --df-surface-2: #242826; --df-ink: #ECEEEA; --df-muted: #9AA29C;
+  --df-line: rgba(236, 238, 234, .08); --df-green: #8CC59D; --df-mint: #253A2C; --df-sage: #6FA47F;
+  --df-ok: #6CC391; --df-warn: #E3AA3E; --df-danger: #E57069;
+}
+.fi-body { background: var(--df-bg) !important; }
+.fi-sidebar, .fi-topbar > nav { background: var(--df-surface) !important; }
+.fi-sidebar-item-btn { border-radius: 999px !important; transition: background .2s, color .2s; }
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn { background: var(--df-green) !important; }
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-icon { color: #fff !important; }
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-icon { color: #0F1A13 !important; }
+.fi-section, .fi-ta-ctn, .fi-wi-stats-overview-stat { border-radius: 20px !important; box-shadow: 0 1px 2px var(--df-line) !important; }
+.fi-btn { border-radius: 999px !important; }
+
+/* Cartões da grade com efeito de inclinação e brilho (datafox.js) */
+.fi-ta-content-grid .fi-ta-record { border-radius: 20px !important; overflow: hidden; transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s; position: relative; }
+.fi-ta-content-grid .fi-ta-record:hover { box-shadow: 0 14px 34px -16px rgba(21,33,26,.35); }
+.fi-ta-content-grid .fi-ta-record::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.18), transparent 45%); opacity: 0; transition: opacity .3s; }
+.fi-ta-content-grid .fi-ta-record:hover::after { opacity: 1; }
+.fi-ta-content-grid .fi-ta-record img { transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.fi-ta-content-grid .fi-ta-record:hover img { transform: scale(1.04); }
+.df-reveal { animation: df-rise .5s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes df-rise { from { opacity: .2; transform: translateY(12px); } }
+
+/* Caixas */
+.df-box-badge { display: inline-grid; place-items: center; border-radius: 16px; font-weight: 800; font-size: 19px; letter-spacing: -.02em;
+  background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+.fi-ta-record:hover .df-box-badge { transform: rotate(-6deg) scale(1.06); }
+.df-box-card { padding-block: 10px; min-height: 150px; }
+.df-box-bar { height: 6px; border-radius: 999px; background: var(--df-surface-2); overflow: hidden; }
+.df-box-bar i { display: block; height: 100%; border-radius: 999px; background: var(--c); animation: df-grow .9s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes df-grow { from { width: 0; } }
+
+/* Utilitários das páginas próprias */
+.df-stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.df-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.df-muted { color: var(--df-muted); font-size: 13px; margin: 0; }
+.df-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.df-h3 { font-size: 18px; font-weight: 700; margin: 0; }
+.df-rounded { border-radius: 20px; width: 100%; }
+
+/* Comparar imagem */
+.df-cmp { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: start; }
+@media (max-width: 1024px) { .df-cmp { grid-template-columns: 1fr; } }
+.df-slider { position: relative; aspect-ratio: 1; border-radius: 20px; overflow: hidden; background: var(--df-surface-2); user-select: none; touch-action: none; max-width: 100%; }
+.df-slider img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.df-slider-handle { position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3); cursor: ew-resize; }
+.df-slider-handle span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.df-slider-label { position: absolute; bottom: 8px; font-size: 11px; background: rgba(0,0,0,.6); color: #fff; padding: 2px 8px; border-radius: 999px; }
+.df-cands { display: flex; flex-direction: column; gap: 10px; position: relative; }
+.df-cand { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px; text-align: left; width: 100%;
+  background: var(--df-surface); border: 1.5px solid transparent; border-radius: 18px; box-shadow: 0 1px 2px var(--df-line); cursor: pointer;
+  transition: transform .2s, border-color .2s; animation: df-rise .45s cubic-bezier(.2,.8,.2,1) backwards; }
+.df-cand:hover { transform: translateX(3px); }
+.df-cand.is-on { border-color: var(--df-green); }
+.df-cand img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: var(--df-surface-2); }
+.df-cand-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.df-cand-body b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.df-cand-body small { color: var(--df-muted); font-size: 12px; }
+.df-cand-body a { text-decoration: underline; }
+.df-verdict { align-self: flex-start; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.df-verdict-same { background: color-mix(in srgb, var(--df-ok) 16%, transparent); color: var(--df-ok); }
+.df-verdict-similar { background: color-mix(in srgb, var(--df-warn) 16%, transparent); color: var(--df-warn); }
+.df-verdict-diff { background: var(--df-surface-2); color: var(--df-muted); }
+.df-ring { width: 52px; height: 52px; position: relative; display: block; }
+.df-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.df-ring circle { fill: none; stroke-width: 5; }
+.df-ring .bg { stroke: var(--df-surface-2); }
+.df-ring .fg { stroke: var(--rc); stroke-linecap: round; stroke-dasharray: 138.2; stroke-dashoffset: 138.2; transition: stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1); }
+.df-ring.is-in .fg { stroke-dashoffset: calc(138.2 * (1 - var(--p))); }
+.df-ring > span { position: absolute; inset: 0; display: grid; place-items: center; font: 600 12px ui-monospace, monospace; }
+.df-scanning::after { content: ""; position: absolute; left: 0; right: 0; height: 40%; top: -40%; pointer-events: none; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--df-sage) 45%, transparent), transparent); animation: df-scan 1.4s linear infinite; }
+.df-cands.df-scanning { overflow: hidden; }
+@keyframes df-scan { to { top: 100%; } }
+.df-empty { display: grid; place-items: center; gap: 8px; text-align: center; padding: 48px 20px; border: 1.5px dashed var(--df-line); border-radius: 20px; color: var(--df-muted); background: var(--df-surface); }
+.df-empty-icon { width: 40px; height: 40px; }
+
+/* Compartilhar */
+.df-share { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .df-share { grid-template-columns: 1fr; } }
+.df-share-frame { aspect-ratio: 4 / 5; border-radius: 16px; overflow: hidden; background: var(--df-surface-2); max-width: 100%; }
+.df-share-frame img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s; }
+.df-share-frame.is-loading img { opacity: .35; }
+.df-share-steps { display: flex; flex-direction: column; gap: 12px; }
+.df-share-step { background: var(--df-surface-2); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.df-share-step p { margin: 0; color: var(--df-muted); font-size: 13px; }
+.df-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--df-green); color: #fff; font-size: 12px; margin-right: 6px; }
+.dark .df-n { color: #0F1A13; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  .fi-ta-content-grid .fi-ta-record { transform: none !important; }
+}
