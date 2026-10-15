@@ -9,13 +9,36 @@
         @endforeach
     </div>
 
+    @if ($tab !== 'dup' && auth()->user()->canEdit())
+        <div class="df-row">
+            @if ($tab === 'failed' && ! $showDismissed && ($tabs['failed']['count'] ?? 0))
+                <div class="df-backup is-stale" style="flex:1 1 100%">
+                    <x-filament::icon icon="heroicon-o-sparkles" class="df-backup-icon"/>
+                    <div style="flex:1;min-width:0"><b>{{ $tabs['failed']['count'] }} peça(s) sem análise da IA.</b>
+                        <p class="df-muted">A IA não respondeu no cadastro (limite de uso, conexão ou foto ilegível). Fotos e fichas estão salvas; reprocesse quando quiser.</p></div>
+                    <x-filament::button icon="heroicon-m-arrow-path" wire:click="retryFailed">Reprocessar com IA ({{ $tabs['failed']['count'] }})</x-filament::button>
+                </div>
+            @endif
+            @if (! $showDismissed && ($tabs[$tab]['count'] ?? 0))
+                <x-filament::button size="sm" color="gray" icon="heroicon-m-check" wire:click="dismissAll">Dispensar todas ({{ $tabs[$tab]['count'] }})</x-filament::button>
+                <x-filament::button size="sm" color="danger" outlined icon="heroicon-m-trash" wire:click="deleteAll"
+                    wire:confirm="Mover as {{ $tabs[$tab]['count'] }} peça(s) desta aba para a Lixeira? Ficam 30 dias para restaurar. Se a ideia é só limpar a lista, use Dispensar.">Excluir essas peças</x-filament::button>
+            @elseif ($showDismissed && ($tabs[$tab]['count'] ?? 0))
+                <x-filament::button size="sm" wire:click="dismissAll(true)">Voltar a mostrar ({{ $tabs[$tab]['count'] }})</x-filament::button>
+            @endif
+            <span style="flex:1"></span>
+            <label class="df-row" style="gap:6px;font-size:13px"><input type="checkbox" wire:model.live="showDismissed"> Ver dispensadas</label>
+        </div>
+    @endif
+
     @if ($tab === 'dup')
         @php($dups = $this->duplicates())
         @php($map = $this->dupItems())
         @if (! $dups)
             <div class="df-empty"><x-filament::icon icon="heroicon-o-check-circle" class="df-empty-icon"/><p>Nenhuma foto quase idêntica entre peças diferentes.</p></div>
         @else
-            <p class="df-muted">Peças diferentes com fotos quase iguais. Confira e una as que forem a mesma peça, ou marque como diferentes para não aparecerem mais.</p>
+            <div class="df-row"><p class="df-muted" style="flex:1">Peças diferentes com fotos quase iguais. Confira e una as que forem a mesma peça, ou marque como diferentes para não aparecerem mais.</p>
+                <x-filament::button size="sm" color="gray" wire:click="ignoreAllDups" wire:confirm="Marcar todos os {{ count($dups) }} pares como peças diferentes?">Marcar todas como diferentes</x-filament::button></div>
             <div>
                 @foreach ($dups as $d)
                     @php($a = $map[$d['a']] ?? null)
@@ -42,9 +65,7 @@
         @endif
     @else
         @php($rows = $this->list())
-        @if ($tab === 'failed' && $rows->isNotEmpty())
-            <div><x-filament::button icon="heroicon-m-arrow-path" color="warning" wire:click="retryFailed">Tentar de novo com a IA</x-filament::button></div>
-        @endif
+
         @if ($rows->isEmpty())
             <div class="df-empty"><x-filament::icon icon="heroicon-o-check-circle" class="df-empty-icon"/><p>Nada pendente aqui.</p></div>
         @else

@@ -11,13 +11,31 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 #[ObservedBy(ItemObserver::class)]
 class Item extends Model
 {
-    use BelongsToAcervo, SoftDeletes;
+    use BelongsToAcervo, Prunable, SoftDeletes;
+
+    /** Lixeira: peça excluída é apagada de vez (com fotos e anexos) 30 dias depois. */
+    public function prunable(): Builder
+    {
+        return static::withoutGlobalScope('acervo')->onlyTrashed()->where('deleted_at', '<', now()->subDays(30));
+    }
+
+    protected function pruning(): void
+    {
+        $disk = \Illuminate\Support\Facades\Storage::disk(config('acervo.disk'));
+        foreach (ItemPhoto::withTrashed()->where('item_id', $this->id)->get() as $p) {
+            $disk->delete(array_filter([$p->path, $p->thumb_path]));
+        }
+        foreach (ItemAttachment::where('item_id', $this->id)->get() as $a) {
+            $disk->delete($a->path);
+        }
+    }
 
     protected $guarded = ['id', 'code', 'created_by', 'updated_by'];
 
@@ -39,6 +57,7 @@ class Item extends Model
             'status_date' => 'date',
             'showcase' => 'boolean',
             'transferred_from' => 'array',
+            'issues_dismissed' => 'array',
         ];
     }
 

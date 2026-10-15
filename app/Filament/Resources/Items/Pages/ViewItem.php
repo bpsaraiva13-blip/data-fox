@@ -115,12 +115,7 @@ class ViewItem extends ViewRecord
             ->modalHeading($label)
             ->modalDescription(fn () => "{$this->record->code} · {$this->record->title}")
             ->fillForm(fn () => ['date' => now()->toDateString(), 'person' => $kind === 'return' ? $this->record->status_person : null])
-            ->schema([
-                \Filament\Forms\Components\DatePicker::make('date')->label('Data')->required()->native(false)->displayFormat('d/m/Y'),
-                TextInput::make('person')->label($personLabel)->required()->maxLength(120)
-                    ->datalist(fn () => \App\Models\Movement::query()->distinct()->orderBy('person')->limit(100)->pluck('person')->all()),
-                TextInput::make('notes')->label('Observação (opcional)')->maxLength(250),
-            ])
+            ->schema(\App\Support\MovementForm::fields($personLabel))
             ->action(function (array $data) use ($kind) {
                 \App\Models\Movement::register($this->record, $kind, $data['date'], $data['person'], $data['notes'] ?? null);
                 Notification::make()->title(['loan' => 'Empréstimo registrado', 'sale' => 'Venda registrada', 'return' => 'Devolução registrada', 'undo' => 'Peça de volta ao acervo'][$kind])->success()->send();

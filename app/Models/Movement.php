@@ -25,15 +25,21 @@ class Movement extends Model
         return $this->belongsTo(Item::class)->withTrashed();
     }
 
+    public function collector(): BelongsTo
+    {
+        return $this->belongsTo(Collector::class)->withTrashed();
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     /** Registra a movimentação e atualiza a situação da peça. */
-    public static function register(Item $item, string $kind, string $date, string $person, ?string $notes = null): self
+    public static function register(Item $item, string $kind, string $date, string $person, ?string $notes = null, ?int $collectorId = null): self
     {
-        $m = static::create(['acervo_id' => $item->acervo_id, 'item_id' => $item->id, 'kind' => $kind, 'date' => $date, 'person' => $person, 'notes' => $notes, 'user_id' => auth()->id()]);
+        $collectorId ??= Collector::findByName($person)?->id;   // liga ao cadastro de colecionadores pelo nome
+        $m = static::create(['acervo_id' => $item->acervo_id, 'item_id' => $item->id, 'kind' => $kind, 'date' => $date, 'person' => $person, 'collector_id' => $collectorId, 'notes' => $notes, 'user_id' => auth()->id()]);
         $status = match ($kind) { 'loan' => 'loaned', 'sale' => 'sold', default => 'available' };
         $item->forceFill(['status' => $status, 'status_person' => $status === 'available' ? null : $person, 'status_date' => $date])->saveQuietly();
         ActivityLog::record('move', $item->id, "{$item->code} · ".self::KINDS[$kind]." — {$person}");

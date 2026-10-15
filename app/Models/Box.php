@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToAcervo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,9 +14,30 @@ use Illuminate\Support\Facades\DB;
 
 class Box extends Model
 {
-    use BelongsToAcervo;
+    use BelongsToAcervo, Prunable, SoftDeletes;
 
     protected $guarded = ['id', 'created_by'];
+
+    protected function casts(): array
+    {
+        return ['trashed_item_ids' => 'array'];
+    }
+
+    public function prunable(): Builder
+    {
+        return static::withoutGlobalScope('acervo')->onlyTrashed()->where('deleted_at', '<', now()->subDays(30));
+    }
+
+    /** Restaura a caixa e devolve para ela as peças que ainda estão sem caixa. */
+    public function restoreWithItems(): int
+    {
+        $this->restore();
+        $ids = $this->trashed_item_ids ?? [];
+        $n = $ids ? Item::withoutGlobalScope('acervo')->whereIn('id', $ids)->whereNull('box_id')->update(['box_id' => $this->id]) : 0;
+        $this->forceFill(['trashed_item_ids' => null])->saveQuietly();
+
+        return $n;
+    }
 
     protected static function booted(): void
     {
@@ -32,7 +55,16 @@ class Box extends Model
                 ActivityLog::record('box', null, "Renomeou a caixa {$box->getOriginal('name')} para {$box->name}");
             }
         });
-        static::deleted(fn (Box $box) => ActivityLog::record('box', null, "Excluiu a caixa {$box->name}"));
+        // na exclusão (lixeira) as peças ficam "Sem caixa", mas guardamos quais eram para restaurar
+        static::deleting(function (Box $box) {
+            if ($box->isForceDeleting()) {
+                return;
+            }
+            $ids = Item::withoutGlobalScope('acervo')->where('box_id', $box->id)->pluck('id')->all();
+            $box->forceFill(['trashed_item_ids' => $ids])->saveQuietly();
+            Item::withoutGlobalScope('acervo')->whereIn('id', $ids)->update(['box_id' => null]);
+        });
+        static::deleted(fn (Box $box) => $box->isForceDeleting() ? null : ActivityLog::record('box', null, "Excluiu a caixa {$box->name} (lixeira)"));
     }
 
     /** Número na frente do nome ("01 Prataria", "Caixa 10", "12. Bolas"), ou null. */

@@ -21,7 +21,8 @@ class PhotoManager
 
         foreach ($existing as $path => $photo) {
             if (! in_array($path, $paths, true)) {
-                $disk->delete(array_filter([$photo->path, $photo->thumb_path]));
+                // vai para a lixeira (os arquivos ficam 30 dias); posição alta para não virar capa
+                $photo->forceFill(['position' => 100000 + $photo->id])->saveQuietly();
                 $photo->delete();
             }
         }

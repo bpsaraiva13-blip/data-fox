@@ -64,6 +64,7 @@ class BatchUpload extends Page
         return $schema->statePath('data')->components([
             Section::make('Fotos')
                 ->description('Arraste todas as fotos da caixa. Dezenas ou centenas de imagens de uma vez.')
+                ->hidden(fn (Get $get) => filled($get('zip')))
                 ->schema([
                     FileUpload::make('files')
                         ->hiddenLabel()
@@ -77,12 +78,31 @@ class BatchUpload extends Page
                         ->directory(config('acervo.photos_dir'))
                         ->visibility('private')
                         ->storeFileNamesIn('names')
-                        ->required(),
+                        ->required(fn (Get $get) => blank($get('zip'))),
+                ]),
+            Section::make('Ou um .zip com pastas')
+                ->description('As pastas se organizam sozinhas: cada pasta vira uma caixa e cada subpasta vira uma peça (ou, se preferir, tudo numa caixa só). Processado em segundo plano; o aviso chega no sininho.')
+                ->collapsible()->collapsed(fn (Get $get) => blank($get('zip')))
+                ->schema([
+                    FileUpload::make('zip')->hiddenLabel()
+                        ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'application/octet-stream'])
+                        ->maxSize(4 * 1024 * 1024)          // 4 GB
+                        ->disk(config('acervo.disk'))->directory('imports/zips')->visibility('private')
+                        ->storeFileNamesIn('zip_name')
+                        ->live(),
+                    Radio::make('org')->label('Organização')->default('boxes')->live()
+                        ->visible(fn (Get $get) => filled($get('zip')))
+                        ->options([
+                            'boxes' => 'Cada pasta vira uma caixa (subpastas viram peças)',
+                            'box' => 'Tudo na caixa escolhida abaixo (cada pasta vira uma peça)',
+                        ]),
                 ]),
             Section::make('Organização')->columns(2)->schema([
                 Select::make('box_id')->label('Caixa de destino')
                     ->options(fn () => Box::naturalOrder()->pluck('name', 'id'))
-                    ->searchable()->required()
+                    ->searchable()
+                    ->required(fn (Get $get) => blank($get('zip')) || $get('org') === 'box')
+                    ->helperText(fn (Get $get) => filled($get('zip')) && $get('org') !== 'box' ? 'Opcional: recebe as fotos soltas fora de pastas (sem ela, a caixa leva o nome do .zip).' : null)
                     ->createOptionForm(ItemResource::boxFields())
                     ->createOptionUsing(fn (array $data) => Box::create($data)->id),
                 TagsInput::make('tags')->label('Tags para todas as peças do lote')->placeholder('ex.: espolio-silva'),
@@ -110,6 +130,22 @@ class BatchUpload extends Page
     public function submit(): void
     {
         $data = $this->form->getState();
+
+        if (filled($data['zip'] ?? null)) {
+            $zipPath = is_array($data['zip']) ? array_values($data['zip'])[0] : $data['zip'];
+            $zipName = is_array($data['zip_name'] ?? null) ? (array_values($data['zip_name'])[0] ?? basename($zipPath)) : ($data['zip_name'] ?? basename($zipPath));
+            \App\Jobs\ImportZip::dispatch(
+                config('acervo.disk'), $zipPath, $zipName, \App\Models\Acervo::current()->id, auth()->id(),
+                $data['org'] ?? 'boxes', $data['box_id'] ?? null, $data['mode'] ?? 'name', (int) ($data['per'] ?? 2),
+                (bool) ($data['ai'] ?? false), $data['tags'] ?? [],
+            );
+            Notification::make()->success()->title('Importando o .zip em segundo plano')
+                ->body('Você pode continuar usando o sistema. O aviso chega no sininho quando terminar.')->send();
+            $this->form->fill(['mode' => 'name', 'per' => 2, 'org' => 'boxes']);
+            if (blank($data['files'] ?? null)) {
+                return;
+            }
+        }
         // nomes originais dos arquivos (para agrupar frente/verso), gravados pelo FileUpload
         $files = $this->data['names'] ?? $data['names'] ?? [];
         foreach ((array) ($data['files'] ?? []) as $path) {

@@ -120,7 +120,7 @@ class BoxResource extends Resource
                     ->url(fn (Box $r) => BatchUpload::getUrl(['box' => $r->id])),
                 EditAction::make()->iconButton(),
                 DeleteAction::make()->iconButton()->hidden(fn (Box $r) => $r->isLinkedHere())
-                    ->modalDescription(fn (Box $r) => $r->items_count ? "As {$r->items_count} peça(s) desta caixa ficarão como “Sem caixa”." : null),
+                    ->modalDescription(fn (Box $r) => ($r->items_count ? "As {$r->items_count} peça(s) desta caixa ficarão como “Sem caixa”. " : '').'A caixa fica 30 dias na Lixeira; ao restaurar, as peças voltam para ela.'),
             ]);
 
         if ($grid) {

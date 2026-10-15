@@ -163,7 +163,7 @@ class ItemResource extends Resource
     {
         return [
             TextInput::make('name')->label('Nome')->required()
-                ->unique(Box::class, 'name', ignoreRecord: true, modifyRuleUsing: fn ($rule) => $rule->where('acervo_id', \App\Models\Acervo::current()?->id))
+                ->unique(Box::class, 'name', ignoreRecord: true, modifyRuleUsing: fn ($rule) => $rule->where('acervo_id', \App\Models\Acervo::current()?->id)->whereNull('deleted_at'))
                 ->placeholder('Caixa A1 — Porcelanas'),
             TextInput::make('location')->label('Local físico')->placeholder('Depósito, estante 2, prateleira 3'),
             ColorPicker::make('color')->label('Cor')->default(config('acervo.box_colors')[0]),

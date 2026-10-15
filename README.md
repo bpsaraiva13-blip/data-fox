@@ -8,6 +8,9 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
 - **Peças**: fotos, Nº de tombo automático (`ACV-2026-0001`), ficha de catalogação, tags, caixa, histórico de quem cadastrou e alterou.
 - **IA**: analisa as fotos e sugere título, época, origem, material, estado, descrição e tags; busca inteligente por descrição; conferência se uma foto nova é a mesma peça de alguma já cadastrada.
 - **Cadastro em lote**: todas as fotos de uma caixa de uma vez, agrupadas pelo nome do arquivo, uma por peça ou em sequência. A IA preenche as fichas em segundo plano.
+  Também aceita um **.zip com pastas** (até 4 GB): cada pasta vira uma caixa e cada subpasta uma peça.
+- **Pendências**: falhas da IA (reprocessar todas de uma vez), peças sem foto, sem caixa, título provisório, possíveis duplicatas;
+  dispensar ou mandar para a lixeira em lote.
 - **Unir peças**: junta frente e verso (ou partes) que ficaram separados, com sugestões automáticas.
 - **Comparar imagem**: ranking visual (dHash + cor) e conferência opcional com IA, com comparação deslizante.
 - **Compartilhar no WhatsApp**: cartão de imagem pronto (1080×1350) e texto formatado.
@@ -18,7 +21,9 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
 - **Enviar entre acervos**: peças ou caixas inteiras, movendo ou copiando (fotos, documentos e movimentações vão juntos).
   Envios grandes rodam na fila e avisam no sininho.
 - **Caixa vinculada**: a mesma caixa aparece em vários acervos, sempre igual; as peças continuam no acervo de origem.
-- **Movimentações**: empréstimo, venda, devolução, com data e responsável.
+- **Movimentações**: empréstimo, venda, devolução, com data e responsável; várias peças de uma vez.
+- **Colecionadores**: cadastro com contato, endereço completo (CEP preenche o endereço), interesses e histórico de movimentações.
+- **Lixeira**: peças, fotos, caixas e colecionadores excluídos ficam 30 dias para restaurar; depois são apagados com os arquivos.
 - **Coleções** temáticas, **vitrine** (pública ou só para convidados), **conferência** de caixa com leitor de etiqueta,
   **fotografar peças** com a câmera, **pendências** (sem foto, sem caixa, falha na IA, possíveis duplicatas),
   **documentos anexos** (nota fiscal, laudo…), **registro de acesso** (quem viu, exportou, gerou PDF).
@@ -70,7 +75,10 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
    ```
    (Ou use as *Managed queues* do Cloud: ele troca `QUEUE_CONNECTION` para `cloud` automaticamente.)
    A fila também gera os backups pedidos pela tela e os envios grandes entre acervos.
-   **Agendador**: ligue o *Scheduler* no App cluster para o backup diário (03:30, horário de Brasília).
+   **Agendador**: ligue o *Scheduler* no App cluster. Ele roda o backup diário (03:30) e a limpeza da lixeira
+   (`model:prune`, 04:10), que apaga de vez o que foi excluído há mais de 30 dias.
+   **.zip grandes**: com o bucket como disco, defina `LIVEWIRE_UPLOAD_DISK=` com o nome do disco do bucket para o navegador
+   enviar direto para ele. Em servidor próprio, ajuste `upload_max_filesize`/`post_max_size` do PHP.
 7. Faça o deploy. Depois, em **Commands**, crie o primeiro administrador:
    ```sh
    php artisan datafox:admin --name="Bruno" --email="voce@email.com" --password="uma-senha-forte"
@@ -120,12 +128,13 @@ Ajuste os modelos em `ACERVO_AI_MODEL` e `ACERVO_AI_SEARCH_MODEL`.
 
 ## Estrutura
 
-- `app/Filament/Resources` — Peças, Caixas, Coleções, Movimentações, Tags, Atividade, Registro de acesso, Equipe, Convites, Usuários
-- `app/Filament/Pages` — Cadastro em lote, Fotografar peças, Conferência, Pendências, Comparar imagem, perfil e acervo
+- `app/Filament/Resources` — Peças, Caixas, Coleções, Movimentações, Colecionadores, Tags, Atividade, Registro de acesso, Equipe, Convites, Usuários
+- `app/Filament/Pages` — Cadastro em lote, Fotografar peças, Conferência, Pendências, Lixeira, Comparar imagem, perfil e acervo
 - `app/Services` — `CuratorAI` (Anthropic), `ImageSignature` (dHash), `PhotoManager`, `ItemMerger`, `ItemSplitter`,
-  `ItemTransfer`, `BatchUploader`, `ShareCard`, `PdfMaker`, `BackupMaker`
+  `ItemTransfer`, `BatchUploader`, `ZipImporter`, `ShareCard`, `PdfMaker`, `BackupMaker`
 - `app/Models/Concerns/BelongsToAcervo` — filtro por acervo (inclui caixas vinculadas)
-- `app/Jobs` — `AnalyzeItem` (IA), `MakeBackup`, `TransferItems`
+- `app/Jobs` — `AnalyzeItem` (IA), `MakeBackup`, `TransferItems`, `ImportZip`
+- `prototipo/` — a versão web (claude.ai) usada como protótipo
 - `app/Console/Commands` — `datafox:admin`, `datafox:import`, `datafox:backup`
 - `public/css/datafox.css`, `public/js/datafox.js` — identidade visual e microinterações
 - `config/acervo.php` — categorias, estados, cores das caixas, modelos de IA

@@ -46,6 +46,9 @@ class Issues extends Page
     #[Url]
     public string $tab = 'dup';
 
+    /** Mostrar as pendências dispensadas (para trazer de volta). */
+    public bool $showDismissed = false;
+
     public static function canAccess(): bool
     {
         return auth()->user()?->canEdit() ?? false;
@@ -68,29 +71,31 @@ class Issues extends Page
     }
 
     /** @return array<string, \Closure(): Builder> */
-    public static function checks(): array
+    public static function checks(bool $dismissed = false): array
     {
-        $base = fn () => ItemAccess::restrict(Item::query());
+        // cada verificação ignora (ou mostra só) as peças em que aquela pendência foi dispensada
+        $base = fn (string $k) => ItemAccess::restrict(Item::query())
+            ->whereRaw(($dismissed ? '' : 'not ')."jsonb_exists(coalesce(items.issues_dismissed, '[]'::jsonb), ?)", [$k]);
 
         return [
-            'nophoto' => fn () => $base()->doesntHave('photos'),
-            'nobox' => fn () => $base()->whereNull('box_id'),
-            'untitled' => fn () => $base()->where(fn ($q) => $q->where('title', 'Sem título')->orWhere('title', 'like', 'Peça fotografada %')->orWhere('title', 'ilike', 'img%')->orWhere('title', 'ilike', 'dsc%')),
-            'nodesc' => fn () => $base()->where(fn ($q) => $q->whereNull('description')->orWhere('description', '')),
-            'failed' => fn () => $base()->where('ai_status', 'failed'),
-            'pending' => fn () => $base()->whereIn('ai_status', ['pending', 'running']),
+            'nophoto' => fn () => $base('nophoto')->doesntHave('photos'),
+            'nobox' => fn () => $base('nobox')->whereNull('box_id'),
+            'untitled' => fn () => $base('untitled')->where(fn ($q) => $q->where('title', 'Sem título')->orWhere('title', 'like', 'Peça fotografada %')->orWhere('title', 'ilike', 'img%')->orWhere('title', 'ilike', 'dsc%')),
+            'nodesc' => fn () => $base('nodesc')->where(fn ($q) => $q->whereNull('description')->orWhere('description', '')),
+            'failed' => fn () => $base('failed')->where('ai_status', 'failed'),
+            'pending' => fn () => $base('pending')->whereIn('ai_status', ['pending', 'running']),
         ];
     }
 
     public function tabs(): array
     {
         $labels = [
-            'dup' => 'Possíveis duplicatas', 'nophoto' => 'Sem foto', 'nobox' => 'Sem caixa', 'untitled' => 'Título provisório',
-            'nodesc' => 'Sem descrição', 'failed' => 'Falha na IA', 'pending' => 'IA em andamento',
+            'dup' => 'Possíveis duplicatas', 'failed' => 'Falha na IA', 'nophoto' => 'Sem foto', 'nobox' => 'Sem caixa', 'untitled' => 'Título provisório',
+            'nodesc' => 'Sem descrição', 'pending' => 'IA em andamento',
         ];
         $out = [];
         foreach ($labels as $k => $l) {
-            $out[$k] = ['label' => $l, 'count' => $k === 'dup' ? count($this->duplicates()) : static::checks()[$k]()->count()];
+            $out[$k] = ['label' => $l, 'count' => $k === 'dup' ? count($this->duplicates()) : static::checks($this->showDismissed)[$k]()->count()];
         }
 
         return $out;
@@ -98,7 +103,7 @@ class Issues extends Page
 
     public function list(): Collection
     {
-        return static::checks()[$this->tab]()->with(['cover', 'box'])->latest()->limit(200)->get();
+        return static::checks($this->showDismissed)[$this->tab]()->with(['cover', 'box'])->latest()->limit(200)->get();
     }
 
     /**
@@ -176,6 +181,52 @@ class Issues extends Page
         return Item::whereIn('id', $ids)->with(['cover', 'box'])->get()->keyBy('id');
     }
 
+    /** Dispensa (ou traz de volta) a pendência da aba aberta em todas as peças listadas. */
+    public function dismissAll(bool $undo = false): void
+    {
+        if ($this->tab === 'dup' || ! auth()->user()->canEdit()) {
+            return;
+        }
+        $n = 0;
+        static::checks($undo)[$this->tab]()->select('items.id', 'items.issues_dismissed')->chunkById(200, function ($items) use (&$n, $undo) {
+            foreach ($items as $it) {
+                $cur = collect($it->issues_dismissed ?? []);
+                $new = $undo ? $cur->reject(fn ($k) => $k === $this->tab) : $cur->push($this->tab)->unique();
+                Item::whereKey($it->id)->update(['issues_dismissed' => $new->isEmpty() ? null : json_encode($new->values()->all())]);
+                $n++;
+            }
+        }, 'items.id', 'id');
+        \App\Models\ActivityLog::record('update', null, ($undo ? 'Voltou a mostrar ' : 'Dispensou ')."{$n} pendência(s)");
+        Notification::make()->success()->title($undo ? "{$n} pendência(s) de volta" : "{$n} pendência(s) dispensada(s)")->send();
+        if ($undo) {
+            $this->showDismissed = false;
+        }
+    }
+
+    /** Manda para a Lixeira (30 dias) todas as peças da aba aberta. */
+    public function deleteAll(): void
+    {
+        if ($this->tab === 'dup' || ! auth()->user()->canEdit()) {
+            return;
+        }
+        $n = 0;
+        static::checks($this->showDismissed)[$this->tab]()->chunkById(100, function ($items) use (&$n) {
+            foreach ($items as $it) {
+                $it->delete();
+                $n++;
+            }
+        }, 'items.id', 'id');
+        Notification::make()->success()->title("{$n} peça(s) na Lixeira")->body('Ficam 30 dias para restaurar.')->send();
+    }
+
+    public function ignoreAllDups(): void
+    {
+        foreach ($this->duplicates() as $d) {
+            DupIgnore::firstOrCreate(['item_a' => min($d['a'], $d['b']), 'item_b' => max($d['a'], $d['b'])]);
+        }
+        Notification::make()->success()->title('Todos os pares marcados como peças diferentes')->send();
+    }
+
     public function ignore(int $a, int $b): void
     {
         DupIgnore::firstOrCreate(['item_a' => min($a, $b), 'item_b' => max($a, $b)]);
@@ -196,8 +247,13 @@ class Issues extends Page
 
     public function retryFailed(): void
     {
+        if (! app(\App\Services\CuratorAI::class)->enabled()) {
+            Notification::make()->danger()->title('IA desligada')->body('Configure ANTHROPIC_API_KEY para reprocessar.')->send();
+
+            return;
+        }
         $n = 0;
-        foreach (static::checks()['failed']()->pluck('id') as $id) {
+        foreach (static::checks()['failed']()->pluck('items.id') as $id) {
             Item::whereKey($id)->update(['ai_status' => 'pending', 'ai_error' => null]);
             AnalyzeItem::dispatch($id);
             $n++;

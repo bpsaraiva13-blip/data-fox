@@ -46,7 +46,7 @@ class MovementResource extends Resource
     {
         return $table
             ->defaultSort('date', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with(['item.cover', 'user']))
+            ->modifyQueryUsing(fn ($q) => $q->with(['item.cover', 'user', 'collector']))
             ->recordUrl(fn (Movement $r) => $r->item && ! $r->item->trashed() ? ItemResource::getUrl('view', ['record' => $r->item]) : null)
             ->columns([
                 TextColumn::make('date')->label('Data')->date('d/m/Y')->sortable(),
@@ -54,7 +54,9 @@ class MovementResource extends Resource
                     ->color(fn ($s) => ['loan' => 'warning', 'sale' => 'danger'][$s] ?? 'success'),
                 TextColumn::make('item.code')->label('Tombo')->fontFamily('mono')->searchable(),
                 TextColumn::make('item.title')->label('Peça')->searchable()->limit(50),
-                TextColumn::make('person')->label('Responsável')->searchable(),
+                TextColumn::make('person')->label('Responsável')->searchable()
+                    ->url(fn (Movement $r) => $r->collector && ! $r->collector->trashed() ? \App\Filament\Resources\Collectors\CollectorResource::getUrl('edit', ['record' => $r->collector]) : null)
+                    ->color(fn (Movement $r) => $r->collector_id ? 'primary' : null),
                 TextColumn::make('notes')->label('Observação')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user.name')->label('Registrado por'),
             ])
@@ -64,7 +66,7 @@ class MovementResource extends Resource
                     ->query(fn ($q, array $d) => $d['value'] ? $q->whereHas('item', fn ($i) => $i->where('status', $d['value'])) : $q),
             ])
             ->emptyStateHeading('Nenhuma movimentação')
-            ->emptyStateDescription('Abra uma peça e use Situação → Registrar empréstimo ou venda.');
+            ->emptyStateDescription('Use “Registrar movimentação” acima ou, na ficha da peça, Situação → Registrar empréstimo ou venda.');
     }
 
     public static function getPages(): array
