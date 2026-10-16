@@ -30,7 +30,7 @@ a{color:var(--accent)}
 .au-card h1{font-size:32px;line-height:1.08;letter-spacing:-.03em;margin:0 0 6px;font-weight:800}
 .au-lead{color:var(--muted);margin:0 0 24px}
 .au-social{display:flex;flex-direction:column;gap:10px}
-.au-sbtn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:600 15px inherit;text-decoration:none;transition:transform .15s,box-shadow .2s,background .2s}
+.au-sbtn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;font-size:15px;text-decoration:none;transition:transform .15s,box-shadow .2s,background .2s}
 .au-sbtn:hover{box-shadow:var(--shadow);transform:translateY(-1px)}.au-sbtn:active{transform:none}
 .au-sbtn svg{width:19px;height:19px;flex:none}
 .au-apple{background:#000;color:#fff;border-color:#000}
@@ -43,12 +43,12 @@ a{color:var(--accent)}
 .au-in{position:relative}
 .au-form input[type=email],.au-form input[type=password],.au-form input[type=text]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;min-height:48px;transition:border-color .2s,box-shadow .2s}
 .au-form input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
-.au-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font:600 13px inherit;padding:8px 10px;border-radius:10px;cursor:pointer}
+.au-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:13px;padding:8px 10px;border-radius:10px;cursor:pointer}
 .au-eye:hover{background:var(--surface-2)}
 .au-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
 .au-row label{display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:500}
 .au-row input{width:17px;height:17px;accent-color:var(--accent)}
-.au-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:700 15.5px inherit;cursor:pointer;text-decoration:none;transition:filter .2s,transform .15s;margin-top:4px}
+.au-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;font-size:15.5px;cursor:pointer;text-decoration:none;transition:filter .2s,transform .15s;margin-top:4px}
 .au-btn:hover{filter:brightness(1.08)}.au-btn:active{transform:scale(.99)}
 .au-btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-2)}
 .au-err{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger);border-radius:14px;padding:11px 14px;font-size:14px;margin:0 0 14px}
