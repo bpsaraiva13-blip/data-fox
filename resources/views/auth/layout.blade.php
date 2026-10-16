@@ -17,7 +17,7 @@
         <a class="au-logo" href="{{ url('/') }}"><span class="au-mark">DF</span><span><b>Data Fox</b><small>Acervo e raridades</small></span></a>
         <div class="au-tiles"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span><span>08</span><span>09</span></div>
         <div class="au-pitch">
-            <h2>O seu acervo de antiguidades e raridades, organizado peça por peça.</h2>
+            <h2>O acervo digital de antiguidades e coleções da Equipe Azzurra.</h2>
             <ul>
                 <li><i>✦</i>Fichas preenchidas pela IA a partir das fotos</li>
                 <li><i>▣</i>Caixas, locais e conferência do que está guardado</li>
