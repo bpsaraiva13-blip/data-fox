@@ -31,7 +31,7 @@ class ExportDocs extends Command
             $disk->put($dir.'/'.now()->format('Y-m-d_His').'.json.gz', gzencode(json_encode($out), 6));
             $files = collect($disk->files($dir))->sort()->values();
             $files->slice(0, max(0, $files->count() - $keep))->each(fn ($f) => $disk->delete($f));
-            $this->line("{$a->name}: ".collect($out['cols'] ?? [])->map->count()->sum().' documento(s)');
+            $this->line("{$a->name}: ".collect($out['cols'] ?? [])->sum(fn ($c) => count($c)).' documento(s)');
         }
 
         return self::SUCCESS;
