@@ -5,7 +5,21 @@ use App\Http\Controllers\ShareImageController;
 use App\Http\Controllers\ShowcaseController;
 use Illuminate\Support\Facades\Route;
 
-// O painel Filament (Data Fox) responde na raiz do site.
+// A interface do Data Fox (a mesma da versão web) responde em "/"; a administração (Filament) em /admin.
+use App\Http\Controllers\App as UI;
+
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/', UI\AppController::class)->name('app');
+    Route::post('/api/db/sync', [UI\DbController::class, 'sync'])->middleware('throttle:300,1')->name('api.db.sync');
+    Route::post('/api/db/write', [UI\DbController::class, 'write'])->middleware('throttle:900,1')->name('api.db.write');
+    Route::post('/api/assets', [UI\AssetController::class, 'upload'])->middleware('throttle:600,1')->name('api.assets.upload');
+    Route::delete('/api/assets/{id}', [UI\AssetController::class, 'destroy'])->where('id', '[A-Za-z0-9_.\-]+')->name('api.assets.delete');
+    Route::get('/_blob/{id}', [UI\AssetController::class, 'show'])->where('id', '[A-Za-z0-9_.\-]+')->name('blob');
+    Route::post('/api/people/profiles', [UI\PeopleController::class, 'profiles'])->name('api.people.profiles');
+    Route::get('/api/people/search', [UI\PeopleController::class, 'search'])->middleware('throttle:60,1')->name('api.people.search');
+    Route::post('/api/ai/json', [UI\AiController::class, 'json'])->middleware('throttle:60,1')->name('api.ai');
+});
+
 
 Route::middleware('web')->group(function () {
     Route::get('/convite/{token}', [InvitationController::class, 'show'])->name('invitations.show');

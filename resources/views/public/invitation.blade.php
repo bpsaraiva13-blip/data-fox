@@ -8,10 +8,10 @@
     @else
         <p class="pb-eyebrow">Convite</p>
         <h1>{{ $inv->acervo->name }}</h1>
-        <p class="pb-muted">{{ $inv->inviter?->name ?? 'Um administrador' }} convidou <b>{{ $inv->email }}</b> como <b>{{ \App\Models\Acervo::ROLES[$inv->role] ?? $inv->role }}</b>.</p>
+        <p class="pb-muted">{{ $inv->inviter?->name ?? 'Um administrador' }} convidou {!! $inv->email ? '<b>'.e($inv->email).'</b>' : 'você' !!} como <b>{{ \App\Models\Acervo::ROLES[$inv->role] ?? $inv->role }}</b>.</p>
 
         @if ($state === 'accept')
-            @if (strcasecmp($user->email, $inv->email) !== 0)
+            @if ($inv->email && strcasecmp($user->email, $inv->email) !== 0)
                 <p class="pb-warn">Você está conectado como {{ $user->email }}. O convite foi enviado para {{ $inv->email }}, mas pode ser aceito nesta conta.</p>
             @endif
             <form method="post" action="{{ route('invitations.accept', $inv->token) }}">@csrf
@@ -23,10 +23,17 @@
             @include('filament.social-buttons', ['invite' => $inv->token])
         @else
             @include('filament.social-buttons', ['invite' => $inv->token])
-            <p class="pb-muted pb-small">Ou crie uma senha:</p>
+            @unless ($inv->email)
+                <p class="pb-muted pb-small">Já tem conta no Data Fox? <a href="{{ $loginUrl }}">Entre</a> e o convite é aceito em seguida.</p>
+            @endunless
+            <p class="pb-muted pb-small">Ou crie uma conta com senha:</p>
             <form method="post" action="{{ route('invitations.register', $inv->token) }}" class="pb-form">@csrf
                 <label>Seu nome<input name="name" value="{{ old('name', $inv->name) }}" required autocomplete="name"></label>
-                <label>E-mail<input value="{{ $inv->email }}" disabled></label>
+                @if ($inv->email)
+                    <label>E-mail<input value="{{ $inv->email }}" disabled></label>
+                @else
+                    <label>Seu e-mail<input type="email" name="email" value="{{ old('email') }}" required autocomplete="email"></label>
+                @endif
                 <label>Crie uma senha<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
                 <label>Repita a senha<input type="password" name="password_confirmation" required autocomplete="new-password"></label>
                 @if ($errors->any())<p class="pb-warn">{{ $errors->first() }}</p>@endif

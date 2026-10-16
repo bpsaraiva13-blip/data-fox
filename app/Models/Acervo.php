@@ -23,7 +23,7 @@ class Acervo extends Model
 
     protected function casts(): array
     {
-        return ['showcase_public' => 'boolean', 'last_backup_at' => 'datetime'];
+        return ['showcase_public' => 'boolean', 'last_backup_at' => 'datetime', 'page' => 'array'];
     }
 
     protected static function booted(): void

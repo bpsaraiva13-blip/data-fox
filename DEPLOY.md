@@ -3,6 +3,10 @@
 Roteiro do zero até o sistema no ar no seu domínio. Troque `acervo.seudominio.com.br` pelo endereço que você quer usar
 (pode ser um subdomínio, como `acervo.`, ou o domínio principal).
 
+> **Como fica**: em `/` abre o Data Fox com a mesma interface da versão web (o servidor guarda os dados e confere
+> as permissões); em `/admin` fica a administração do sistema (usuários, só para administradores) e a tela de
+> conta de cada pessoa (senha, e-mail, duas etapas), aberta pelo **Meu perfil** do Data Fox.
+>
 > O código no branch `main` é testado a cada push (GitHub Actions → **CI**): instalação, migrations no PostgreSQL,
 > testes de acesso e da jornada do usuário, e um build igual ao de produção. Só faça deploy com o CI verde.
 
@@ -83,8 +87,8 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```
 
-Confira se existe `APP_KEY` entre as variáveis injetadas. Se não existir, gere uma (`php artisan key:generate --show`
-em qualquer máquina com o projeto) e cadastre. **Nunca troque o `APP_KEY` depois**: ele criptografa os segredos
+**O Cloud não cria a `APP_KEY`.** Gere em **Commands** com `php artisan key:generate --show`, copie a linha
+`base64:...` e cadastre `APP_KEY=base64:...` nas variáveis (sem ela, toda página dá erro 500). **Nunca troque o `APP_KEY` depois**: ele criptografa os segredos
 da verificação em duas etapas.
 
 Depois de mudar variáveis, faça **Redeploy**.
@@ -96,7 +100,8 @@ Depois de mudar variáveis, faça **Redeploy**.
    ```sh
    php artisan datafox:admin --name="Bruno" --email="voce@email.com" --password="uma-senha-forte"
    ```
-3. Abra o endereço `*.laravel.cloud`, entre e crie o seu acervo.
+3. Abra o endereço `*.laravel.cloud`, entre e crie o seu acervo (botão **Criar meu acervo**).
+   A equipe entra por **Equipe → Convidar**: o link do convite leva a pessoa a criar a conta e já cai no acervo.
 4. Recomendado: em **Meu perfil**, ative a verificação em duas etapas.
 
 ## 6. Apontar o domínio (Registro.br)
@@ -137,15 +142,19 @@ Apple: veja a seção no `README.md` (exige conta Apple Developer).
 
 ## 8. Trazer os dados da versão web
 
-1. Na versão web, **Backup completo (.zip)** com as fotos. Para acervos grandes, uma caixa por vez.
+1. Na versão web, **Backup completo (.zip)** com as fotos (para acervos grandes, uma caixa por vez).
 2. Envie o `.zip` para o bucket, na pasta `imports/`.
-3. **Commands**:
+3. **Commands** (confira com `--dry-run` e depois importe):
    ```sh
-   php artisan datafox:import s3:imports/datafox-backup-acervo-AAAA-MM-DD.zip --user=voce@email.com --acervo="Nome do acervo" --dry-run
-   php artisan datafox:import s3:imports/datafox-backup-acervo-AAAA-MM-DD.zip --user=voce@email.com --acervo="Nome do acervo"
+   php artisan datafox:import-web s3:imports/datafox-backup-acervo-AAAA-MM-DD.zip --user=voce@email.com --acervo="Nome do acervo" --dry-run
+   php artisan datafox:import-web s3:imports/datafox-backup-acervo-AAAA-MM-DD.zip --user=voce@email.com --acervo="Nome do acervo"
    ```
-   Troque `s3` pelo nome do disco do bucket, se for outro. O comando traz caixas, peças, fotos, tags, histórico,
-   colecionadores, movimentações e coleções, e pode ser repetido sem duplicar.
+   Vêm caixas, peças, fotos (com miniaturas), histórico, movimentações, colecionadores e coleções, com os mesmos
+   ids da versão web. Pode repetir sem duplicar. Os nomes de quem cadastrou aparecem no histórico.
+   As pessoas da equipe precisam de conta no Laravel: convide cada uma pela tela **Equipe**.
+
+Backup diário: às 03:15 o servidor grava um JSON de cada acervo em `backups/interface/<acervo>/` no bucket
+(últimos 14). O **Backup completo (.zip)** da interface continua funcionando para baixar tudo com as fotos.
 
 ## 9. Conferência final
 

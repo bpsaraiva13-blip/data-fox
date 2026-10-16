@@ -30,6 +30,26 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
 - **Backup**: diário e automático (agendador) + botão "Gerar backup agora"; mesmo formato do backup da versão web.
 - **Importação** do backup `.zip` da versão anterior (peças, caixas, tags, histórico e fotos).
 
+## Interface
+
+Em `/` roda a **mesma interface da versão web** (`resources/app/data-fox.html`, o mesmo arquivo publicado no
+claude.ai). O `public/js/datafox-runtime.js` entrega a ela o que no claude.ai vem do `window.claude`
+(banco, usuário, fotos, downloads e IA) usando a API do Laravel:
+
+| Rota | O que faz |
+|---|---|
+| `POST /api/db/sync` · `POST /api/db/write` | lê/sincroniza e grava documentos (`app/Support/PageStore.php` confere as permissões) |
+| `POST /api/assets` · `GET /_blob/{id}` | fotos e anexos no bucket privado |
+| `POST /api/ai/json` | IA com a chave só no servidor |
+| `POST /api/people/profiles` · `GET /api/people/search` | nomes e busca de pessoas para a equipe |
+
+Permissões no servidor: admin/editor gravam, somente leitura só lê, "só vitrine" vê só as peças expostas,
+caixas permitidas limitam peças e caixas, caixa vinculada libera só as peças dela, e só administradores mexem em
+equipe, convites e configurações. `/admin` (Filament) é a administração do sistema e a tela de conta.
+
+Ao mudar a interface, edite `resources/app/data-fox.html` (e publique a mesma versão no claude.ai, se quiser).
+O código específico do Laravel fica atrás de `SRV` (`window.DATAFOX_SERVER`).
+
 ## Deploy no Laravel Cloud
 
 O passo a passo completo (banco, bucket, fila, agendador, variáveis, primeiro administrador, domínio no

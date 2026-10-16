@@ -13,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // depois do login todos vão para o Data Fox (/), não para o painel /admin
+        $this->app->bind(\Filament\Auth\Http\Responses\Contracts\LoginResponse::class, \App\Http\Responses\LoginResponse::class);
     }
 
     public function boot(): void

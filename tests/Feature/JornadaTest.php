@@ -30,8 +30,9 @@ class JornadaTest extends TestCase
 
     public function test_sem_acervo_vai_para_criar_acervo(): void
     {
-        $u = $this->user();
-        $this->actingAs($u)->get('/')->assertRedirect();
+        // a interface abre e mostra "Nenhum acervo" (criar ou usar convite)
+        $u = $this->user(['role' => 'editor']);
+        $this->actingAs($u)->get('/')->assertOk()->assertSee('Nenhum acervo');
     }
 
     public function test_dono_abre_todas_as_telas(): void
@@ -79,19 +80,17 @@ class JornadaTest extends TestCase
 
         $this->get(route('invitations.show', $inv->token))->assertOk()->assertSee('Criar conta e aceitar');
         $this->post(route('invitations.register', $inv->token), ['name' => 'Maria', 'password' => 'senha-forte-1', 'password_confirmation' => 'senha-forte-1'])
-            ->assertRedirect(Filament::getUrl($a));
+            ->assertRedirect('/?acervo='.$a->id);
 
         $maria = User::where('email', 'maria@exemplo.com')->first();
         $this->assertAuthenticatedAs($maria);
         $this->assertSame('editor', $a->membershipFor($maria)->role);
         $this->assertNotNull($inv->fresh()->accepted_at);
 
-        // usa o sistema: lista e cadastro abrem; equipe e convites não
-        $this->get(ItemResource::getUrl('index', tenant: $a))->assertOk();
-        $this->get(ItemResource::getUrl('create', tenant: $a))->assertOk();
-        $this->get(MemberResource::getUrl('index', tenant: $a))->assertForbidden();
-        $this->get(InvitationResource::getUrl('index', tenant: $a))->assertForbidden();
-        $this->get(UserResource::getUrl('index', tenant: $a))->assertForbidden();
+        // usa o Data Fox (/); o painel /admin é só para administradores do sistema
+        $this->get('/')->assertOk();
+        $this->get(ItemResource::getUrl('index', tenant: $a))->assertRedirect('/');
+        $this->get(UserResource::getUrl('index', tenant: $a))->assertRedirect('/');
 
         // o convite não serve duas vezes
         $this->post('/logout');

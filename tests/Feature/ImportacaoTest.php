@@ -49,4 +49,35 @@ class ImportacaoTest extends TestCase
         $col = ItemCollection::withoutGlobalScopes()->where('acervo_id', $a->id)->where('name', 'Destaques')->firstOrFail();
         $this->assertEqualsCanonicalizing(['ACV-2026-0001', 'ACV-2026-0003'], $col->items()->pluck('code')->all());
     }
+
+    public function test_importa_backup_da_pagina_para_a_interface(): void
+    {
+        Storage::fake('local');
+        config(['acervo.disk' => 'local', 'acervo.backup.disk' => 'local']);
+        $bruno = $this->user(['email' => 'bruno@exemplo.com', 'name' => 'Bruno']);
+        $zip = base_path('tests/fixtures/backup-pagina.zip');
+        for ($i = 0; $i < 2; $i++) {
+            $this->artisan('datafox:import-web', ['file' => $zip, '--user' => 'bruno@exemplo.com', '--acervo' => 'Azzurra'])->assertSuccessful();
+        }
+        $a = Acervo::where('name', 'Azzurra')->firstOrFail();
+        $count = fn (string $c) => \Illuminate\Support\Facades\DB::table('docs')->where('acervo_id', $a->id)->where('col', $c)->whereNotNull('data')->count();
+        $this->assertSame(4, $count('items'));
+        $this->assertSame(2, $count('boxes'));
+        $this->assertSame(1, $count('collectors'));
+        $this->assertSame(2, $count('movements'));
+        $this->assertSame(1, $count('collections'));
+        // 4 fotos + 4 miniaturas geradas
+        $this->assertSame(8, \Illuminate\Support\Facades\DB::table('assets')->where('acervo_id', $a->id)->count());
+
+        // a interface lê com os mesmos ids e as fotos abrem
+        $r = $this->actingAs($bruno)->postJson('/api/db/sync', ['queries' => ['i' => ['path' => "acervos/{$a->id}/items"]]])->assertOk()->json('results.i.docs');
+        $bule = collect($r)->firstWhere('id', 'it1')['data'];
+        $this->assertSame('Bule de porcelana inglesa', $bule['title']);
+        $this->assertSame('bxA', $bule['boxId']);
+        $this->actingAs($bruno)->get('/_blob/'.$bule['photos'][0]['id'])->assertOk();
+        $this->assertSame('Bruno', $this->actingAs($bruno)->postJson('/api/people/profiles', ['ids' => ['u_bruno']])->json('u_bruno.name'));
+
+        $this->artisan('datafox:export-docs')->assertSuccessful();
+        $this->assertNotEmpty(Storage::disk('local')->files('backups/interface/'.$a->id));
+    }
 }

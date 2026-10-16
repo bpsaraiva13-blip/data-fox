@@ -12,3 +12,6 @@ Illuminate\Support\Facades\Schedule::command('datafox:backup')->dailyAt('03:30')
 
 // Lixeira: apaga de vez (com os arquivos) o que foi excluído há mais de 30 dias
 Illuminate\Support\Facades\Schedule::command('model:prune')->dailyAt('04:10')->timezone('America/Sao_Paulo')->onOneServer();
+
+// Interface: backup diário dos documentos de cada acervo (JSON no bucket)
+Illuminate\Support\Facades\Schedule::command('datafox:export-docs')->dailyAt('03:15')->timezone('America/Sao_Paulo')->withoutOverlapping()->onOneServer();

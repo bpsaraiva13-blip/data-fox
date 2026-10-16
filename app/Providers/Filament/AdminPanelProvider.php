@@ -44,12 +44,12 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('')
+            ->path('admin')
             ->login()
             ->passwordReset()
             // trocar o e-mail do perfil exige confirmar pelo novo endereço
             ->emailChangeVerification()
-            ->profile(EditProfile::class, isSimple: false)
+            ->profile(EditProfile::class, isSimple: true)   // tela simples: abre sem acervo selecionado (usada por todos a partir do Data Fox)
             // verificação em duas etapas opcional (cada pessoa ativa em Meu perfil)
             ->multiFactorAuthentication([
                 \Filament\Auth\MultiFactor\App\AppAuthentication::make()->recoverable()->brandName('Data Fox'),
@@ -65,6 +65,7 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn () => Filament::getTenant() !== null),
             ])
             ->brandName('Data Fox')
+            ->homeUrl(fn () => url('/'))
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('favicon.svg'))
@@ -109,6 +110,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\AdminAreaOnly::class,
             ]);
     }
 }
