@@ -90,6 +90,12 @@ class MemberResource extends Resource
             ]);
     }
 
+    /** Só a equipe do acervo aberto (o escopo automático do Filament está desligado no painel). */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('acervo_user.acervo_id', Acervo::current()?->id ?? 0);
+    }
+
     public static function getPages(): array
     {
         return ['index' => ManageMembers::route('/')];

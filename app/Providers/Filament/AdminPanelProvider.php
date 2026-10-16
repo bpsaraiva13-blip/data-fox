@@ -47,6 +47,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login()
             ->passwordReset()
+            // trocar o e-mail do perfil exige confirmar pelo novo endereço
+            ->emailChangeVerification()
             ->profile(EditProfile::class, isSimple: false)
             // verificação em duas etapas opcional (cada pessoa ativa em Meu perfil)
             ->multiFactorAuthentication([

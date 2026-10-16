@@ -44,12 +44,36 @@ class Invitation extends Model
         return route('invitations.show', $this->token);
     }
 
-    /** Adiciona a pessoa ao acervo com o perfil e as caixas do convite. */
+    public function acceptedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'accepted_by');
+    }
+
+    /** Ordem dos perfis, do maior para o menor. */
+    private const RANK = ['admin' => 4, 'editor' => 3, 'viewer' => 2, 'showcase' => 1];
+
+    /**
+     * Adiciona a pessoa ao acervo com o perfil e as caixas do convite.
+     * Quem já participa nunca perde perfil nem caixas por aceitar um convite menor,
+     * e quem foi bloqueado continua bloqueado.
+     */
     public function accept(User $user): void
     {
-        $this->acervo->members()->syncWithoutDetaching([$user->id => [
-            'role' => $this->role, 'status' => 'active', 'boxes' => $this->boxes, 'invited_by' => $this->invited_by,
-        ]]);
+        $current = $this->acervo->membershipFor($user);
+        if ($current && $current->status === 'blocked') {
+            abort(403, 'Seu acesso a este acervo foi bloqueado pelo administrador.');
+        }
+        if ($current) {
+            $keepRole = (self::RANK[$current->role] ?? 0) >= (self::RANK[$this->role] ?? 0);
+            $boxes = $current->allowedBoxes() === null || $this->boxes === null
+                ? null
+                : array_values(array_unique(array_merge($current->allowedBoxes(), $this->boxes)));
+            $current->update(['role' => $keepRole ? $current->role : $this->role, 'boxes' => $boxes]);
+        } else {
+            $this->acervo->members()->attach($user->id, [
+                'role' => $this->role, 'status' => 'active', 'boxes' => $this->boxes, 'invited_by' => $this->invited_by,
+            ]);
+        }
         $this->update(['accepted_at' => now(), 'accepted_by' => $user->id]);
         ActivityLog::forceCreate([
             'acervo_id' => $this->acervo_id, 'type' => 'user', 'label' => "{$user->name} entrou pelo convite (".(Acervo::ROLES[$this->role] ?? $this->role).')',
