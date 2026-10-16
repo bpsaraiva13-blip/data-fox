@@ -50,7 +50,15 @@ class SiteController extends Controller
                 $disk->delete($b['logo']);
             }
             $path = 'acervo/brand/logo-'.Str::lower(Str::random(8));
-            $disk->put($path, file_get_contents($f->getRealPath()), ['ContentType' => $f->getMimeType()]);
+            try {
+                $ok = $disk->put($path, file_get_contents($f->getRealPath()), ['ContentType' => $f->getMimeType()]);
+            } catch (\Throwable $e) {
+                report($e);
+                $ok = false;
+            }
+            if (! $ok) {
+                return response()->json(['message' => 'Não foi possível guardar o logo no armazenamento do servidor. Rode php artisan datafox:check-storage para ver o erro.'], 500);
+            }
             $new += ['logo' => $path, 'logo_mime' => $f->getMimeType(), 'v' => $b['v'] + 1];
         }
         Site::save($new);

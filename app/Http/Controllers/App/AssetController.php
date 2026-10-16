@@ -32,7 +32,17 @@ class AssetController extends Controller
 
         $id = (string) Str::uuid();
         $path = 'acervo/assets/'.substr($id, 0, 2).'/'.$id;
-        Storage::disk(config('acervo.disk'))->put($path, file_get_contents($f->getRealPath()), ['ContentType' => $mime]);
+        try {
+            $ok = Storage::disk(config('acervo.disk'))->put($path, file_get_contents($f->getRealPath()), ['ContentType' => $mime]);
+        } catch (\Throwable $e) {
+            report($e);
+            $ok = false;
+        }
+        if (! $ok) {
+            report(new \RuntimeException('Falha ao gravar no disco '.config('acervo.disk').': '.$path));
+
+            return response()->json(['error' => ['code' => 'storage_failed', 'message' => 'Não foi possível guardar a foto no armazenamento do servidor. Avise o administrador (rode php artisan datafox:check-storage).']], 500);
+        }
         DB::table('assets')->insert(['id' => $id, 'user_id' => $request->user()->id, 'acervo_id' => $aid, 'path' => $path, 'mime' => $mime, 'size' => $f->getSize(), 'created_at' => now(), 'updated_at' => now()]);
 
         return response()->json(['id' => $id, 'url' => url('/_blob/'.$id), 'sizeBytes' => $f->getSize(), 'contentType' => $mime]);

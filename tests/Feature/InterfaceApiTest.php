@@ -265,6 +265,21 @@ class InterfaceApiTest extends TestCase
         $this->get('/_blob/'.$id)->assertRedirect();
     }
 
+    public function test_diagnostico_do_armazenamento(): void
+    {
+        config(['acervo.disk' => 'local']);
+        $this->artisan('datafox:check-storage')->assertSuccessful();
+    }
+
+    public function test_falha_no_armazenamento_aparece_como_erro(): void
+    {
+        config(['acervo.disk' => 'quebrado', 'filesystems.disks.quebrado' => ['driver' => 'local', 'root' => '/proc/nao-existe/x', 'throw' => false]]);
+        $u = $this->user();
+        $this->actingAs($u)->post('/api/assets', ['file' => UploadedFile::fake()->image('a.jpg', 10, 10), 'type' => 'image/jpeg'], ['Accept' => 'application/json'])
+            ->assertStatus(500)->assertJsonPath('error.code', 'storage_failed');
+        $this->assertSame(0, \Illuminate\Support\Facades\DB::table('assets')->count());
+    }
+
     public function test_ia_sem_chave_fica_desligada(): void
     {
         config(['acervo.ai.api_key' => null]);
