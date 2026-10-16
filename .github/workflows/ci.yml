@@ -98,7 +98,27 @@ jobs:
           php artisan optimize 2>&1 | tee -a /tmp/step.log
           php artisan filament:optimize 2>&1 | tee -a /tmp/step.log
           php artisan migrate:status 2>&1 | tail -3 | tee -a /tmp/step.log
-          php artisan optimize:clear 2>&1 | tee -a /tmp/step.log
+      # Sobe o site em modo produção e abre as páginas públicas de verdade (HTTP), como no Cloud
+      - name: Fumaça HTTP em produção
+        env:
+          APP_ENV: production
+          APP_DEBUG: 'false'
+          APP_URL: http://127.0.0.1:8000
+          SESSION_DRIVER: database
+          CACHE_STORE: database
+          LOG_CHANNEL: single
+        run: |
+          php artisan config:cache >/dev/null
+          (php artisan serve --host=127.0.0.1 --port=8000 > /tmp/serve.log 2>&1 &) ; sleep 3
+          : > /tmp/step.log
+          fail=0
+          for u in / /login /password-reset/request /up; do
+            code=$(curl -s -o /tmp/body.html -w '%{http_code}' -H 'X-Forwarded-Proto: https' "http://127.0.0.1:8000$u")
+            echo "$u -> $code" | tee -a /tmp/step.log
+            case $code in 2*|3*) ;; *) fail=1 ;; esac
+          done
+          if [ $fail = 1 ]; then echo '--- laravel.log' >> /tmp/step.log; tail -c 6000 storage/logs/laravel.log >> /tmp/step.log 2>/dev/null; echo '--- serve' >> /tmp/step.log; tail -n 40 /tmp/serve.log >> /tmp/step.log; exit 1; fi
+          php artisan optimize:clear >/dev/null
       - name: Resumo do erro
         if: failure()
         run: |
