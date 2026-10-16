@@ -127,8 +127,10 @@ class FuncionalidadesTest extends TestCase
     public function test_busca_na_lista_de_pecas(): void
     {
         [, $a] = $this->entrar();
-        $this->item($a, null, ['title' => 'Cálice de cristal']);
-        $this->item($a, null, ['title' => 'Moeda de prata']);
-        $this->get(ItemResource::getUrl('index', ['tableSearch' => 'calice'], tenant: $a))->assertOk()->assertSee('Cálice de cristal')->assertDontSee('Moeda de prata');
+        $calice = $this->item($a, null, ['title' => 'Cálice de cristal']);
+        $moeda = $this->item($a, null, ['title' => 'Moeda de prata']);
+        // sem acento também encontra (unaccent do PostgreSQL)
+        Livewire::test(\App\Filament\Resources\Items\Pages\ListItems::class)->searchTable('calice')
+            ->assertCanSeeTableRecords([$calice])->assertCanNotSeeTableRecords([$moeda]);
     }
 }
