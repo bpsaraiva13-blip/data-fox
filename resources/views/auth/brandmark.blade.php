@@ -1,0 +1,1 @@
+<span class="au-mark">@if ($brand['logo'])<img src="{{ $brand['logo'] }}" alt="">@else{{ mb_strtoupper(mb_substr(preg_replace('/[^\pL\pN]+/u', '', $brand['name']) ?: 'DF', 0, 2)) }}@endif</span><span><b>{{ $brand['name'] }}</b>@if ($brand['sub'])<small>{{ $brand['sub'] }}</small>@endif</span>

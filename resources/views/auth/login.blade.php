@@ -1,8 +1,9 @@
+@php($brand = \App\Support\Site::public())
 @extends('auth.layout')
 @section('title', 'Entrar')
 @section('content')
     <p class="au-eyebrow">Bem-vindo de volta</p>
-    <h1>Entrar no Data Fox</h1>
+    <h1>Entrar no {{ $brand['name'] }}</h1>
     <p class="au-lead">Acesse o seu acervo com a sua conta.</p>
 
     @if (session('social_error'))<p class="au-err" role="alert">{{ session('social_error') }}</p>@endif

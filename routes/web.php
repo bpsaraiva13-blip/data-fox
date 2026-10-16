@@ -17,11 +17,13 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/_blob/{id}', [UI\AssetController::class, 'show'])->where('id', '[A-Za-z0-9_.\-]+')->name('blob');
     Route::post('/api/people/profiles', [UI\PeopleController::class, 'profiles'])->name('api.people.profiles');
     Route::get('/api/people/search', [UI\PeopleController::class, 'search'])->middleware('throttle:60,1')->name('api.people.search');
+    Route::post('/api/site', [UI\SiteController::class, 'update'])->middleware('throttle:30,1')->name('api.site');
     Route::post('/api/ai/json', [UI\AiController::class, 'json'])->middleware('throttle:60,1')->name('api.ai');
 });
 
 
 Route::middleware('web')->group(function () {
+    Route::get('/brand/icon', [UI\SiteController::class, 'icon'])->name('brand.icon');
     Route::get('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
     Route::post('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->middleware('throttle:20,1');
     Route::get('/convite/{token}', [InvitationController::class, 'show'])->name('invitations.show');

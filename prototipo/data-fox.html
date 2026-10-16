@@ -51,6 +51,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0
 .brand-mark{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--label);color:var(--label-ink);font-family:var(--f-display);font-weight:800;font-size:17px}
 .brand h1{font-size:18px;line-height:1.1}
 .brand small{display:block;color:var(--muted);font-size:11.5px;font-family:var(--f-body)}
+.brand-mark img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}.brand-mark.has-img{background:none;overflow:hidden}
+.bm-row{display:flex;gap:12px;align-items:center}.bm-prev{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:var(--label);color:var(--label-ink);font-weight:800;font-size:20px;overflow:hidden;flex:none}.bm-prev img{width:100%;height:100%;object-fit:cover}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:999px;color:var(--muted);font-weight:500;position:relative}
 .nav button:hover{background:var(--surface-2);color:var(--ink)}
@@ -3123,10 +3125,31 @@ function bindLook(pf){
   $("#pf-th").onclick=e=>{const b=e.target.closest("[data-th]");if(!b)return;LOOKPREVIEW.theme=b.dataset.th;look()};
   watchLookClose();
 }
+/* marca do sistema (só no Laravel, para administradores do sistema): nome, subtítulo, frase da tela de entrar e logo */
+const brandInitials=n=>(String(n||"").replace(/[^\p{L}\p{N}]+/gu,"").slice(0,2)||"DF").toUpperCase();
+function applyBrand(){const b=SRV?.brand;if(!b)return;const m=$(".brand .brand-mark"),h=$(".brand h1"),sm=$(".brand small");
+  if(m){m.classList.toggle("has-img",!!b.logo);m.innerHTML=b.logo?`<img src="${esc(b.logo)}" alt="">`:esc(brandInitials(b.name))}
+  if(h)h.textContent=b.name;if(sm){sm.textContent=b.sub||"";sm.hidden=!b.sub}document.title=b.name;
+  let ic=document.querySelector('link[rel="icon"]');if(ic&&b.logo)ic.href=b.logo}
+applyBrand();
+function brandHTML(){const b=SRV.brand;return`<div class="f" style="border-top:1px solid var(--line);padding-top:14px;margin-top:4px"><label>Marca do sistema <small style="font-weight:400;color:var(--muted)">(vale para todos)</small></label>
+  <div class="bm-row"><span class="bm-prev" id="bm-prev">${b.logo?`<img src="${esc(b.logo)}" alt="">`:esc(brandInitials(b.name))}</span><div style="display:flex;gap:6px;flex-wrap:wrap"><label class="btn sm" style="cursor:pointer">${ICON("upload")}Trocar logo e ícone<input type="file" id="bm-file" accept="image/png,image/jpeg,image/webp" hidden></label>${b.logo?`<button type="button" class="btn sm ghost" id="bm-rm">Usar as iniciais</button>`:""}</div></div>
+  <small style="color:var(--muted);display:block;margin-top:6px">PNG, JPG ou WebP quadrado, até 2 MB. Aparece na tela de entrar, no menu e na aba do navegador.</small>
+  <label for="bm-name" style="margin-top:10px">Nome</label><input class="inp" id="bm-name" maxlength="40" value="${esc(b.name)}">
+  <label for="bm-sub" style="margin-top:8px">Subtítulo</label><input class="inp" id="bm-sub" maxlength="60" value="${esc(b.sub||"")}" placeholder="ex.: Acervo e raridades">
+  <label for="bm-tag" style="margin-top:8px">Frase da tela de entrar</label><textarea class="inp" id="bm-tag" maxlength="160" rows="2">${esc(b.tagline||"")}</textarea>
+  <button type="button" class="btn sm" id="bm-save" style="margin-top:10px;align-self:flex-start">${ICON("check")}Salvar marca</button></div>`}
+function bindBrand(){let file=null,remove=false;const prev=$("#bm-prev");
+  $("#bm-file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>2*1024*1024){toast("A imagem pode ter até 2 MB.",true);return}file=f;remove=false;prev.innerHTML=`<img src="${URL.createObjectURL(f)}" alt="">`};
+  $("#bm-rm")&&($("#bm-rm").onclick=()=>{remove=true;file=null;prev.textContent=brandInitials($("#bm-name").value)});
+  $("#bm-save").onclick=async e=>{const btn=e.currentTarget;const name=$("#bm-name").value.trim();if(!name){toast("Dê um nome ao sistema.",true);return}
+    const f=new FormData();f.append("name",name);f.append("sub",$("#bm-sub").value.trim());f.append("tagline",$("#bm-tag").value.trim());if(file)f.append("logo",file);if(remove)f.append("remove_logo","1");
+    btn.disabled=true;try{const r=await fetch("/api/site",{method:"POST",body:f,headers:{"X-CSRF-TOKEN":SRV.csrf,Accept:"application/json"},credentials:"same-origin"});const j=await r.json().catch(()=>({}));
+      if(!r.ok)throw{message:j?.message||j?.error?.message||"Não foi possível salvar a marca."};SRV.brand=j.brand;applyBrand();file=null;remove=false;toast("Marca atualizada para todos")}catch(err){toast(errMsg(err),true)}btn.disabled=false}}
 function openLook(){if(!S.me?.id){toast("Entre com a sua conta para personalizar.",true);return}const pf=S.profiles[S.me.id]||{};
-  mini("Aparência",lookHTML(pf),"Salvar",async()=>{const data={...(S.profiles[S.me.id]||{}),accent:LOOKPREVIEW?LOOKPREVIEW.accent:(pf.accent||""),theme:LOOKPREVIEW?LOOKPREVIEW.theme:(pf.theme||""),updatedAt:new Date().toISOString()};
+  mini("Aparência",lookHTML(pf)+(SRV?.brand&&SRV.user?.isAdmin?brandHTML():""),"Salvar",async()=>{const data={...(S.profiles[S.me.id]||{}),accent:LOOKPREVIEW?LOOKPREVIEW.accent:(pf.accent||""),theme:LOOKPREVIEW?LOOKPREVIEW.theme:(pf.theme||""),updatedAt:new Date().toISOString()};
     LOOKPREVIEW=null;await S.db.doc("profiles/"+S.me.id).set(data);applyLook(data.accent,data.theme);toast("Aparência salva")});
-  bindLook(pf)}
+  bindLook(pf);if(SRV?.brand&&SRV.user?.isAdmin)bindBrand()}
 function openProfile(){if(!S.me?.id)return;const pf=S.profiles[S.me.id]||{};let newAvatar=null;
   mini("Meu perfil",`<div style="display:flex;flex-direction:column;gap:12px">
    <div style="display:flex;gap:14px;align-items:center"><img id="pf-img" src="${avatar(S.me.id)}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover"><label class="btn sm" style="cursor:pointer">${ICON("camera")}Trocar foto<input type="file" id="pf-file" accept="image/*" hidden></label>${pf.avatar?`<button class="btn sm ghost" id="pf-rmimg">Usar a da conta</button>`:""}</div>
