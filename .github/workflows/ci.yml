@@ -112,13 +112,33 @@ jobs:
           (php artisan serve --host=127.0.0.1 --port=8000 > /tmp/serve.log 2>&1 &) ; sleep 3
           : > /tmp/step.log
           fail=0
-          for u in / /login /password-reset/request /up; do
+          for u in / /admin/login /admin/password-reset/request /up; do
             code=$(curl -s -o /tmp/body.html -w '%{http_code}' -H 'X-Forwarded-Proto: https' "http://127.0.0.1:8000$u")
             echo "$u -> $code" | tee -a /tmp/step.log
             case $code in 2*|3*) ;; *) fail=1 ;; esac
           done
           if [ $fail = 1 ]; then echo '--- laravel.log' >> /tmp/step.log; tail -c 6000 storage/logs/laravel.log >> /tmp/step.log 2>/dev/null; echo '--- serve' >> /tmp/step.log; tail -n 40 /tmp/serve.log >> /tmp/step.log; exit 1; fi
           php artisan optimize:clear >/dev/null
+      # A interface de verdade num navegador: entrar, cadastrar, recarregar, convite, permissões, tempo real
+      - name: Interface no navegador (Playwright)
+        env:
+          APP_ENV: staging
+          APP_DEBUG: 'false'
+          APP_URL: http://127.0.0.1:8000
+          SESSION_DRIVER: database
+          SESSION_SECURE_COOKIE: 'false'
+          CACHE_STORE: database
+          LOG_CHANNEL: single
+          FILESYSTEM_DISK: local
+          ACERVO_DISK: local
+        run: |
+          set -o pipefail
+          : > /tmp/step.log
+          pip install --quiet playwright >/dev/null && python3 -m playwright install --with-deps chromium >/dev/null 2>&1
+          php artisan datafox:admin --name=Bruno --email=bruno@exemplo.com --password=senha-forte-1 >/dev/null
+          pkill -f "artisan serve" || true; sleep 1
+          (PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=127.0.0.1 --port=8000 > /tmp/serve.log 2>&1 &) ; sleep 3
+          python3 tests/e2e/interface.py http://127.0.0.1:8000 2>&1 | tee -a /tmp/step.log || { echo '--- laravel.log' >> /tmp/step.log; tail -c 5000 storage/logs/laravel.log >> /tmp/step.log 2>/dev/null; exit 1; }
       - name: Resumo do erro
         if: failure()
         run: |
