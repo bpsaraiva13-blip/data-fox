@@ -73,5 +73,5 @@ jobs:
       - name: Resumo do erro
         if: failure()
         run: |
-          msg=$(tail -n 80 /tmp/step.log | sed -e 's/\x1b\[[0-9;]*m//g' | cut -c1-300 | awk '{printf "%s%%0A", $0}')
+          msg=$(grep -v -E '^\s+- (Installing|Downloading|Locking|Upgrading)' /tmp/step.log | tail -n 45 | sed -e 's/\x1b\[[0-9;]*m//g' | cut -c1-300 | awk '{printf "%s%%0A", $0}')
           echo "::error title=Falha::${msg}"
