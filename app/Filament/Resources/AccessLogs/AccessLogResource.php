@@ -35,11 +35,11 @@ class AccessLogResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with('user'))
+            ->modifyQueryUsing(fn ($query) => $query->with('user'))
             ->columns([
                 TextColumn::make('created_at')->label('Quando')->dateTime('d/m/Y H:i')->sortable(),
                 TextColumn::make('user.name')->label('Quem')->searchable(),
-                TextColumn::make('type')->label('O que')->badge()->formatStateUsing(fn ($s) => AccessLog::TYPES[$s] ?? $s)->color('gray'),
+                TextColumn::make('type')->label('O que')->badge()->formatStateUsing(fn ($state) => AccessLog::TYPES[$state] ?? $state)->color('gray'),
                 TextColumn::make('label')->label('Detalhe')->wrap()->searchable(),
                 TextColumn::make('ip')->label('IP')->toggleable(isToggledHiddenByDefault: true),
             ])

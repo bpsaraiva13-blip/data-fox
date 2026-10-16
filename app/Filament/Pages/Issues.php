@@ -80,8 +80,8 @@ class Issues extends Page
         return [
             'nophoto' => fn () => $base('nophoto')->doesntHave('photos'),
             'nobox' => fn () => $base('nobox')->whereNull('box_id'),
-            'untitled' => fn () => $base('untitled')->where(fn ($q) => $q->where('title', 'Sem título')->orWhere('title', 'like', 'Peça fotografada %')->orWhere('title', 'ilike', 'img%')->orWhere('title', 'ilike', 'dsc%')),
-            'nodesc' => fn () => $base('nodesc')->where(fn ($q) => $q->whereNull('description')->orWhere('description', '')),
+            'untitled' => fn () => $base('untitled')->where(fn ($query) => $query->where('title', 'Sem título')->orWhere('title', 'like', 'Peça fotografada %')->orWhere('title', 'ilike', 'img%')->orWhere('title', 'ilike', 'dsc%')),
+            'nodesc' => fn () => $base('nodesc')->where(fn ($query) => $query->whereNull('description')->orWhere('description', '')),
             'failed' => fn () => $base('failed')->where('ai_status', 'failed'),
             'pending' => fn () => $base('pending')->whereIn('ai_status', ['pending', 'running']),
         ];
@@ -120,7 +120,7 @@ class Issues extends Page
 
         return Cache::remember($key, 600, function () {
             $photos = ItemPhoto::query()->whereNotNull('hash')
-                ->whereHas('item', fn ($q) => ItemAccess::restrict($q))
+                ->whereHas('item', fn ($query) => ItemAccess::restrict($query))
                 ->get(['item_id', 'hash', 'color'])
                 ->map(fn ($p) => [$p->item_id, @hex2bin($p->hash) ?: '', $p->color ?? [0, 0, 0]])
                 ->filter(fn ($p) => strlen($p[1]) === 8)->values()->all();

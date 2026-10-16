@@ -45,7 +45,7 @@ class MemberResource extends Resource
         $isOwner = fn (Membership $r) => $r->acervo->owner_id === $r->user_id;
 
         return $table
-            ->modifyQueryUsing(fn ($q) => $q->with(['user', 'acervo']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['user', 'acervo']))
             ->columns([
                 ImageColumn::make('user.avatar')->label('')->circular()->imageSize(36)
                     ->state(fn (Membership $r) => $r->user?->getFilamentAvatarUrl())

@@ -141,7 +141,7 @@ class ItemResource extends Resource
                         Select::make('condition')->label('Estado de conservação')
                             ->options(array_combine(config('acervo.conditions'), config('acervo.conditions'))),
                         Select::make('box_id')->label('Caixa')
-                            ->relationship('box', 'name', fn (Builder $q) => $q->naturalOrder())->searchable()->preload()
+                            ->relationship('box', 'name', fn (Builder $query) => $query->naturalOrder())->searchable()->preload()
                             ->createOptionForm(static::boxFields())
                             ->createOptionModalHeading('Nova caixa'),
                         TextInput::make('value')->label('Valor estimado')->numeric()->prefix('R$')->minValue(0),
@@ -319,7 +319,7 @@ class ItemResource extends Resource
                         TextColumn::make('created_at')->label('Cadastro')->since()->color('gray')->size('xs')->alignEnd()->sortable(),
                     ]),
                     TextColumn::make('title')->label('Título')->weight('semibold')->size('lg')->limit(60)
-                        ->searchable(query: fn (Builder $q, string $search) => $q->search($search))->sortable(),
+                        ->searchable(query: fn (Builder $query, string $search) => $query->search($search))->sortable(),
                     TextColumn::make('era')->color('gray')->placeholder('—')
                         ->description(fn (Item $r) => ($r->box?->name ?? 'Sem caixa').' · por '.($r->creator?->name ?? '—')),
                     TextColumn::make('tags.name')->badge()->prefix('#')->limitList(4)->color('gray'),
@@ -338,7 +338,7 @@ class ItemResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                SelectFilter::make('box_id')->label('Caixa')->relationship('box', 'name', fn (Builder $q) => $q->naturalOrder())->searchable()->preload(),
+                SelectFilter::make('box_id')->label('Caixa')->relationship('box', 'name', fn (Builder $query) => $query->naturalOrder())->searchable()->preload(),
                 SelectFilter::make('batch')->label('Lote')->options(fn () => Item::whereNotNull('batch')->groupBy('batch')->orderByRaw('max(items.created_at) desc')->limit(50)->pluck('batch', 'batch')),
                 SelectFilter::make('category')->label('Categoria')->options(array_combine(config('acervo.categories'), config('acervo.categories'))),
                 SelectFilter::make('status')->label('Situação')->options(['available' => 'No acervo', 'loaned' => 'Emprestada', 'sold' => 'Vendida']),

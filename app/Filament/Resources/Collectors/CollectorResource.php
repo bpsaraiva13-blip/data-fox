@@ -64,7 +64,7 @@ class CollectorResource extends Resource
                 TextInput::make('phone')->label('Telefone / WhatsApp')->tel()->maxLength(30)->columnSpan(2),
                 TextInput::make('phone2')->label('Outro telefone')->tel()->maxLength(30)->columnSpan(2),
                 TextInput::make('instagram')->label('Instagram')->prefix('@')->maxLength(60)->columnSpan(2)
-                    ->dehydrateStateUsing(fn ($s) => $s ? ltrim($s, '@') : null),
+                    ->dehydrateStateUsing(fn ($state) => $state ? ltrim($state, '@') : null),
                 TextInput::make('email')->label('E-mail')->email()->maxLength(160)->columnSpanFull(),
             ]),
             Section::make('Endereço')->columns(6)->schema([
@@ -109,14 +109,14 @@ class CollectorResource extends Resource
     {
         return $table
             ->defaultSort('name')
-            ->modifyQueryUsing(fn ($q) => $q->withCount('movements'))
+            ->modifyQueryUsing(fn ($query) => $query->withCount('movements'))
             ->columns([
                 TextColumn::make('name')->label('Nome')->weight('semibold')->searchable(['name', 'nick', 'phone', 'email', 'city'])
                     ->description(fn (Collector $r) => $r->nick),
-                TextColumn::make('kind')->label('Tipo')->badge()->color('gray')->formatStateUsing(fn ($s) => Collector::KINDS[$s] ?? $s),
+                TextColumn::make('kind')->label('Tipo')->badge()->color('gray')->formatStateUsing(fn ($state) => Collector::KINDS[$state] ?? $state),
                 TextColumn::make('interests')->label('Coleciona')->badge()->limitList(3)->placeholder('—'),
                 TextColumn::make('phone')->label('Telefone')->placeholder('—')->copyable(),
-                TextColumn::make('city')->label('Cidade')->formatStateUsing(fn ($s, Collector $r) => $s.($r->uf ? '/'.$r->uf : ''))->placeholder('—')->sortable(),
+                TextColumn::make('city')->label('Cidade')->formatStateUsing(fn ($state, Collector $r) => $state.($r->uf ? '/'.$r->uf : ''))->placeholder('—')->sortable(),
                 TextColumn::make('movements_count')->label('Movimentações')->numeric()->alignEnd()->sortable(),
             ])
             ->filters([

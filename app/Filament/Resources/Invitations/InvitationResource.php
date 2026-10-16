@@ -51,10 +51,10 @@ class InvitationResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with(['inviter', 'acceptedBy']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['inviter', 'acceptedBy']))
             ->columns([
                 TextColumn::make('email')->label('E-mail')->description(fn (Invitation $r) => $r->name)->searchable(),
-                TextColumn::make('role')->label('Perfil')->badge()->formatStateUsing(fn ($s) => Acervo::ROLES[$s] ?? $s),
+                TextColumn::make('role')->label('Perfil')->badge()->formatStateUsing(fn ($state) => Acervo::ROLES[$state] ?? $state),
                 TextColumn::make('boxes')->label('Caixas')->state(fn (Invitation $r) => BoxAccess::label($r->boxes))->color('gray')->wrap(),
                 TextColumn::make('situacao')->label('Situação')->badge()
                     ->state(fn (Invitation $r) => $r->accepted_at ? 'Aceito' : ($r->revoked_at ? 'Revogado' : ($r->expires_at->isPast() ? 'Expirado' : 'Pendente')))

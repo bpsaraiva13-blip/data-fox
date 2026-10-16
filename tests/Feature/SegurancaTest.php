@@ -83,7 +83,8 @@ class SegurancaTest extends TestCase
         $a = $this->acervo($owner);
         $u = $this->user();
         $this->member($a, $u, 'editor', null, 'blocked');
-        $this->actingAs($u)->get(ItemResource::getUrl('index', tenant: $a))->assertForbidden();
+        // bloqueado: o acervo some para a pessoa
+        $this->actingAs($u)->get(ItemResource::getUrl('index', tenant: $a))->assertNotFound();
 
         $this->actingAs($owner);
         $inv = Invitation::create(['acervo_id' => $a->id, 'email' => $u->email, 'role' => 'editor']);

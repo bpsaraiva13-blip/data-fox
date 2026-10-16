@@ -40,7 +40,7 @@ class MovementForm
 
                 return ItemAccess::restrict(Item::query())
                     ->where('status', $kind === 'return' ? 'loaned' : ($kind === 'undo' ? 'sold' : 'available'))
-                    ->where(fn ($q) => $q->where('title', 'ilike', "%{$search}%")->orWhere('code', 'ilike', "%{$search}%"))
+                    ->where(fn ($query) => $query->where('title', 'ilike', "%{$search}%")->orWhere('code', 'ilike', "%{$search}%"))
                     ->orderBy('code')->limit(50)->get()
                     ->mapWithKeys(fn (Item $i) => [$i->id => "{$i->code} · {$i->title}"])->all();
             })

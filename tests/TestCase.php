@@ -19,7 +19,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function user(array $attrs = []): User
     {
-        return User::factory()->create(['role' => 'editor', 'active' => true] + $attrs);
+        return User::factory()->create($attrs + ['role' => 'editor', 'active' => true]);
     }
 
     /** Acervo com o dono como administrador. */
@@ -44,6 +44,6 @@ abstract class TestCase extends BaseTestCase
 
     protected function item(Acervo $a, ?Box $box = null, array $attrs = []): Item
     {
-        return Item::withoutGlobalScopes()->forceCreate(['acervo_id' => $a->id, 'title' => 'Peça '.uniqid(), 'box_id' => $box?->id] + $attrs);
+        return Item::withoutGlobalScopes()->forceCreate($attrs + ['acervo_id' => $a->id, 'title' => 'Peça '.uniqid(), 'box_id' => $box?->id]);
     }
 }
