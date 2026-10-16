@@ -66,7 +66,8 @@ class ImportacaoTest extends TestCase
         $this->assertSame(1, $count('collectors'));
         $this->assertSame(2, $count('movements'));
         $this->assertSame(1, $count('collections'));
-        $this->assertSame(4, \Illuminate\Support\Facades\DB::table('assets')->where('acervo_id', $a->id)->count());
+        // 4 fotos + 4 miniaturas geradas
+        $this->assertSame(8, \Illuminate\Support\Facades\DB::table('assets')->where('acervo_id', $a->id)->count());
 
         // a interface lê com os mesmos ids e as fotos abrem
         $r = $this->actingAs($bruno)->postJson('/api/db/sync', ['queries' => ['i' => ['path' => "acervos/{$a->id}/items"]]])->assertOk()->json('results.i.docs');
