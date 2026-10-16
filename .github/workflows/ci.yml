@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    name: Testes (PHP 8.4 + PostgreSQL)
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: datafox
+          POSTGRES_PASSWORD: datafox
+          POSTGRES_DB: datafox_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U datafox" --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: datafox_test
+      DB_USERNAME: datafox
+      DB_PASSWORD: datafox
+      FILESYSTEM_DISK: local
+      ACERVO_DISK: local
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, mbstring, zip, pcntl, pdo, pdo_pgsql, pgsql, gd, intl, bcmath, exif
+          coverage: none
+
+      # Os passos guardam a saída e, se falharem, mostram o final dela como anotação
+      # (fica visível na aba "Checks" e pela API, sem baixar logs).
+      - name: Instalar dependências
+        run: |
+          set -o pipefail
+          composer install --prefer-dist --no-interaction --no-progress 2>&1 | tee /tmp/step.log
+      - name: Preparar .env
+        run: |
+          set -o pipefail
+          cp .env.example .env && php artisan key:generate 2>&1 | tee /tmp/step.log
+      - name: Migrations no PostgreSQL
+        run: |
+          set -o pipefail
+          php artisan migrate --force 2>&1 | tee /tmp/step.log
+          php artisan migrate:rollback --force 2>&1 | tee -a /tmp/step.log
+          php artisan migrate --force 2>&1 | tee -a /tmp/step.log
+      - name: Rotas e painel carregam
+        run: |
+          set -o pipefail
+          php artisan route:list --except-vendor 2>&1 | tee /tmp/step.log
+          php artisan about --only=environment 2>&1 | tee -a /tmp/step.log
+      - name: Testes
+        run: |
+          set -o pipefail
+          php artisan test --compact 2>&1 | tee /tmp/step.log
+      - name: Resumo do erro
+        if: failure()
+        run: |
+          msg=$(tail -n 80 /tmp/step.log | sed -e 's/\x1b\[[0-9;]*m//g' | cut -c1-300 | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Falha::${msg}"
