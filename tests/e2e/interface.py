@@ -57,6 +57,23 @@ with sync_playwright() as p:
     check(pg.evaluate("[...S.items.values()][0].title") == "Bule inglês", "depois de recarregar, a peça continua salva no servidor")
     check(pg.evaluate("[...S.boxes.values()][0].name") == "01 Porcelanas", "a caixa continua salva")
 
+    # marca do sistema: o administrador troca o logo e a frase em Aparência
+    import base64, tempfile
+    png = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAEklEQVR4nGNgYGD4z0AswK4SAFXuAf8EPy+xAAAAAElFTkSuQmCC")
+    tf = tempfile.NamedTemporaryFile(suffix=".png", delete=False); tf.write(png); tf.close()
+    pg.evaluate("openLook()"); pg.wait_for_timeout(400)
+    pg.set_input_files("#bm-file", tf.name)
+    pg.fill("#bm-tag", "Frase nova do teste E2E.")
+    pg.click("#mini-ok")   # o Salvar principal também grava a marca
+    try:
+        pg.wait_for_function("SRV.brand && SRV.brand.logo && SRV.brand.tagline==='Frase nova do teste E2E.'", timeout=15000); ok = True
+    except Exception:
+        ok = False
+    check(ok, "Aparência: logo e frase salvos pelo botão Salvar")
+    check(pg.evaluate("!!document.querySelector('.brand .brand-mark img')"), "logo aparece no menu")
+    icon = pg.evaluate("fetch('/brand/icon').then(r=>r.headers.get('content-type'))")
+    check(icon == "image/png", "ícone do site servido em /brand/icon")
+
     # convite por link
     code = pg.evaluate("(async()=>{const code='E2E'+Math.random().toString(36).slice(2,10).toUpperCase();await S.db.doc('invites/'+code).set({aid:S.aid,role:'viewer',label:'Ana',boxes:null,expiresAt:new Date(Date.now()+864e5).toISOString(),createdAt:new Date().toISOString(),createdBy:S.me.id});return code})()")
     aid = pg.evaluate("S.aid")
@@ -85,6 +102,8 @@ with sync_playwright() as p:
     check(ok, "peça nova do Bruno aparece para a Ana em segundos")
     p2.screenshot(path="/tmp/e2e-mobile.png"); pg.screenshot(path="/tmp/e2e-desktop.png")
 
+    p3 = b.new_context().new_page(); p3.goto(BASE + "/entrar")
+    check("Frase nova do teste E2E." in p3.content(), "tela de entrar mostra a frase nova")
     check(not errs, "sem erros de JavaScript" + (": " + " | ".join(errs[:3]) if errs else ""))
     b.close()
 
