@@ -27,7 +27,7 @@ class CheckStorage extends Command
         $steps = [
             'gravar' => fn ($d) => $d->put($path, 'ok', ['ContentType' => 'text/plain']) ?: throw new \RuntimeException('put() devolveu false'),
             'ler' => fn ($d) => $d->get($path) === 'ok' ?: throw new \RuntimeException('conteúdo diferente'),
-            'link temporário' => fn ($d) => $this->line('   '.substr($d->temporaryUrl($path, now()->addMinutes(5)), 0, 90).'…'),
+            'link temporário' => fn ($d) => ($cfg['driver'] ?? '') === 's3' ? $this->line('   '.substr($d->temporaryUrl($path, now()->addMinutes(5)), 0, 90).'…') : $this->line('   (disco local: sem link temporário)'),
             'apagar' => fn ($d) => $d->delete($path),
         ];
         $disk = Storage::build(array_merge($cfg, ['throw' => true]));
