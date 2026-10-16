@@ -27,7 +27,7 @@ class InvitationController extends Controller
             'inv' => $inv,
             'state' => $user ? 'accept' : ($exists ? 'login' : 'register'),
             'user' => $user,
-            'loginUrl' => Filament::getLoginUrl(),
+            'loginUrl' => route('login'),
         ]);
     }
 

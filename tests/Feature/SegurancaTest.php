@@ -126,7 +126,7 @@ class SegurancaTest extends TestCase
 
     public function test_cabecalhos_de_seguranca(): void
     {
-        $this->get(route('filament.admin.auth.login'))->assertOk()
+        $this->get(route('login'))->assertOk()
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN');
     }
@@ -145,7 +145,7 @@ class SegurancaTest extends TestCase
     public function test_google_sem_conta_nem_convite_e_recusado(): void
     {
         $this->fakeGoogle('estranho@exemplo.com');
-        $this->get('/auth/google/callback')->assertRedirect(Filament::getLoginUrl());
+        $this->get('/auth/google/callback')->assertRedirect(route('login'));
         $this->assertGuest();
         $this->assertDatabaseMissing('users', ['email' => 'estranho@exemplo.com']);
     }
@@ -154,7 +154,7 @@ class SegurancaTest extends TestCase
     {
         $this->user(['email' => 'ana@exemplo.com']);
         $this->fakeGoogle('ana@exemplo.com', verified: false);
-        $this->get('/auth/google/callback')->assertRedirect(Filament::getLoginUrl());
+        $this->get('/auth/google/callback')->assertRedirect(route('login'));
         $this->assertGuest();
     }
 
@@ -162,7 +162,7 @@ class SegurancaTest extends TestCase
     {
         $this->user(['email' => 'ana@exemplo.com', 'email_verified_at' => null]);
         $this->fakeGoogle('ana@exemplo.com');
-        $this->get('/auth/google/callback')->assertRedirect(Filament::getLoginUrl());
+        $this->get('/auth/google/callback')->assertRedirect(route('login'));
         $this->assertGuest();
     }
 
@@ -198,8 +198,8 @@ class SegurancaTest extends TestCase
 
     public function test_verificacao_sem_login_pendente_volta_ao_login(): void
     {
-        $this->get(route('social.2fa'))->assertRedirect(Filament::getLoginUrl());
-        $this->post(route('social.2fa.verify'), ['code' => '123456'])->assertRedirect(Filament::getLoginUrl());
+        $this->get(route('social.2fa'))->assertRedirect(route('login'));
+        $this->post(route('social.2fa.verify'), ['code' => '123456'])->assertRedirect(route('login'));
         $this->assertGuest();
     }
 

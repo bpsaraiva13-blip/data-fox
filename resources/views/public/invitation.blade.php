@@ -1,46 +1,47 @@
-@extends('public.layout')
-@section('title', 'Convite · Data Fox')
+@extends('auth.layout')
+@section('title', 'Convite')
 @section('content')
-<div class="pb-card pb-narrow">
     @if ($state === 'invalid')
+        <p class="au-eyebrow">Convite</p>
         <h1>Convite indisponível</h1>
-        <p class="pb-muted">Este convite expirou, foi revogado ou já foi usado. Peça um novo convite a quem enviou.</p>
+        <p class="au-lead">Este convite expirou, foi revogado ou já foi usado. Peça um novo link a quem enviou.</p>
+        <a class="au-btn ghost" href="{{ route('login') }}">Ir para a tela de entrar</a>
     @else
-        <p class="pb-eyebrow">Convite</p>
+        <p class="au-eyebrow">Convite para o acervo</p>
         <h1>{{ $inv->acervo->name }}</h1>
-        <p class="pb-muted">{{ $inv->inviter?->name ?? 'Um administrador' }} convidou {!! $inv->email ? '<b>'.e($inv->email).'</b>' : 'você' !!} como <b>{{ \App\Models\Acervo::ROLES[$inv->role] ?? $inv->role }}</b>.</p>
+        <p class="au-lead">{{ $inv->inviter?->name ?? 'Um administrador' }} convidou {!! $inv->email ? '<b>'.e($inv->email).'</b>' : 'você' !!} para participar como
+            <span class="au-chip">{{ \App\Models\Acervo::ROLES[$inv->role] ?? $inv->role }}</span></p>
+        @if ($errors->any())<p class="au-err" role="alert">{{ $errors->first() }}</p>@endif
+        @if (session('social_error'))<p class="au-err" role="alert">{{ session('social_error') }}</p>@endif
 
         @if ($state === 'accept')
             @if ($inv->email && strcasecmp($user->email, $inv->email) !== 0)
-                <p class="pb-warn">Você está conectado como {{ $user->email }}. O convite foi enviado para {{ $inv->email }}, mas pode ser aceito nesta conta.</p>
+                <p class="au-ok">Você está conectado como {{ $user->email }}. O convite foi enviado para {{ $inv->email }}, mas pode ser aceito nesta conta.</p>
             @endif
             <form method="post" action="{{ route('invitations.accept', $inv->token) }}">@csrf
-                <button class="pb-btn">Aceitar convite</button>
+                <button class="au-btn">Aceitar e abrir o acervo</button>
             </form>
         @elseif ($state === 'login')
-            <p>Você já tem conta. Entre com <b>{{ $inv->email }}</b> e abra este link de novo para aceitar.</p>
-            <a class="pb-btn" href="{{ $loginUrl }}">Entrar</a>
-            @include('filament.social-buttons', ['invite' => $inv->token])
+            <p class="au-lead">Você já tem conta com <b>{{ $inv->email }}</b>. Entre e o convite é aceito em seguida.</p>
+            @include('auth.social', ['invite' => $inv->token, 'sep' => 'ou'])
+            <a class="au-btn" href="{{ $loginUrl }}">Entrar com e-mail e senha</a>
         @else
-            @include('filament.social-buttons', ['invite' => $inv->token])
-            @unless ($inv->email)
-                <p class="pb-muted pb-small">Já tem conta no Data Fox? <a href="{{ $loginUrl }}">Entre</a> e o convite é aceito em seguida.</p>
-            @endunless
-            <p class="pb-muted pb-small">Ou crie uma conta com senha:</p>
-            <form method="post" action="{{ route('invitations.register', $inv->token) }}" class="pb-form">@csrf
-                <label>Seu nome<input name="name" value="{{ old('name', $inv->name) }}" required autocomplete="name"></label>
+            @include('auth.social', ['invite' => $inv->token, 'sep' => 'ou crie uma senha'])
+            <form method="post" action="{{ route('invitations.register', $inv->token) }}" class="au-form">@csrf
+                <div class="au-f"><label for="name">Seu nome</label><input id="name" type="text" name="name" value="{{ old('name', $inv->name) }}" required autocomplete="name"></div>
                 @if ($inv->email)
-                    <label>E-mail<input value="{{ $inv->email }}" disabled></label>
+                    <div class="au-f"><label>E-mail</label><input type="email" value="{{ $inv->email }}" disabled></div>
                 @else
-                    <label>Seu e-mail<input type="email" name="email" value="{{ old('email') }}" required autocomplete="email"></label>
+                    <div class="au-f"><label for="email">Seu e-mail</label><input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" inputmode="email"></div>
                 @endif
-                <label>Crie uma senha<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
-                <label>Repita a senha<input type="password" name="password_confirmation" required autocomplete="new-password"></label>
-                @if ($errors->any())<p class="pb-warn">{{ $errors->first() }}</p>@endif
-                <button class="pb-btn">Criar conta e aceitar</button>
+                <div class="au-f"><label for="password">Crie uma senha</label><input id="password" type="password" name="password" required minlength="8" autocomplete="new-password"></div>
+                <div class="au-f"><label for="password_confirmation">Repita a senha</label><input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"></div>
+                <button class="au-btn">Criar conta e entrar no acervo</button>
             </form>
+            @unless ($inv->email)
+                <p class="au-note">Já tem conta no Data Fox? <a href="{{ $loginUrl }}">Entre</a> e o convite é aceito em seguida.</p>
+            @endunless
         @endif
-        <p class="pb-muted pb-small">Válido até {{ $inv->expires_at->timezone(config('app.timezone'))->format('d/m/Y H:i') }}.</p>
+        <p class="au-note">Convite válido até {{ $inv->expires_at->timezone(config('app.timezone'))->format('d/m/Y H:i') }}.</p>
     @endif
-</div>
 @endsection
