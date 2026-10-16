@@ -49,7 +49,7 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             // trocar o e-mail do perfil exige confirmar pelo novo endereço
             ->emailChangeVerification()
-            ->profile(EditProfile::class, isSimple: false)
+            ->profile(EditProfile::class, isSimple: true)   // tela simples: abre sem acervo selecionado (usada por todos a partir do Data Fox)
             // verificação em duas etapas opcional (cada pessoa ativa em Meu perfil)
             ->multiFactorAuthentication([
                 \Filament\Auth\MultiFactor\App\AppAuthentication::make()->recoverable()->brandName('Data Fox'),
