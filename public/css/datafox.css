@@ -157,3 +157,13 @@
 .df-backup-icon { width: 30px; height: 30px; color: var(--df-green); }
 .df-backup.is-stale .df-backup-icon { color: var(--df-warn); }
 .df-link { color: var(--df-green); text-decoration: underline; }
+/* Entrar com Google / Apple */
+.df-social { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.df-social-sep { display: flex; align-items: center; gap: 10px; color: var(--df-muted); font-size: 12px; }
+.df-social-sep::before, .df-social-sep::after { content: ""; flex: 1; height: 1px; background: var(--df-line); }
+.df-social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; padding: 10px 14px; font-weight: 600; font-size: 14px;
+  border: 1px solid var(--df-line); background: var(--df-surface); color: var(--df-ink); transition: transform .15s, box-shadow .15s; }
+.df-social-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.df-social-apple { background: #111; color: #fff; border-color: #111; }
+.df-social-note { font-size: 12px; color: var(--df-muted); text-align: center; margin: 0; }
+.df-social-err { background: color-mix(in srgb, var(--df-danger, #B6423A) 12%, transparent); color: var(--df-danger, #B6423A); border-radius: 10px; padding: 8px 12px; font-size: 13px; margin: 0 0 8px; }

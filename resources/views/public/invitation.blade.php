@@ -20,7 +20,10 @@
         @elseif ($state === 'login')
             <p>Você já tem conta. Entre com <b>{{ $inv->email }}</b> e abra este link de novo para aceitar.</p>
             <a class="pb-btn" href="{{ $loginUrl }}">Entrar</a>
+            @include('filament.social-buttons', ['invite' => $inv->token])
         @else
+            @include('filament.social-buttons', ['invite' => $inv->token])
+            <p class="pb-muted pb-small">Ou crie uma senha:</p>
             <form method="post" action="{{ route('invitations.register', $inv->token) }}" class="pb-form">@csrf
                 <label>Seu nome<input name="name" value="{{ old('name', $inv->name) }}" required autocomplete="name"></label>
                 <label>E-mail<input value="{{ $inv->email }}" disabled></label>

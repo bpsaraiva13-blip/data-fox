@@ -89,6 +89,40 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
 9. **Vitrine**: em *Configurações do acervo* (menu do acervo) ative "Vitrine pública". O endereço é
    `https://SEU-DOMINIO/vitrine/<slug-do-acervo>`; sem a opção, só quem é da equipe ou "Só vitrine" vê.
 
+## Acesso: senha, Google, Apple e verificação em duas etapas
+
+- **Senha**: todo mundo entra pela tela de login (`/login`). A sessão expira após `SESSION_LIFETIME` minutos sem uso
+  (padrão 120). Para pedir login sempre que o navegador for fechado, use `SESSION_EXPIRE_ON_CLOSE=true`.
+- **Duas etapas** (opcional): cada pessoa ativa em **Meu perfil** com um app autenticador (Google Authenticator,
+  1Password, Authy…). O administrador do sistema pode desligar em **Usuários** se alguém perder o celular.
+- **Entrar com Google / Apple**: só entra quem já tem conta com o mesmo e-mail ou tem convite pendente para ele.
+  Os botões aparecem sozinhos quando as variáveis abaixo estão preenchidas.
+- Em **Usuários**: último acesso (e como entrou), desativar acesso, desconectar de todos os aparelhos.
+
+### Google
+1. [console.cloud.google.com](https://console.cloud.google.com) → APIs e serviços → **Credenciais** → Criar credenciais →
+   **ID do cliente OAuth** → Aplicativo da Web.
+2. URI de redirecionamento autorizado: `https://SEU-DOMINIO/auth/google/callback`.
+3. Variáveis:
+   ```ini
+   GOOGLE_CLIENT_ID=....apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=...
+   ```
+
+### Apple (precisa de conta Apple Developer)
+1. [developer.apple.com](https://developer.apple.com/account) → Certificates, IDs & Profiles:
+   - **Identifiers** → um *App ID* com "Sign in with Apple" e um **Services ID** (ex.: `com.seudominio.datafox.web`);
+     no Services ID, configure o domínio e o Return URL `https://SEU-DOMINIO/auth/apple/callback`.
+   - **Keys** → nova chave com "Sign in with Apple"; baixe o arquivo `.p8` e anote o Key ID.
+2. Variáveis:
+   ```ini
+   APPLE_CLIENT_ID=com.seudominio.datafox.web     # o Services ID
+   APPLE_TEAM_ID=XXXXXXXXXX
+   APPLE_KEY_ID=XXXXXXXXXX
+   APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"   # conteúdo do .p8
+   ```
+   A Apple só informa o e-mail no primeiro login; depois o sistema reconhece a pessoa pelo identificador da Apple.
+
 ## Trazer os dados da versão anterior
 
 1. Na versão anterior, clique em **Backup completo (.zip)** (barra lateral) e salve o arquivo.
@@ -139,6 +173,6 @@ Ajuste os modelos em `ACERVO_AI_MODEL` e `ACERVO_AI_SEARCH_MODEL`.
 - `public/css/datafox.css`, `public/js/datafox.js` — identidade visual e microinterações
 - `config/acervo.php` — categorias, estados, cores das caixas, modelos de IA
 
-Pacotes extras: `barryvdh/laravel-dompdf` (PDFs), `chillerlan/php-qrcode` (etiquetas), `league/flysystem-aws-s3-v3` (bucket).
+Pacotes extras: `laravel/socialite` e `socialiteproviders/apple` (login social), `barryvdh/laravel-dompdf` (PDFs), `chillerlan/php-qrcode` (etiquetas), `league/flysystem-aws-s3-v3` (bucket).
 
 Fonte Plus Jakarta Sans (SIL Open Font License) em `resources/fonts`.

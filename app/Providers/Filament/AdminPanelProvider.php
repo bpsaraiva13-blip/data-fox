@@ -48,6 +48,10 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->profile(EditProfile::class, isSimple: false)
+            // verificação em duas etapas opcional (cada pessoa ativa em Meu perfil)
+            ->multiFactorAuthentication([
+                \Filament\Auth\MultiFactor\App\AppAuthentication::make()->recoverable()->brandName('Data Fox'),
+            ])
             // Vários acervos: cada pessoa cria o seu ou participa de acervos compartilhados.
             // O filtro por acervo é feito pelo trait BelongsToAcervo (inclui caixas vinculadas).
             ->tenant(Acervo::class, slugAttribute: 'slug', ownershipRelationship: 'acervo')
@@ -86,6 +90,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString(
                 '<link rel="stylesheet" href="'.asset('css/datafox.css').'?v='.filemtime(public_path('css/datafox.css')).'">'
             ))
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.social-buttons'))
             ->renderHook(PanelsRenderHook::BODY_END, fn () => new HtmlString(
                 '<script src="'.asset('js/datafox.js').'?v='.filemtime(public_path('js/datafox.js')).'" defer></script>'
             ))

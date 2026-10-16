@@ -128,6 +128,16 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0
 .seg button{border-radius:999px}
 .seg button[aria-pressed="true"]{background:var(--label);color:var(--label-ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+#lock{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;padding:20px}
+#lock[hidden]{display:none}
+#lock .box{width:min(380px,100%);display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+#lock .who{display:flex;flex-direction:column;align-items:center;gap:8px}#lock .who img{width:72px;height:72px;border-radius:50%;object-fit:cover;box-shadow:var(--shadow)}
+#lock .dots{display:flex;gap:12px;justify-content:center;margin:4px 0}#lock .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2);transition:all .15s}#lock .dots i.on{background:var(--accent);border-color:var(--accent);transform:scale(1.1)}
+#lock .pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;justify-content:center}
+#lock .pad button{height:72px;border-radius:50%;border:0;background:var(--surface);font:600 22px/1 ui-monospace,monospace;color:var(--ink);cursor:pointer;box-shadow:0 1px 2px var(--line);transition:transform .1s,background .15s}
+#lock .pad button:active{transform:scale(.92);background:var(--surface-2)}#lock .pad button.ghost{background:none;box-shadow:none;font-size:14px;font-family:inherit;color:var(--muted)}
+#lock .err{color:var(--danger);min-height:20px;font-size:13px}#lock.shake .dots{animation:lockshake .4s}
+@keyframes lockshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 /* desempenho: o navegador só desenha o que está na tela */
 #items .grid>.card{content-visibility:auto;contain-intrinsic-size:auto 360px}#items .list>*{content-visibility:auto;contain-intrinsic-size:auto 72px}
 .cp-grid{grid-auto-rows:max-content}.cp-it{flex:none;min-height:0}
@@ -803,6 +813,7 @@ a.btn.primary{color:var(--accent-ink)}
 <div class="modal" id="share" role="dialog" aria-modal="true" aria-labelledby="sh-title"></div>
 <div class="modal" id="merge" role="dialog" aria-modal="true" aria-labelledby="mg-title"></div>
 <div class="modal" id="pick" role="dialog" aria-modal="true" aria-labelledby="pk-title"></div>
+<div id="lock" hidden role="dialog" aria-modal="true" aria-label="Desbloquear o Data Fox"></div>
 <div class="modal" id="person" role="dialog" aria-modal="true" aria-labelledby="pp-title"></div>
 <div class="modal sm" id="backup" role="dialog" aria-modal="true" aria-labelledby="bk-title"></div>
 <div class="modal" id="cam" role="dialog" aria-modal="true" aria-labelledby="cam-title"></div>
@@ -1308,7 +1319,9 @@ async function addBatchFiles(list){
 /* estrutura de pastas: tira a pasta-raiz (nome do .zip ou da pasta escolhida) e um invólucro extra, se houver */
 function stripDepth(){if(B._sd&&B._sd.n===B.files.length)return B._sd;const all=B.files.map(x=>x.name.split("/"));let cut=0,root="";
   const common=(k,minLen)=>all.length&&all.every(p=>p.length>=minLen)&&all.every(p=>p[k]===all[0][k]);
-  if(common(0,2)){cut=1;root=all[0][0];if(common(1,4))cut=2}
+  if(common(0,2)){cut=1;root=all[0][0];if(common(1,4))cut=2;
+    // pasta escolhida com fotos soltas E subpastas: ela mesma é a caixa (as subpastas são peças)
+    else if(!B.fixedBox&&all.some(p=>p.length===2)&&all.some(p=>p.length>2))cut=0}
   B._sd={n:B.files.length,cut,root};return B._sd}
 function relParts(f){return f.name.split("/").slice(stripDepth().cut)}
 function folderStats(){const tops=new Set(),deep=new Set();let loose=0;for(const f of B.files){const p=relParts(f);if(p.length===1)loose++;else{tops.add(p[0]);if(p.length>2)deep.add(p[0]+"/"+p[1])}}return{tops:[...tops].sort(natCmp),deep:deep.size,loose}}
@@ -1322,7 +1335,7 @@ async function makePreviews(){if(previewing)return;previewing=true;
       f.prev=URL.createObjectURL(await toBlob(drawTo(bmp,220),.75));bmp.close?.()}catch(e){f.prev="";f.bad=true}
     await new Promise(r=>setTimeout(r,0));
     $$(`[data-fid="${f.id}"]`).forEach(img=>{if(f.prev)img.src=f.prev})}}finally{previewing=false}}
-function batchBoxOk(){if(B.box.trim())return true;if(B.org!=="boxes")return false;return folderStats().loose===0}
+function batchBoxOk(){if(B.box.trim())return true;return B.org==="boxes"&&folderStats().tops.length>0}
 function groupFiles(fs){let gs=[];
   if(B.mode==="one")gs=fs.map(f=>[groupKey(f.name.split("/").pop()),[f]]);
   else if(B.mode==="seq"){for(let i=0;i<fs.length;i+=B.per)gs.push([groupKey(fs[i].name.split("/").pop()),fs.slice(i,i+B.per)])}
@@ -1333,7 +1346,7 @@ function buildGroups(){
   const fs=B.files.filter(f=>!f.bad);let out=[];
   if(B.org==="boxes"&&folderStats().tops.length){
     // 1º nível = caixa; 2º nível = peça (tudo o que estiver dentro dela); fotos soltas na caixa seguem o modo escolhido
-    const byBox=new Map();for(const f of fs){const p=relParts(f);const box=p.length>1?p[0]:(B.box.trim()||"");if(!byBox.has(box))byBox.set(box,[]);byBox.get(box).push({f,p})}
+    const byBox=new Map();for(const f of fs){const p=relParts(f);const box=p.length>1?p[0]:(B.box.trim()||stripDepth().root||"");if(!byBox.has(box))byBox.set(box,[]);byBox.get(box).push({f,p})}
     for(const [box,arr] of [...byBox].sort((a,b)=>natCmp(a[0],b[0]))){const sub=new Map(),loose=[];
       for(const {f,p} of arr){if(p.length>2){const k=p[1];if(!sub.has(k))sub.set(k,[]);sub.get(k).push(f)}else loose.push(f)}
       for(const [k,files] of [...sub].sort((a,b)=>natCmp(a[0],b[0])))out.push([k,files,box,true]);
@@ -1375,7 +1388,7 @@ function drawBatch(){
       <label class="chk"><input type="checkbox" id="b-ai" ${B.ai?"checked":""} ${S.sample&&S.imgLimits?"":"disabled"}>${ICON("spark")}<span>Analisar cada peça com IA<br><small style="color:var(--muted)">Preenche título, época, origem, material, estado, descrição e tags</small></span></label>
       <div class="f"><label for="b-tags">Tags para todas as peças do lote</label><input class="inp" id="b-tags" value="${esc(B.tags)}" placeholder="ex.: espolio-silva, leilao-2026"></div>
     </div></div>`;
-    const okB=n&&batchBoxOk();foot=`<span style="margin-right:auto;color:var(--muted);font-size:13px">${okB?"":"Adicione as fotos e escolha a caixa."}</span><button class="btn ghost" id="b-cancel">Cancelar</button><button class="btn primary" id="b-next" ${okB?"":"disabled"}>Agrupar ${n} foto${n===1?"":"s"} →</button>`;
+    const okB=n&&batchBoxOk();foot=`<span style="margin-right:auto;color:var(--muted);font-size:13px">${okB?"":n?"Escolha ou digite a caixa de destino.":"Adicione as fotos, uma pasta ou um .zip."}</span><button class="btn ghost" id="b-cancel">Cancelar</button><button class="btn primary" id="b-next" ${okB?"":"disabled"}>Agrupar ${n} foto${n===1?"":"s"} →</button>`;
   }else if(B.step===2){
     const g=B.groups.length,k=B.sel.size;
     const bxs=[...new Set(B.groups.map(x=>x.box))];const exB=new Set([...S.boxes.values()].map(b=>norm(b.name)));
@@ -1945,7 +1958,7 @@ let CK={i:0,list:[]};
 function openCK(){$("#cmdk").classList.add("show");showScrim(closeCK);$("#cmdk-q").value="";renderCK();setTimeout(()=>$("#cmdk-q").focus(),30)}
 function closeCK(){$("#cmdk").classList.remove("show");hideScrim()}
 function renderCK(){
-  const q=$("#cmdk-q").value;const acts=[["Nova peça","plus",()=>openEditor()],["Fotografar peças (câmera)","camera",()=>openCam()],["Cadastro em lote","upload",()=>openBatch()],["Conferência de caixa","checklist",()=>setView("conferencia")],["Pendências","alert",()=>setView("pendencias")],["Abrir vitrine","eye",()=>openVitrine()],["Nova coleção","star",()=>collForm()],["Novo colecionador","users",()=>{setView("colecionadores");openPerson(null)}],["Colecionadores","users",()=>setView("colecionadores")],["Convidar pessoa","users",()=>{setView("equipe");openInvite()}],["Meu perfil","user",()=>openProfile()],["Trocar de acervo","box",()=>openSwitchPop($("#acv-switch"))],["Comparar imagem","compare",()=>setView("comparar")],["Nova caixa","box",()=>{setView("caixas");boxForm()}],["Ver atividade","clock",()=>setView("atividade")],["Gerenciar tags","tag",()=>setView("tags")]].filter(a=>!q||norm(a[0]).includes(norm(q))).map(a=>({l:a[0],i:a[1],s:"Ação",run:a[2]}));
+  const q=$("#cmdk-q").value;const acts=[["Nova peça","plus",()=>openEditor()],["Fotografar peças (câmera)","camera",()=>openCam()],["Cadastro em lote","upload",()=>openBatch()],["Conferência de caixa","checklist",()=>setView("conferencia")],["Pendências","alert",()=>setView("pendencias")],["Abrir vitrine","eye",()=>openVitrine()],["Nova coleção","star",()=>collForm()],["Novo colecionador","users",()=>{setView("colecionadores");openPerson(null)}],["Colecionadores","users",()=>setView("colecionadores")],["Convidar pessoa","users",()=>{setView("equipe");openInvite()}],["Meu perfil","user",()=>openProfile()],["Bloquear agora (PIN)","user",()=>lockNow()],["Trocar de acervo","box",()=>openSwitchPop($("#acv-switch"))],["Comparar imagem","compare",()=>setView("comparar")],["Nova caixa","box",()=>{setView("caixas");boxForm()}],["Ver atividade","clock",()=>setView("atividade")],["Gerenciar tags","tag",()=>setView("tags")]].filter(a=>!q||norm(a[0]).includes(norm(q))).map(a=>({l:a[0],i:a[1],s:"Ação",run:a[2]}));
   const its=[...S.items.values()].map(i=>[i,q?textScore(i,q):1]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([i])=>({l:i.title,i:"grid",s:i.code,run:()=>openDetail(i.id)}));
   const bxs=sortedBoxes().filter(b=>q&&norm(b.name).includes(norm(q))).slice(0,4).map(b=>({l:b.name,i:"box",s:"Caixa",run:()=>{S.f.box=b.id;setView("acervo");renderSide();renderFilters();renderItems()}}));
   CK.list=[...acts,...its,...bxs];CK.i=0;drawCK();
@@ -2374,6 +2387,55 @@ function unlinkBox(bid){if(!guardWrite())return;const b=boxOf(bid),h=homeOf(bid)
   mini("Remover vínculo",`<p>Parar de mostrar <b>${esc(b.name)}</b> neste acervo? As peças continuam no acervo <b>${esc(S.acervos.get(h)?.name||"de origem")}</b>, nada é apagado.</p>`,"Remover vínculo",async()=>{
     await dref("boxes",bid).update({linkedTo:(b.linkedTo||[]).filter(x=>x!==S.aid)});logAct("box",null,`Removeu o vínculo da caixa ${b.name} (de ${S.acervos.get(h)?.name||""})`);if(S.f.box===bid)S.f.box="all";toast("Vínculo removido")},true)}
 
+/* ---------- PIN de acesso: tela de bloqueio ao abrir e após inatividade ---------- */
+const LOCK={on:false,mode:"unlock",buf:"",first:"",fails:0,until:0,last:Date.now()};
+const LOCK_KEY="datafox.unlock";
+const myPin=()=>S.profiles?.[S.me?.id]?.pin||null;
+const lockAfterMin=()=>{const v=S.profiles?.[S.me?.id]?.lockAfter;return v==null?15:+v};
+async function pinHash(pin,salt,iter=150000){const enc=new TextEncoder();const k=await crypto.subtle.importKey("raw",enc.encode(pin),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:enc.encode(salt+"|"+(S.me?.id||"")),iterations:iter,hash:"SHA-256"},k,256);return[...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,"0")).join("")}
+function unlockedNow(){try{const u=JSON.parse(sessionStorage.getItem(LOCK_KEY)||"null");return u&&u.uid===S.me?.id&&Date.now()-u.at<lockAfterMin()*60000+60000}catch(e){return false}}
+function markUnlocked(){LOCK.last=Date.now();try{sessionStorage.setItem(LOCK_KEY,JSON.stringify({uid:S.me?.id,at:Date.now()}))}catch(e){}}
+function pinRequired(){return !!curAcervo()?.requirePin}
+function checkLock(){if(!S.me?.id||!S.db)return;
+  if(myPin()){if(!LOCK.on&&!unlockedNow())showLock("unlock")}
+  else if(pinRequired()&&!LOCK.on)showLock("create");}
+function showLock(mode){LOCK.on=true;LOCK.mode=mode;LOCK.buf="";LOCK.first="";drawLock();$$("#side,#main-area,.modal").forEach(el=>el.setAttribute("inert",""))}
+function hideLock(){LOCK.on=false;$("#lock").hidden=true;$$("#side,#main-area,.modal").forEach(el=>el.removeAttribute("inert"))}
+function drawLock(msg){const el=$("#lock");el.hidden=false;const n=LOCK.buf.length,len=LOCK.mode==="unlock"?(myPin()?.len||4):Math.max(4,n);
+  const title=LOCK.mode==="unlock"?"Digite seu PIN":LOCK.mode==="confirm"?"Confirme o novo PIN":"Crie um PIN de acesso";
+  const sub=LOCK.mode==="unlock"?`Olá, ${esc(who(S.me.id))}. O Data Fox está bloqueado.`:pinRequired()&&!myPin()?`O acervo “${esc(curAcervo()?.name||"")}” exige PIN. Escolha de 4 a 8 números.`:"Escolha de 4 a 8 números.";
+  const wait=LOCK.until>Date.now()?Math.ceil((LOCK.until-Date.now())/1000):0;
+  el.innerHTML=`<div class="box"><div class="who"><img src="${avatar(S.me.id)}" alt=""><h2 style="font-size:22px;margin:0">${title}</h2><p class="notes" style="margin:0">${sub}</p></div>
+    <div class="dots">${Array.from({length:len},(_,i)=>`<i class="${i<n?"on":""}"></i>`).join("")}</div><div class="err">${esc(msg||(wait?`Muitas tentativas. Aguarde ${wait}s.`:""))}</div>
+    <div class="pad">${[1,2,3,4,5,6,7,8,9].map(d=>`<button data-d="${d}" ${wait?"disabled":""}>${d}</button>`).join("")}<button class="ghost" data-k="del">Apagar</button><button data-d="0" ${wait?"disabled":""}>0</button><button class="ghost" data-k="ok">${LOCK.mode==="unlock"?"Entrar":"OK"}</button></div>
+    ${LOCK.mode==="unlock"?`<button class="btn sm ghost" data-k="forgot">Esqueci o PIN</button>`:""}</div>`;
+  if(wait)setTimeout(()=>LOCK.on&&drawLock(),1000)}
+async function lockKey(k){if(LOCK.until>Date.now())return;
+  if(/^\d$/.test(k)){if(LOCK.buf.length>=8)return;LOCK.buf+=k;drawLock();if(LOCK.mode==="unlock"&&LOCK.buf.length===(myPin()?.len||4))await lockSubmit();return}
+  if(k==="del"){LOCK.buf=LOCK.buf.slice(0,-1);drawLock();return}
+  if(k==="ok")return lockSubmit();
+  if(k==="forgot"){drawLock(S.me.id===curAcervo()?.ownerId||S.user&&await S.user.isOwner?.().catch(()=>false)?"Você é o dono: peça ao Claude para limpar o seu PIN, ou entre por outro navegador já desbloqueado.":"Peça ao dono do Data Fox para limpar o seu PIN na tela Equipe.")}}
+async function lockSubmit(){const pin=LOCK.buf;
+  if(LOCK.mode==="unlock"){const p=myPin();if(!p)return hideLock();const h=await pinHash(pin,p.salt,p.iter);
+    if(h===p.hash){LOCK.fails=0;markUnlocked();hideLock();return}
+    LOCK.fails++;LOCK.buf="";if(LOCK.fails>=5){LOCK.until=Date.now()+60000*Math.min(10,LOCK.fails-4);}
+    $("#lock").classList.remove("shake");void $("#lock").offsetWidth;$("#lock").classList.add("shake");drawLock(LOCK.fails>=5?"":"PIN incorreto");return}
+  if(pin.length<4||pin.length>8){drawLock("Use de 4 a 8 números.");return}
+  if(LOCK.mode==="create"){LOCK.first=pin;LOCK.buf="";LOCK.mode="confirm";drawLock();return}
+  if(LOCK.mode==="confirm"){if(pin!==LOCK.first){LOCK.mode="create";LOCK.buf="";LOCK.first="";drawLock("Os PINs não conferem. Tente de novo.");return}
+    await savePin(pin);markUnlocked();hideLock();toast("PIN criado. Ele será pedido ao abrir o Data Fox.")}}
+async function savePin(pin){const salt=randCode(16),iter=150000;const pf=S.profiles[S.me.id]||{};
+  const data={...pf,pin:{hash:await pinHash(pin,salt,iter),salt,iter,len:pin.length,at:new Date().toISOString()},updatedAt:new Date().toISOString()};
+  S.profiles[S.me.id]=data;await S.db.doc("profiles/"+S.me.id).set(data)}
+async function clearPin(uid){const pf={...(S.profiles[uid]||{})};delete pf.pin;pf.updatedAt=new Date().toISOString();S.profiles[uid]=pf;await S.db.doc("profiles/"+uid).set(pf)}
+function lockNow(){if(!myPin()){toast("Crie um PIN em Meu perfil para poder bloquear.",true);return}try{sessionStorage.removeItem(LOCK_KEY)}catch(e){}showLock("unlock")}
+$("#lock").addEventListener("click",e=>{const b=e.target.closest("[data-d],[data-k]");if(b)lockKey(b.dataset.d??b.dataset.k)});
+addEventListener("keydown",e=>{if(!LOCK.on)return;if(/^\d$/.test(e.key)){e.preventDefault();lockKey(e.key)}else if(e.key==="Backspace"){e.preventDefault();lockKey("del")}else if(e.key==="Enter"){e.preventDefault();lockKey("ok")}},true);
+["pointerdown","keydown","wheel","touchstart"].forEach(t=>addEventListener(t,()=>{if(!LOCK.on){LOCK.last=Date.now();if(myPin())markUnlocked()}},{passive:true,capture:true}));
+setInterval(()=>{const m=lockAfterMin();if(myPin()&&!LOCK.on&&m>0&&Date.now()-LOCK.last>m*60000){try{sessionStorage.removeItem(LOCK_KEY)}catch(e){}showLock("unlock")}},20000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkLock()});
+
 /* ---------- vitrine ---------- */
 let VIT={forced:false,item:null,coll:null};
 function openVitrine(forced){VIT.forced=!!forced;VIT.item=null;$("#vit").classList.add("show");drawVitrine();if(!forced)try{history.replaceState(null,"",location.pathname+location.search+"#vitrine")}catch(e){}}
@@ -2578,7 +2640,7 @@ function applyMembership(){
   if(!m){showGate("noaccess");return}
   if(m.status==="blocked"){showGate("blocked");return}
   if(S.role==="showcase"){hideGate();openVitrine(true);return}
-  hideGate();applyScope();
+  hideGate();applyScope();checkLock();
 }
 function switchAcervo(aid){
   if(jobsRunning()&&aid!==S.aid&&S.db){toast("Espere terminar as tarefas em andamento (barra lateral) para trocar de acervo.",true);renderSwitch?.();return}
@@ -2738,16 +2800,19 @@ function renderTeam(){
     return`<div class="tm ${blocked?"blocked":""}" data-uid="${esc(uid)}"><img src="${avatar(uid)}" alt=""><div style="min-width:0"><b>${esc(who(uid))}${uid===S.me.id?" (você)":""}</b><small>${owner?"Dono do acervo":m.via==="convite"?"Entrou por convite":"Adicionado"}${m.addedAt?" · "+fmtDate(m.addedAt):""}${lastAct(uid)?" · ativo "+rel(lastAct(uid)):""}</small></div>
     <div>${owner?`<span class="pill2 m">Administrador</span>`:`<select class="sel" data-role aria-label="Perfil">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${m.role===k?"selected":""}>${v}</option>`).join("")}</select>`}</div>
     <div class="hide-sm">${owner?`<small>Todas as caixas</small>`:`<button class="btn sm ghost" data-boxes>${ICON("box")}${bx}</button>`}</div>
-    <div class="hide-sm">${blocked?`<span class="pill2 no">Bloqueado</span>`:`<span class="pill2 ok">Ativo</span>`}</div>
-    <div style="display:flex;gap:4px">${owner?"":`<button class="btn sm ghost" data-block>${blocked?"Desbloquear":"Bloquear"}</button><button class="btn sm ghost danger" data-rm aria-label="Remover">${ICON("trash")}</button>`}</div></div>`}).join("")}</div>
+    <div class="hide-sm">${blocked?`<span class="pill2 no">Bloqueado</span>`:`<span class="pill2 ok">Ativo</span>`}${S.profiles[uid]?.pin?` <span class="pill2 n" title="Usa PIN de acesso">PIN</span>`:""}</div>
+    <div style="display:flex;gap:4px">${owner?"":`${S.isPageOwner&&S.profiles[uid]?.pin&&uid!==S.me.id?`<button class="btn sm ghost" data-clearpin title="A pessoa esqueceu o PIN">Limpar PIN</button>`:""}<button class="btn sm ghost" data-block>${blocked?"Desbloquear":"Bloquear"}</button><button class="btn sm ghost danger" data-rm aria-label="Remover">${ICON("trash")}</button>`}</div></div>`}).join("")}</div>
+  <div class="att" style="margin-top:16px">${ICON("user")}<span><b>Exigir PIN de acesso</b><br><small style="color:var(--muted)">Todos deste acervo precisam criar um PIN, pedido ao abrir o Data Fox e após ${lockAfterMin()} min sem uso.</small></span><label class="chk" style="margin-left:auto"><input type="checkbox" id="team-reqpin" ${a.requirePin?"checked":""}></label></div>
   <h3 style="font-size:17px;margin:22px 0 10px">Convites pendentes</h3>
   ${invs.length?`<div class="team">${invs.map(i=>`<div class="tm" data-inv="${esc(i.id)}"><span class="act-ico box">${ICON("file")}</span><div style="min-width:0"><b>${esc(i.label||"Convite sem nome")}</b><small>${ROLES[i.role]} · ${Array.isArray(i.boxes)?i.boxes.length+" caixa(s)":"todas as caixas"} · vence ${fmtDate(i.expiresAt)}</small></div><div class="hide-sm"></div><div class="hide-sm"></div><div class="hide-sm"></div><div style="display:flex;gap:4px"><button class="btn sm ghost" data-copy>${ICON("copy")}Link</button><button class="btn sm ghost danger" data-revoke>Revogar</button></div></div>`).join("")}</div>`:`<p class="notes">Nenhum convite pendente.</p>`}
   <p class="notes" style="margin-top:18px">As permissões são aplicadas por esta página. Para quem tiver acesso de edição à página no claude.ai, elas organizam o trabalho, mas não são uma barreira técnica. Na versão Laravel, o servidor faz essa verificação.</p>`;
 }
-$("#team-root").addEventListener("change",async e=>{const r=e.target.closest("[data-role]");if(!r)return;const uid=r.closest("[data-uid]").dataset.uid;try{await setMembers(m=>{m[uid]={...(m[uid]||{}),role:r.value}},`Mudou o perfil de ${who(uid)} para ${ROLES[r.value]}`);toast("Perfil atualizado")}catch(err){toast(errMsg(err),true)}});
+$("#team-root").addEventListener("change",async e=>{if(e.target.id==="team-reqpin"){const on=e.target.checked;try{await S.db.doc("acervos/"+S.aid).update({requirePin:on});logAct("user",null,on?"Passou a exigir PIN de acesso":"Deixou de exigir PIN de acesso");toast(on?"PIN obrigatório neste acervo":"PIN não é mais obrigatório")}catch(err){toast(errMsg(err),true)}return}
+  const r=e.target.closest("[data-role]");if(!r)return;const uid=r.closest("[data-uid]").dataset.uid;try{await setMembers(m=>{m[uid]={...(m[uid]||{}),role:r.value}},`Mudou o perfil de ${who(uid)} para ${ROLES[r.value]}`);toast("Perfil atualizado")}catch(err){toast(errMsg(err),true)}});
 $("#team-root").addEventListener("click",async e=>{
   const row=e.target.closest("[data-uid]"),inv=e.target.closest("[data-inv]");
   if(row){const uid=row.dataset.uid;const m=curAcervo().members?.[uid]||{};
+    if(e.target.closest("[data-clearpin]")){mini("Limpar PIN",`<p>Apagar o PIN de <b>${esc(who(uid))}</b>? A pessoa poderá criar outro ao abrir o Data Fox.</p>`,"Limpar",async()=>{await clearPin(uid);logAct("user",null,`Limpou o PIN de ${who(uid)}`);toast("PIN apagado")});return}
     if(e.target.closest("[data-block]")){const bl=m.status!=="blocked";await setMembers(x=>{x[uid]={...x[uid],status:bl?"blocked":"active"}},`${bl?"Bloqueou":"Desbloqueou"} ${who(uid)}`);toast(bl?"Acesso bloqueado":"Acesso liberado")}
     if(e.target.closest("[data-rm]"))mini("Remover do acervo",`<p>Remover <b>${esc(who(uid))}</b> deste acervo? O histórico de cadastros dessa pessoa continua registrado.</p>`,"Remover",async()=>{await setMembers(x=>{delete x[uid]},`Removeu ${who(uid)} do acervo`);toast("Pessoa removida")},true);
     if(e.target.closest("[data-boxes]")){mini("Caixas de "+who(uid),`<div class="f">${boxPicker(Array.isArray(m.boxes)?m.boxes:null)}</div>`,"Salvar",async()=>{const b=readBoxPicker($("#mini"));await setMembers(x=>{x[uid]={...x[uid],boxes:b}},`Mudou as caixas de ${who(uid)}`);toast("Acesso às caixas atualizado")});wireBoxPicker($("#mini"))}}
@@ -2763,13 +2828,19 @@ function openProfile(){if(!S.me?.id)return;const pf=S.profiles[S.me.id]||{};let 
    <div class="f"><label for="mini-in">Nome de exibição</label><input class="inp" id="mini-in" value="${esc(pf.name||S.me.name||"")}" placeholder="${esc(S.me.name||"")}"></div>
    <div class="f"><label for="pf-phone">WhatsApp (opcional, aparece para a equipe)</label><input class="inp mono" id="pf-phone" value="${esc(pf.phone||"")}" inputmode="tel"></div>
    <div class="f"><label>Meus acervos</label>${myAcervos().map(a=>`<div class="att">${ICON("box")}<span>${esc(a.name)}</span><small class="pill2 n">${esc(ROLES[memberOf(a)?.role]||"")}</small>${a.ownerId!==S.me.id?`<button class="btn sm ghost danger" data-leave="${esc(a.id)}">Sair</button>`:""}</div>`).join("")}<button class="btn sm" id="pf-new" style="margin-top:6px">${ICON("plus")}Criar novo acervo</button></div>
-   <p class="notes" style="margin:0">Senha e e-mail são os da sua conta Claude. Na versão Laravel, cada pessoa tem login e senha próprios.</p></div>`,"Salvar perfil",async()=>{
-     const data={name:$("#mini-in").value.trim(),phone:$("#pf-phone").value.trim(),updatedAt:new Date().toISOString()};
+   <div class="f"><label>Segurança</label><div class="att">${ICON("user")}<span>${pf.pin?`PIN de acesso ativo (${pf.pin.len} números)`:"Sem PIN — o Data Fox abre direto com a sua conta Claude"}</span></div>
+     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn sm" id="pf-pin">${pf.pin?"Trocar PIN":"Criar PIN"}</button>${pf.pin&&!pinRequired()?`<button class="btn sm ghost danger" id="pf-pinrm">Remover PIN</button>`:""}${pf.pin?`<button class="btn sm ghost" id="pf-locknow">Bloquear agora</button>`:""}</div>
+     <label for="pf-lock" style="margin-top:8px">Bloquear depois de ficar sem uso por</label><select class="inp" id="pf-lock">${[[5,"5 minutos"],[15,"15 minutos"],[30,"30 minutos"],[60,"1 hora"],[0,"Só ao abrir o Data Fox"]].map(([v,l])=>`<option value="${v}" ${lockAfterMin()===v?"selected":""}>${l}</option>`).join("")}</select></div>
+   <p class="notes" style="margin:0">Entrar no Data Fox exige estar conectado à sua conta Claude. O PIN é uma trava a mais neste navegador (por exemplo, num computador compartilhado). Na versão Laravel há senha, login com Google/Apple e verificação em duas etapas.</p></div>`,"Salvar perfil",async()=>{
+     const data={...(S.profiles[S.me.id]||{}),name:$("#mini-in").value.trim(),phone:$("#pf-phone").value.trim(),lockAfter:+$("#pf-lock").value,updatedAt:new Date().toISOString()};
      if(newAvatar===false)data.avatar=null;else if(newAvatar){const a=await S.assets.upload(newAvatar,{type:"image/jpeg"});data.avatar=a.id}else if(pf.avatar)data.avatar=pf.avatar;
      await S.db.doc("profiles/"+S.me.id).set(data);toast("Perfil salvo")});
   $("#pf-file").onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!S.assets){toast("Seu acesso não permite enviar fotos.",true);return}const bmp=await toBitmap(f);const c=drawTo(bmp,320);newAvatar=await toBlob(c,.85);$("#pf-img").src=URL.createObjectURL(newAvatar)};
   $("#pf-rmimg")&&($("#pf-rmimg").onclick=()=>{newAvatar=false;$("#pf-img").src=S.me.avatarUrl||avatar(null)});
   $("#pf-new").onclick=()=>{$("#mini [data-x]").click();setTimeout(newAcervo,300)};
+  $("#pf-pin").onclick=()=>{$("#mini [data-x]").click();setTimeout(()=>showLock("create"),250)};
+  $("#pf-pinrm")&&($("#pf-pinrm").onclick=async()=>{await clearPin(S.me.id);$("#mini [data-x]").click();toast("PIN removido")});
+  $("#pf-locknow")&&($("#pf-locknow").onclick=()=>{$("#mini [data-x]").click();setTimeout(lockNow,200)});
   $$("[data-leave]",$("#mini")).forEach(b=>b.onclick=async()=>{const aid=b.dataset.leave,a=S.acervos.get(aid);const members=JSON.parse(JSON.stringify(a.members||{}));delete members[S.me.id];await S.db.doc("acervos/"+aid).update({members});toast("Você saiu de "+a.name);$("#mini [data-x]").click();if(aid===S.aid){const m=myAcervos();if(m[0])switchAcervo(m[0].id)}});
 }
 $("#me").onclick=openProfile;$("#me").onkeydown=e=>{if(e.key==="Enter")openProfile()};
@@ -2784,13 +2855,13 @@ async function boot(){
   const use=n=>window.claude?.use?window.claude.use(n).catch(()=>null):Promise.resolve(null);
   const [db,user,assets,sample,downloads]=await Promise.all(["db","user","assets","sample","downloads"].map(use));
   Object.assign(S,{db,user,assets,sample,downloads});
-  if(user){try{S.me=await user.me()}catch(e){}}
+  if(user){try{S.me=await user.me()}catch(e){}try{S.isPageOwner=!!(await user.isOwner())}catch(e){}}
   if(sample){try{S.imgLimits=(await sample.limits())?.images||null}catch(e){}}
   let cw=null;try{cw=user?.can?await user.can("data.write"):null}catch(e){}S.canWriteBase=!!db&&cw!==false;S.booting=false;
   renderMe();
   if(!db){$("#mode-banner").innerHTML=`<div class="banner">${ICON("box")}<span>O acervo está sem conexão com o banco de dados. Abra a página publicada no claude.ai, com sua conta, para ver e cadastrar peças.</span></div>`;S.loaded.items=S.loaded.boxes=true;renderAll();return}
   if(!S.me?.id){showGate("signin");return}
-  db.collection("profiles").onSnapshot(s=>{S.profiles=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));renderMe();refreshPeopleUI()},()=>{});
+  db.collection("profiles").onSnapshot(s=>{S.profiles=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));renderMe();refreshPeopleUI();checkLock()},()=>{});
   db.collection("invites").onSnapshot(s=>{S.invites=s.docs.map(d=>({id:d.id,...d.data()}));if(S.view==="equipe")renderTeam();checkInviteHash()},()=>{});
   let first=true;
   db.collection("acervos").onSnapshot(async s=>{

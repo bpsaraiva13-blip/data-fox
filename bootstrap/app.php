@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Laravel Cloud fica atrás de proxy/balanceador
         $middleware->trustProxies(at: '*');
         $middleware->redirectGuestsTo(fn () => route('filament.admin.auth.login'));
+        // a Apple devolve o login por POST vindo do domínio dela
+        $middleware->validateCsrfTokens(except: ['auth/apple/callback']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
