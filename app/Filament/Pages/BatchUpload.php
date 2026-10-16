@@ -68,7 +68,7 @@ class BatchUpload extends Page
                 ->schema([
                     FileUpload::make('files')
                         ->hiddenLabel()
-                        ->image()
+                        ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'])
                         ->multiple()
                         ->maxFiles(400)
                         ->maxSize(15 * 1024)

@@ -37,7 +37,7 @@ class AttachmentsRelationManager extends RelationManager
             Select::make('kind')->label('Tipo')->options(array_combine(ItemAttachment::KINDS, ItemAttachment::KINDS))->required()->default('Nota fiscal'),
             TextInput::make('name')->label('Descrição')->required()->maxLength(120),
             FileUpload::make('path')->label('Arquivo (PDF ou imagem, até 20 MB)')->required()
-                ->acceptedFileTypes(['application/pdf', 'image/*'])->maxSize(20 * 1024)
+                ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic'])->maxSize(20 * 1024)
                 ->disk(config('acervo.disk'))->directory('acervo/documentos')->visibility('private')
                 ->storeFileNamesIn('original_name'),
         ]);

@@ -13,7 +13,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('type');
             $table->morphs('notifiable');
-            $table->text('data');
+            $table->jsonb('data');   // o Filament filtra por data->>'format' (precisa ser json no PostgreSQL)
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });

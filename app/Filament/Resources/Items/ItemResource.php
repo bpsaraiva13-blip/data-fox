@@ -99,7 +99,7 @@ class ItemResource extends Resource
                     ->schema([
                         FileUpload::make('photo_paths')
                             ->hiddenLabel()
-                            ->image()
+                            ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'])
                             ->multiple()
                             ->reorderable()
                             ->appendFiles()

@@ -69,7 +69,24 @@ jobs:
       - name: Testes
         run: |
           set -o pipefail
-          php artisan test --compact 2>&1 | tee /tmp/step.log
+          php artisan test --compact --log-junit /tmp/junit.xml 2>&1 | tee /tmp/step.log
+      - name: Falhas dos testes
+        if: failure()
+        run: |
+          [ -f /tmp/junit.xml ] || exit 0
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, re
+          r = ET.parse('/tmp/junit.xml').getroot()
+          n = 0
+          for tc in r.iter('testcase'):
+              for f in list(tc.findall('failure')) + list(tc.findall('error')):
+                  n += 1
+                  if n > 9: break
+                  txt = re.sub(r'\x1b\[[0-9;]*m', '', (f.text or ''))
+                  lines = [l for l in txt.splitlines() if l.strip() and '/vendor/' not in l][:14]
+                  msg = '%0A'.join(l[:240] for l in lines).replace('::', ': :')
+                  print(f"::error title={tc.get('name')}::{msg}")
+          PY
       - name: Resumo do erro
         if: failure()
         run: |
