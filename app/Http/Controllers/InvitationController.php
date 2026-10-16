@@ -19,7 +19,9 @@ class InvitationController extends Controller
             return view('public.invitation', ['inv' => $inv, 'state' => 'invalid']);
         }
         $user = Auth::user();
-        $exists = User::where('email', $inv->email)->exists();
+        $exists = $inv->email && User::whereRaw('lower(email) = ?', [mb_strtolower($inv->email)])->exists();
+        // quem entrar ou criar a conta volta para este convite
+        session()->put('url.intended', route('invitations.show', $inv->token));
 
         return view('public.invitation', [
             'inv' => $inv,
@@ -35,24 +37,29 @@ class InvitationController extends Controller
         abort_unless($inv->isPending(), 410, 'Este convite expirou ou já foi usado.');
         $inv->accept(Auth::user());
 
-        return redirect(Filament::getUrl($inv->acervo));
+        return redirect('/?acervo='.$inv->acervo_id);
     }
 
     public function register(Request $request, string $token)
     {
         $inv = Invitation::where('token', $token)->firstOrFail();
         abort_unless($inv->isPending(), 410, 'Este convite expirou ou já foi usado.');
-        abort_if(User::where('email', $inv->email)->exists(), 409, 'Já existe uma conta com este e-mail. Entre para aceitar.');
+        abort_if($inv->email && User::whereRaw('lower(email) = ?', [mb_strtolower($inv->email)])->exists(), 409, 'Já existe uma conta com este e-mail. Entre para aceitar.');
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
+            // convite por link (sem e-mail): a pessoa informa o dela
+            'email' => $inv->email ? ['nullable'] : ['required', 'email', 'max:190', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
-        ]);
-        $user = User::create(['name' => $data['name'], 'email' => $inv->email, 'password' => $data['password'], 'role' => 'editor', 'active' => true]);
-        $user->forceFill(['email_verified_at' => now()])->save();
+        ], ['email.unique' => 'Já existe uma conta com este e-mail. Use "Já tenho conta" para entrar e aceitar.']);
+        $email = $inv->email ?: mb_strtolower($data['email']);
+        $user = User::create(['name' => $data['name'], 'email' => $email, 'password' => $data['password'], 'role' => 'editor', 'active' => true]);
+        // e-mail do convite = confirmado; e-mail digitado num convite por link não é
+        $user->forceFill(['email_verified_at' => $inv->email ? now() : null])->save();
         Auth::login($user, remember: true);
+        $request->session()->regenerate();
         $inv->accept($user);
 
-        return redirect(Filament::getUrl($inv->acervo));
+        return redirect('/?acervo='.$inv->acervo_id);
     }
 }

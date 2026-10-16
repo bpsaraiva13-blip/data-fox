@@ -173,10 +173,10 @@ class SocialLoginController extends Controller
         if ($invite && $invite->isPending()) {
             $invite->accept($user);
 
-            return redirect(Filament::getUrl($invite->acervo));
+            return redirect('/?acervo='.$invite->acervo_id);
         }
 
-        return redirect()->intended(Filament::getUrl());
+        return redirect()->intended(url('/'));
     }
 
     private function driver(string $provider)

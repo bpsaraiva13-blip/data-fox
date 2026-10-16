@@ -17,9 +17,10 @@ abstract class TestCase extends BaseTestCase
         Filament::setCurrentPanel('admin');
     }
 
+    /** Por padrão, administrador do sistema (o painel /admin é só deles); passe role=editor para um usuário comum. */
     protected function user(array $attrs = []): User
     {
-        return User::factory()->create($attrs + ['role' => 'editor', 'active' => true]);
+        return User::factory()->create($attrs + ['role' => 'admin', 'active' => true]);
     }
 
     /** Acervo com o dono como administrador. */

@@ -542,7 +542,7 @@ a.btn.primary{color:var(--accent-ink)}
 .pop button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:center;width:100%;box-sizing:border-box;padding:9px 12px;border-radius:12px;font-size:14px}
 .pop button:hover,.pop button.on{background:var(--surface-2)}
 .pop small{margin-left:auto;color:var(--muted);font-size:11.5px}
-.gate{position:absolute;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px}
+.gate{position:absolute;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px}.gate[hidden]{display:none}
 .gate .box{max-width:460px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;background:var(--surface);border-radius:24px;padding:32px 26px;box-shadow:var(--shadow)}
 .gate h2{font-size:24px}.gate p{margin:0;color:var(--muted)}
 .main{position:relative}
@@ -1039,7 +1039,10 @@ const fmtDT=iso=>iso?new Date(iso).toLocaleString("pt-BR",{day:"2-digit",month:"
 const rel=iso=>{if(!iso)return"";const d=(Date.now()-new Date(iso))/1e3;if(d<60)return"agora";if(d<3600)return`há ${Math.floor(d/60)} min`;if(d<86400)return`há ${Math.floor(d/3600)} h`;if(d<86400*30)return`há ${Math.floor(d/86400)} d`;return fmtDate(iso)};
 const blobUrl=id=>id?"/_blob/"+id:"";
 
-const APP_URL="https://claude.ai/artifact/KXTYv3xLYmmUAhfJAWfsc3";
+/* SRV: no Laravel (window.DATAFOX_SERVER), a mesma página roda com o servidor do Data Fox */
+const SRV=window.DATAFOX_SERVER||null;
+const APP_URL=SRV?location.origin+"/":"https://claude.ai/artifact/KXTYv3xLYmmUAhfJAWfsc3";
+const inviteLink=code=>SRV?`${location.origin}/convite/${encodeURIComponent(code)}`:`${APP_URL}#convite-${code}`;
 const S={db:null,user:null,assets:null,sample:null,downloads:null,me:null,canWrite:false,canWriteBase:false,
   aid:"main",acervos:new Map(),profiles:{},invites:[],allItems:new Map(),allBoxes:new Map(),movements:[],collections:new Map(),access:[],inventories:[],dupIgnore:new Set(),meta:{},unsub:[],trash:[],people2:new Map(),role:null,member:null,
   items:new Map(),boxes:new Map(),activity:[],people:{},loaded:{items:false,boxes:false},
@@ -2920,7 +2923,7 @@ function applyMembership(){
   $$('#nav [data-view="equipe"]').forEach(b=>b.hidden=!isAdmin());
   $("#team-invite").hidden=$("#team-add").hidden=!isAdmin();
   renderMe();
-  if(!a){showGate(S.acervos.size?"none":"wait");return}
+  if(!a){showGate(S.acervos.size||SRV?"none":"wait");return}
   if(!m){showGate("noaccess");return}
   if(m.status==="blocked"){showGate("blocked");return}
   if(S.role==="showcase"){hideGate();openVitrine(true);return}
@@ -3020,6 +3023,7 @@ function promptInviteCode(){if(!S.me?.id){toast("Entre com sua conta para usar o
     const code=cleanInviteCode($("#mini-in").value);if(!code)return false;const inv=S.invites.find(i=>i.id===code)||S.invites.find(i=>i.id.toLowerCase()===code.toLowerCase());
     if(!inv){toast("Código não encontrado. Confira com quem convidou.",true);return false}setTimeout(()=>openInviteCode(inv.id),300)})}
 function openInviteCode(code){
+  if(SRV){location.href=inviteLink(code);return}
   const inv=S.invites.find(i=>i.id===code);
   if(!inv){if(S.invites.length||S.acervos.size)showGate("badinvite");return}
   if(inv.revoked||inv.usedBy&&inv.usedBy!==S.me.id||new Date(inv.expiresAt)<new Date()){showGate("badinvite");return}
@@ -3041,20 +3045,20 @@ const sortedBoxesAll=()=>[...S.allBoxes.values()].sort(boxCmp);
 function wireBoxPicker(root){const all=$("#bp-all",root),list=$("#bp-list",root);all.onchange=()=>{list.style.opacity=all.checked?.45:1;list.style.pointerEvents=all.checked?"none":"auto"};
   $$("#bp-list input",root).forEach(i=>{const sync=()=>i.nextElementSibling.classList.toggle("on",i.checked);sync();i.onchange=sync})}
 function readBoxPicker(root){return $("#bp-all",root).checked?null:$$("#bp-list input:checked",root).map(i=>i.value)}
-function inviteText(inv,a){return`Olá! Você foi convidado para o acervo *${a.name}* no Data Fox, como ${ROLES[inv.role]}.\n\n1. Abra o Data Fox com sua conta Claude:\n${APP_URL}\n2. Clique em *Tenho um código de convite* (ou no seletor de acervo, *Entrar com código de convite*) e digite:\n*${inv.id}*\n\nO convite vale até ${fmtDate(inv.expiresAt)}.`}
+function inviteText(inv,a){if(SRV)return`Olá! Você foi convidado para o acervo *${a.name}* no Data Fox, como ${ROLES[inv.role]}.\n\nAbra o link para criar sua conta (ou entrar) e aceitar:\n${inviteLink(inv.id)}\n\nO convite vale até ${fmtDate(inv.expiresAt)}.`;return`Olá! Você foi convidado para o acervo *${a.name}* no Data Fox, como ${ROLES[inv.role]}.\n\n1. Abra o Data Fox com sua conta Claude:\n${APP_URL}\n2. Clique em *Tenho um código de convite* (ou no seletor de acervo, *Entrar com código de convite*) e digite:\n*${inv.id}*\n\nO convite vale até ${fmtDate(inv.expiresAt)}.`}
 function openInvite(){if(!isAdmin())return;const a=curAcervo();
   mini("Convidar para o acervo",`<div style="display:flex;flex-direction:column;gap:12px">
     <div class="f"><label for="mini-in">Nome ou e-mail da pessoa (para você identificar)</label><input class="inp" id="mini-in" placeholder="ex.: maria@email.com"></div>
     <div class="f"><label for="iv-role">Perfil</label><select class="inp" id="iv-role">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${k==="editor"?"selected":""}>${v}</option>`).join("")}</select></div>
     <div class="f"><label>Caixas que a pessoa vê e edita</label>${boxPicker(null)}</div>
     <div class="f"><label for="iv-days">Validade do convite</label><select class="inp" id="iv-days"><option value="2">2 dias</option><option value="7" selected>7 dias</option><option value="30">30 dias</option></select></div>
-    <p class="notes" style="margin:0">A pessoa precisa ter acesso a esta página no claude.ai (menu Compartilhar) e abrir o link com a conta dela.</p></div>`,"Gerar convite",async()=>{
+    <p class="notes" style="margin:0">${SRV?"A pessoa abre o link, cria a conta dela (ou entra) e já cai neste acervo.":"A pessoa precisa ter acesso a esta página no claude.ai (menu Compartilhar) e abrir o link com a conta dela."}</p></div>`,"Gerar convite",async()=>{
       const code=randCode(12),now=new Date();const inv={aid:a.id,label:$("#mini-in").value.trim(),role:$("#iv-role").value,boxes:readBoxPicker($("#mini")),createdBy:S.me.id,createdAt:now.toISOString(),expiresAt:new Date(now.getTime()+(+$("#iv-days").value)*864e5).toISOString()};
       await S.db.doc("invites/"+code).set(inv);logAct("user",null,`Criou convite (${ROLES[inv.role]})${inv.label?" para "+inv.label:""}`);
       setTimeout(()=>showInviteLink({id:code,...inv}),250)});
   wireBoxPicker($("#mini"));
 }
-function showInviteLink(inv){const a=curAcervo();const t=inviteText(inv,a),link=`${APP_URL}#convite-${inv.id}`;
+function showInviteLink(inv){const a=curAcervo();const t=inviteText(inv,a),link=inviteLink(inv.id);
   mini("Convite pronto",`<div style="display:flex;flex-direction:column;gap:10px"><div class="f"><label>Código do convite</label><div class="mono" style="font-size:24px;font-weight:700;letter-spacing:.06em;user-select:all">${esc(inv.id)}</div></div><div class="f"><label for="iv-link">Link do convite</label><input class="inp mono" id="iv-link" value="${esc(link)}" readonly></div><div class="f"><label for="iv-text">Mensagem</label><textarea class="inp" id="iv-text" rows="6">${esc(t)}</textarea></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="iv-copy">${ICON("copy")}Copiar mensagem</button><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(t)}">${ICON("chat")}WhatsApp</a><a class="btn sm" href="mailto:${esc(/@/.test(inv.label||"")?inv.label:"")}?subject=${encodeURIComponent("Convite para o acervo "+a.name)}&body=${encodeURIComponent(t)}">${ICON("file")}E-mail</a></div>
     <p class="notes" style="margin:0">O envio por e-mail abre o seu aplicativo de e-mail com a mensagem pronta. Se nada abrir, copie a mensagem.</p></div>`,"Concluir",async()=>{});
@@ -3089,7 +3093,7 @@ function renderTeam(){
   <div class="att" style="margin-top:16px">${ICON("user")}<span><b>Exigir PIN de acesso</b><br><small style="color:var(--muted)">Todos deste acervo precisam criar um PIN, pedido ao abrir o Data Fox e após ${lockAfterMin()} min sem uso.</small></span><label class="chk" style="margin-left:auto"><input type="checkbox" id="team-reqpin" ${a.requirePin?"checked":""}></label></div>
   <h3 style="font-size:17px;margin:22px 0 10px">Convites pendentes</h3>
   ${invs.length?`<div class="team">${invs.map(i=>`<div class="tm" data-inv="${esc(i.id)}"><span class="act-ico box">${ICON("file")}</span><div style="min-width:0"><b>${esc(i.label||"Convite sem nome")}</b><small>${ROLES[i.role]} · ${Array.isArray(i.boxes)?i.boxes.length+" caixa(s)":"todas as caixas"} · vence ${fmtDate(i.expiresAt)}</small></div><div class="hide-sm"></div><div class="hide-sm"></div><div class="hide-sm"></div><div style="display:flex;gap:4px"><button class="btn sm ghost" data-copy>${ICON("copy")}Link</button><button class="btn sm ghost danger" data-revoke>Revogar</button></div></div>`).join("")}</div>`:`<p class="notes">Nenhum convite pendente.</p>`}
-  <p class="notes" style="margin-top:18px">As permissões são aplicadas por esta página. Para quem tiver acesso de edição à página no claude.ai, elas organizam o trabalho, mas não são uma barreira técnica. Na versão Laravel, o servidor faz essa verificação.</p>`;
+  ${SRV?`<p class="notes" style="margin-top:18px">O servidor do Data Fox confere essas permissões em cada leitura e gravação.</p>`:`<p class="notes" style="margin-top:18px">As permissões são aplicadas por esta página. Para quem tiver acesso de edição à página no claude.ai, elas organizam o trabalho, mas não são uma barreira técnica. Na versão Laravel, o servidor faz essa verificação.</p>`}`;
 }
 $("#team-root").addEventListener("change",async e=>{if(e.target.id==="team-reqpin"){const on=e.target.checked;try{await S.db.doc("acervos/"+S.aid).update({requirePin:on});logAct("user",null,on?"Passou a exigir PIN de acesso":"Deixou de exigir PIN de acesso");toast(on?"PIN obrigatório neste acervo":"PIN não é mais obrigatório")}catch(err){toast(errMsg(err),true)}return}
   const r=e.target.closest("[data-role]");if(!r)return;const uid=r.closest("[data-uid]").dataset.uid;try{await setMembers(m=>{m[uid]={...(m[uid]||{}),role:r.value}},`Mudou o perfil de ${who(uid)} para ${ROLES[r.value]}`);toast("Perfil atualizado")}catch(err){toast(errMsg(err),true)}});
@@ -3133,7 +3137,7 @@ ${lookHTML(pf)}
    <div class="f"><label>Segurança</label><div class="att">${ICON("user")}<span>${pf.pin?`PIN de acesso ativo (${pf.pin.len} números)`:"Sem PIN — o Data Fox abre direto com a sua conta Claude"}</span></div>
      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn sm" id="pf-pin">${pf.pin?"Trocar PIN":"Criar PIN"}</button>${pf.pin&&!pinRequired()?`<button class="btn sm ghost danger" id="pf-pinrm">Remover PIN</button>`:""}${pf.pin?`<button class="btn sm ghost" id="pf-locknow">Bloquear agora</button>`:""}</div>
      <label for="pf-lock" style="margin-top:8px">Bloquear depois de ficar sem uso por</label><select class="inp" id="pf-lock">${[[5,"5 minutos"],[15,"15 minutos"],[30,"30 minutos"],[60,"1 hora"],[0,"Só ao abrir o Data Fox"]].map(([v,l])=>`<option value="${v}" ${lockAfterMin()===v?"selected":""}>${l}</option>`).join("")}</select></div>
-   <p class="notes" style="margin:0">Entrar no Data Fox exige estar conectado à sua conta Claude. O PIN é uma trava a mais neste navegador (por exemplo, num computador compartilhado). Na versão Laravel há senha, login com Google/Apple e verificação em duas etapas.</p></div>`,"Salvar perfil",async()=>{
+   ${SRV?`<div class="f"><label>Conta</label><div style="display:flex;gap:6px;flex-wrap:wrap"><a class="btn sm" href="${esc(SRV.urls.account)}">${ICON("user")}Senha, e-mail e duas etapas</a>${SRV.urls.admin?`<a class="btn sm" href="${esc(SRV.urls.admin)}">${ICON("users")}Administração</a>`:""}<form method="post" action="${esc(SRV.urls.logout)}" style="margin:0"><input type="hidden" name="_token" value="${esc(SRV.csrf)}"><button class="btn sm ghost danger">Sair</button></form></div><p class="notes" style="margin:6px 0 0">Você entrou como ${esc(SRV.user.email)}. O PIN é uma trava a mais neste navegador.</p></div>`:`<p class="notes" style="margin:0">Entrar no Data Fox exige estar conectado à sua conta Claude. O PIN é uma trava a mais neste navegador (por exemplo, num computador compartilhado). Na versão Laravel há senha, login com Google/Apple e verificação em duas etapas.</p>`}</div>`,"Salvar perfil",async()=>{
      const data={...(S.profiles[S.me.id]||{}),accent:LOOKPREVIEW?LOOKPREVIEW.accent:(pf.accent||""),theme:LOOKPREVIEW?LOOKPREVIEW.theme:(pf.theme||""),name:$("#mini-in").value.trim(),phone:$("#pf-phone").value.trim(),lockAfter:+$("#pf-lock").value,updatedAt:new Date().toISOString()};
      if(newAvatar===false)data.avatar=null;else if(newAvatar){const a=await S.assets.upload(newAvatar,{type:"image/jpeg"});data.avatar=a.id}else if(pf.avatar)data.avatar=pf.avatar;
      LOOKPREVIEW=null;await S.db.doc("profiles/"+S.me.id).set(data);applyLook(data.accent,data.theme);toast("Perfil salvo")});

@@ -211,7 +211,7 @@ class SegurancaTest extends TestCase
         $inv = Invitation::create(['acervo_id' => $a->id, 'email' => 'nova@exemplo.com', 'role' => 'viewer']);
         auth()->logout();
         $this->fakeGoogle('nova@exemplo.com', 'g-999');
-        $this->get('/auth/google/callback')->assertRedirect(Filament::getUrl($a));
+        $this->get('/auth/google/callback')->assertRedirect('/?acervo='.$a->id);
         $nova = User::where('email', 'nova@exemplo.com')->first();
         $this->assertAuthenticatedAs($nova);
         $this->assertSame('viewer', $a->membershipFor($nova)->role);
