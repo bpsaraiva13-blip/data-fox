@@ -221,6 +221,7 @@ class Issues extends Page
 
     public function ignoreAllDups(): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         foreach ($this->duplicates() as $d) {
             DupIgnore::firstOrCreate(['item_a' => min($d['a'], $d['b']), 'item_b' => max($d['a'], $d['b'])]);
         }
@@ -229,6 +230,7 @@ class Issues extends Page
 
     public function ignore(int $a, int $b): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         DupIgnore::firstOrCreate(['item_a' => min($a, $b), 'item_b' => max($a, $b)]);
         Notification::make()->title('Par marcado como peças diferentes')->success()->send();
     }
@@ -247,6 +249,7 @@ class Issues extends Page
 
     public function retryFailed(): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         if (! app(\App\Services\CuratorAI::class)->enabled()) {
             Notification::make()->danger()->title('IA desligada')->body('Configure ANTHROPIC_API_KEY para reprocessar.')->send();
 

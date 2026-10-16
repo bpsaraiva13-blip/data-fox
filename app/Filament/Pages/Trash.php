@@ -89,6 +89,7 @@ class Trash extends Page
 
     public function restore(int $id): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         $label = '';
         switch ($this->tab) {
             case 'boxes':
@@ -128,6 +129,7 @@ class Trash extends Page
 
     public function forceDelete(int $id): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         $m = static::query($this->tab)->findOrFail($id);
         if (method_exists($m, 'pruning')) {
             (fn () => $this->pruning())->call($m);   // apaga os arquivos junto
