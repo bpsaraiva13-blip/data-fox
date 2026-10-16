@@ -22,6 +22,8 @@ Route::middleware(['web', 'auth'])->group(function () {
 
 
 Route::middleware('web')->group(function () {
+    Route::get('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
+    Route::post('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->middleware('throttle:20,1');
     Route::get('/convite/{token}', [InvitationController::class, 'show'])->name('invitations.show');
     Route::post('/convite/{token}/aceitar', [InvitationController::class, 'accept'])->middleware('auth')->name('invitations.accept');
     Route::post('/convite/{token}/registrar', [InvitationController::class, 'register'])->middleware('throttle:10,1')->name('invitations.register');

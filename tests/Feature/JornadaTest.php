@@ -78,7 +78,7 @@ class JornadaTest extends TestCase
         $inv = Invitation::create(['acervo_id' => $a->id, 'email' => 'maria@exemplo.com', 'role' => 'editor']);
         auth()->logout();
 
-        $this->get(route('invitations.show', $inv->token))->assertOk()->assertSee('Criar conta e aceitar');
+        $this->get(route('invitations.show', $inv->token))->assertOk()->assertSee('Criar conta e entrar no acervo');
         $this->post(route('invitations.register', $inv->token), ['name' => 'Maria', 'password' => 'senha-forte-1', 'password_confirmation' => 'senha-forte-1'])
             ->assertRedirect('/?acervo='.$a->id);
 

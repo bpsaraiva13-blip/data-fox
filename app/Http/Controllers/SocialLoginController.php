@@ -42,7 +42,7 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider)
     {
         abort_unless(isset(self::PROVIDERS[$provider]) && static::enabled($provider), 404);
-        $fail = fn (string $msg) => redirect(Filament::getLoginUrl())->with('social_error', $msg);
+        $fail = fn (string $msg) => redirect()->route('login')->with('social_error', $msg);
 
         try {
             $social = $this->driver($provider)->user();
@@ -109,24 +109,24 @@ class SocialLoginController extends Controller
     {
         $pending = $this->pending($request);
         if (! $pending) {
-            return redirect(Filament::getLoginUrl());
+            return redirect()->route('login');
         }
 
-        return view('public.two-factor', ['via' => self::PROVIDERS[$pending['via']] ?? '']);
+        return view('public.two-factor', ['via' => $pending['via'] === 'password' ? 'e-mail e senha' : (self::PROVIDERS[$pending['via']] ?? '')]);
     }
 
     public function verify(Request $request)
     {
         $pending = $this->pending($request);
         if (! $pending) {
-            return redirect(Filament::getLoginUrl());
+            return redirect()->route('login');
         }
         $data = $request->validate(['code' => ['required', 'string', 'max:64']]);
         $user = User::find($pending['user']);
         if (! $user || ! $user->active) {
             $request->session()->forget('social_2fa');
 
-            return redirect(Filament::getLoginUrl());
+            return redirect()->route('login');
         }
 
         $key = 'social-2fa:'.$user->id;
@@ -148,7 +148,7 @@ class SocialLoginController extends Controller
         $request->session()->forget('social_2fa');
         $invite = $pending['invite'] ? Invitation::find($pending['invite']) : null;
 
-        return $this->finish($request, $user, $pending['via'], $invite);
+        return $this->finish($request, $user, $pending['via'], $invite, (bool) ($pending['remember'] ?? false));
     }
 
     /** Pendência de 2 etapas guardada na sessão (vale por 10 minutos). */
@@ -164,10 +164,10 @@ class SocialLoginController extends Controller
         return $p;
     }
 
-    private function finish(Request $request, User $user, string $provider, ?Invitation $invite)
+    private function finish(Request $request, User $user, string $provider, ?Invitation $invite, bool $remember = false)
     {
         $user->forceFill(['last_login_at' => now(), 'last_login_via' => $provider])->save();
-        Auth::login($user, remember: false);
+        Auth::login($user, remember: (bool) ($remember ?? false));
         $request->session()->regenerate();
 
         if ($invite && $invite->isPending()) {

@@ -44,7 +44,7 @@ class InterfaceApiTest extends TestCase
 
     public function test_pagina_abre_com_o_runtime_para_quem_esta_logado(): void
     {
-        $this->get('/')->assertRedirect(route('filament.admin.auth.login'));
+        $this->get('/')->assertRedirect(route('login'));
         $u = $this->user();
         $this->actingAs($u)->get('/')->assertOk()->assertSee('window.DATAFOX_SERVER', false)->assertSee('datafox-runtime.js', false)->assertSee('Data Fox');
     }
