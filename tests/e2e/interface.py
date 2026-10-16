@@ -20,8 +20,11 @@ def login(pg, email, pw):
     pg.fill('input[type="email"]', email)
     pg.fill('input[type="password"]', pw)
     pg.click('button[type="submit"]')
-    pg.wait_for_url(re.compile(r".*/(\?.*)?$"), timeout=20000)
-    pg.wait_for_function("typeof S!=="undefined" && S.me && S.me.id", timeout=20000)
+    try:
+        pg.wait_for_url(re.compile(r".*/(\?.*)?$"), timeout=20000)
+        pg.wait_for_function("typeof S!=='undefined' && S.me && S.me.id", timeout=20000)
+    except Exception:
+        print("URL:", pg.url); print(pg.evaluate("document.body.innerText.slice(0,600)")); raise
     pg.wait_for_timeout(1500)
 
 with sync_playwright() as p:
@@ -65,7 +68,7 @@ with sync_playwright() as p:
     p2.fill('input[name="name"]', "Ana"); p2.fill('input[name="email"]', "ana@exemplo.com")
     p2.fill('input[name="password"]', "senha-forte-2"); p2.fill('input[name="password_confirmation"]', "senha-forte-2")
     p2.click("form.pb-form button")
-    p2.wait_for_function("typeof S!=="undefined" && S.role", timeout=20000)
+    p2.wait_for_function("typeof S!=='undefined' && S.role", timeout=20000)
     p2.wait_for_function("S.loaded && S.loaded.items", timeout=20000)
     check(p2.evaluate("S.role") == "viewer", "convite por link: Ana entra como somente leitura")
     check(p2.evaluate("S.aid") == aid, "Ana cai direto no acervo do convite")
