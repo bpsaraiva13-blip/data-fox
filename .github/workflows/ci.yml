@@ -87,6 +87,18 @@ jobs:
                   msg = '%0A'.join(l[:240] for l in lines).replace('::', ': :')
                   print(f"::error title={tc.get('name')}::{msg}")
           PY
+      # Igual ao build do Laravel Cloud: sem pacotes de desenvolvimento e com caches de produção
+      - name: Build de produção
+        env:
+          APP_ENV: production
+          APP_DEBUG: 'false'
+        run: |
+          set -o pipefail
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress 2>&1 | tee /tmp/step.log
+          php artisan optimize 2>&1 | tee -a /tmp/step.log
+          php artisan filament:optimize 2>&1 | tee -a /tmp/step.log
+          php artisan migrate:status 2>&1 | tail -3 | tee -a /tmp/step.log
+          php artisan optimize:clear 2>&1 | tee -a /tmp/step.log
       - name: Resumo do erro
         if: failure()
         run: |
