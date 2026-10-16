@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    name: Testes (PHP 8.4 + PostgreSQL)
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: datafox
+          POSTGRES_PASSWORD: datafox
+          POSTGRES_DB: datafox_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U datafox" --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: datafox_test
+      DB_USERNAME: datafox
+      DB_PASSWORD: datafox
+      FILESYSTEM_DISK: local
+      ACERVO_DISK: local
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, mbstring, zip, pcntl, pdo, pdo_pgsql, pgsql, gd, intl, bcmath, exif
+          coverage: none
+
+      # Os passos guardam a saída e, se falharem, mostram o final dela como anotação
+      # (fica visível na aba "Checks" e pela API, sem baixar logs).
+      - name: Instalar dependências
+        run: |
+          set -o pipefail
+          composer install --prefer-dist --no-interaction --no-progress 2>&1 | tee /tmp/step.log
+      - name: Preparar .env
+        run: |
+          set -o pipefail
+          cp .env.example .env && php artisan key:generate 2>&1 | tee /tmp/step.log
+      - name: Migrations no PostgreSQL
+        run: |
+          set -o pipefail
+          php artisan migrate --force 2>&1 | tee /tmp/step.log
+          php artisan migrate:rollback --force 2>&1 | tee -a /tmp/step.log
+          php artisan migrate --force 2>&1 | tee -a /tmp/step.log
+      - name: Rotas e painel carregam
+        run: |
+          set -o pipefail
+          php artisan route:list --except-vendor 2>&1 | tee /tmp/step.log
+          php artisan about --only=environment 2>&1 | tee -a /tmp/step.log
+      - name: Testes
+        run: |
+          set -o pipefail
+          php artisan test --compact --log-junit /tmp/junit.xml 2>&1 | tee /tmp/step.log
+      - name: Falhas dos testes
+        if: failure()
+        run: |
+          [ -f /tmp/junit.xml ] || exit 0
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, re
+          r = ET.parse('/tmp/junit.xml').getroot()
+          n = 0
+          for tc in r.iter('testcase'):
+              for f in list(tc.findall('failure')) + list(tc.findall('error')):
+                  n += 1
+                  if n > 9: break
+                  txt = re.sub(r'\x1b\[[0-9;]*m', '', (f.text or ''))
+                  lines = [l for l in txt.splitlines() if l.strip() and '/vendor/' not in l][:14]
+                  msg = '%0A'.join(l[:240] for l in lines).replace('::', ': :')
+                  print(f"::error title={tc.get('name')}::{msg}")
+          PY
+      # Igual ao build do Laravel Cloud: sem pacotes de desenvolvimento e com caches de produção
+      - name: Build de produção
+        env:
+          APP_ENV: production
+          APP_DEBUG: 'false'
+        run: |
+          set -o pipefail
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress 2>&1 | tee /tmp/step.log
+          php artisan optimize 2>&1 | tee -a /tmp/step.log
+          php artisan filament:optimize 2>&1 | tee -a /tmp/step.log
+          php artisan migrate:status 2>&1 | tail -3 | tee -a /tmp/step.log
+          php artisan optimize:clear 2>&1 | tee -a /tmp/step.log
+      - name: Resumo do erro
+        if: failure()
+        run: |
+          msg=$(grep -v -E '^\s+- (Installing|Downloading|Locking|Upgrading)' /tmp/step.log | tail -n 45 | sed -e 's/\x1b\[[0-9;]*m//g' | cut -c1-300 | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Falha::${msg}"

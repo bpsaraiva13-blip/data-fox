@@ -13,6 +13,8 @@ Route::middleware('web')->group(function () {
     Route::post('/convite/{token}/registrar', [InvitationController::class, 'register'])->middleware('throttle:10,1')->name('invitations.register');
 
     Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\SocialLoginController::class, 'redirect'])->whereIn('provider', ['google', 'apple'])->name('social.redirect');
+    Route::get('/auth/verificacao', [\App\Http\Controllers\SocialLoginController::class, 'challenge'])->name('social.2fa');
+    Route::post('/auth/verificacao', [\App\Http\Controllers\SocialLoginController::class, 'verify'])->middleware('throttle:10,1')->name('social.2fa.verify');
     Route::match(['get', 'post'], '/auth/{provider}/callback', [\App\Http\Controllers\SocialLoginController::class, 'callback'])->whereIn('provider', ['google', 'apple'])->name('social.callback');
 
     Route::get('/vitrine/{slug}', [ShowcaseController::class, 'index'])->name('showcase');

@@ -26,8 +26,8 @@ class MovementsRelationManager extends RelationManager
     {
         return $table->columns([
             TextColumn::make('date')->label('Data')->date('d/m/Y'),
-            TextColumn::make('kind')->label('Tipo')->badge()->formatStateUsing(fn ($s) => Movement::KINDS[$s] ?? $s)
-                ->color(fn ($s) => ['loan' => 'warning', 'sale' => 'danger'][$s] ?? 'success'),
+            TextColumn::make('kind')->label('Tipo')->badge()->formatStateUsing(fn ($state) => Movement::KINDS[$state] ?? $state)
+                ->color(fn ($state) => ['loan' => 'warning', 'sale' => 'danger'][$state] ?? 'success'),
             TextColumn::make('person')->label('Responsável'),
             TextColumn::make('notes')->label('Observação')->placeholder('—')->wrap(),
             TextColumn::make('user.name')->label('Registrado por'),

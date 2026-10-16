@@ -80,8 +80,8 @@ class Issues extends Page
         return [
             'nophoto' => fn () => $base('nophoto')->doesntHave('photos'),
             'nobox' => fn () => $base('nobox')->whereNull('box_id'),
-            'untitled' => fn () => $base('untitled')->where(fn ($q) => $q->where('title', 'Sem título')->orWhere('title', 'like', 'Peça fotografada %')->orWhere('title', 'ilike', 'img%')->orWhere('title', 'ilike', 'dsc%')),
-            'nodesc' => fn () => $base('nodesc')->where(fn ($q) => $q->whereNull('description')->orWhere('description', '')),
+            'untitled' => fn () => $base('untitled')->where(fn ($query) => $query->where('title', 'Sem título')->orWhere('title', 'like', 'Peça fotografada %')->orWhere('title', 'ilike', 'img%')->orWhere('title', 'ilike', 'dsc%')),
+            'nodesc' => fn () => $base('nodesc')->where(fn ($query) => $query->whereNull('description')->orWhere('description', '')),
             'failed' => fn () => $base('failed')->where('ai_status', 'failed'),
             'pending' => fn () => $base('pending')->whereIn('ai_status', ['pending', 'running']),
         ];
@@ -120,7 +120,7 @@ class Issues extends Page
 
         return Cache::remember($key, 600, function () {
             $photos = ItemPhoto::query()->whereNotNull('hash')
-                ->whereHas('item', fn ($q) => ItemAccess::restrict($q))
+                ->whereHas('item', fn ($query) => ItemAccess::restrict($query))
                 ->get(['item_id', 'hash', 'color'])
                 ->map(fn ($p) => [$p->item_id, @hex2bin($p->hash) ?: '', $p->color ?? [0, 0, 0]])
                 ->filter(fn ($p) => strlen($p[1]) === 8)->values()->all();
@@ -221,6 +221,7 @@ class Issues extends Page
 
     public function ignoreAllDups(): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         foreach ($this->duplicates() as $d) {
             DupIgnore::firstOrCreate(['item_a' => min($d['a'], $d['b']), 'item_b' => max($d['a'], $d['b'])]);
         }
@@ -229,6 +230,7 @@ class Issues extends Page
 
     public function ignore(int $a, int $b): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         DupIgnore::firstOrCreate(['item_a' => min($a, $b), 'item_b' => max($a, $b)]);
         Notification::make()->title('Par marcado como peças diferentes')->success()->send();
     }
@@ -247,6 +249,7 @@ class Issues extends Page
 
     public function retryFailed(): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         if (! app(\App\Services\CuratorAI::class)->enabled()) {
             Notification::make()->danger()->title('IA desligada')->body('Configure ANTHROPIC_API_KEY para reprocessar.')->send();
 

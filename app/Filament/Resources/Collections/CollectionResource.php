@@ -48,7 +48,7 @@ class CollectionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($q) => $q->withCount('items'))
+            ->modifyQueryUsing(fn ($query) => $query->withCount('items'))
             ->defaultSort('name')
             ->contentGrid(['md' => 2, 'xl' => 3])
             ->recordUrl(fn (ItemCollection $r) => static::getUrl('view', ['record' => $r]))

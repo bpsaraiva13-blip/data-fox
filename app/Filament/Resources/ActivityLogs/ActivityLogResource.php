@@ -38,7 +38,7 @@ class ActivityLogResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with('user'))
+            ->modifyQueryUsing(fn ($query) => $query->with('user'))
             ->recordUrl(fn (ActivityLog $r) => $r->item_id && $r->item()->exists() && ! $r->item?->trashed() ? ItemResource::getUrl('view', ['record' => $r->item_id]) : null)
             ->columns([
                 TextColumn::make('created_at')->label('Quando')->dateTime('d/m/Y H:i')->description(fn (ActivityLog $r) => $r->created_at->diffForHumans())->sortable(),
@@ -54,9 +54,9 @@ class ActivityLogResource extends Resource
                 Filter::make('period')->schema([
                     DatePicker::make('from')->label('De'),
                     DatePicker::make('until')->label('Até'),
-                ])->query(fn (Builder $q, array $d) => $q
-                    ->when($d['from'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
-                    ->when($d['until'] ?? null, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))),
+                ])->query(fn (Builder $query, array $data) => $query
+                    ->when($data['from'] ?? null, fn ($query, $v) => $query->whereDate('created_at', '>=', $v))
+                    ->when($data['until'] ?? null, fn ($query, $v) => $query->whereDate('created_at', '<=', $v))),
             ]);
     }
 

@@ -63,10 +63,10 @@ class BoxResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $grid = ($table->getLivewire()->layout ?? 'grid') === 'grid';
+        $grid = ($table->getLivewire()->boxLayout ?? 'grid') === 'grid';
 
         $table
-            ->modifyQueryUsing(fn ($q) => $q->withCount(['items', 'linkedAcervos'])->with(['creator', 'acervo'])->reorder()->naturalOrder())
+            ->modifyQueryUsing(fn ($query) => $query->withCount(['items', 'linkedAcervos'])->with(['creator', 'acervo'])->reorder()->naturalOrder())
             ->recordUrl(fn (Box $r) => static::itemsUrl($r))
             ->paginated([24, 48, 96, 'all'])
             ->recordActions([

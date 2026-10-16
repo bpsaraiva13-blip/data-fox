@@ -51,16 +51,18 @@ class InvitationResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with('inviter'))
+            ->modifyQueryUsing(fn ($query) => $query->with(['inviter', 'acceptedBy']))
             ->columns([
                 TextColumn::make('email')->label('E-mail')->description(fn (Invitation $r) => $r->name)->searchable(),
-                TextColumn::make('role')->label('Perfil')->badge()->formatStateUsing(fn ($s) => Acervo::ROLES[$s] ?? $s),
+                TextColumn::make('role')->label('Perfil')->badge()->formatStateUsing(fn ($state) => Acervo::ROLES[$state] ?? $state),
                 TextColumn::make('boxes')->label('Caixas')->state(fn (Invitation $r) => BoxAccess::label($r->boxes))->color('gray')->wrap(),
                 TextColumn::make('situacao')->label('Situação')->badge()
                     ->state(fn (Invitation $r) => $r->accepted_at ? 'Aceito' : ($r->revoked_at ? 'Revogado' : ($r->expires_at->isPast() ? 'Expirado' : 'Pendente')))
                     ->color(fn ($state) => ['Aceito' => 'success', 'Pendente' => 'warning'][$state] ?? 'gray'),
                 TextColumn::make('expires_at')->label('Vence')->dateTime('d/m/Y H:i'),
                 TextColumn::make('inviter.name')->label('Convidado por')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('acceptedBy.email')->label('Aceito por')->placeholder('—')->toggleable()
+                    ->description(fn (Invitation $r) => $r->acceptedBy && strcasecmp($r->acceptedBy->email, $r->email) !== 0 ? 'outro e-mail' : null),
             ])
             ->recordActions([
                 Action::make('link')->label('Link')->icon(Heroicon::OutlinedLink)->color('gray')
@@ -82,6 +84,12 @@ class InvitationResource extends Resource
                         Notification::make()->title('Convite revogado')->success()->send();
                     }),
             ]);
+    }
+
+    /** Só os convites do acervo aberto (o escopo automático do Filament está desligado no painel). */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('invitations.acervo_id', Acervo::current()?->id ?? 0);
     }
 
     public static function getPages(): array

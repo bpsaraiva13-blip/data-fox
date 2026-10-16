@@ -27,7 +27,7 @@ class ItemsRelationManager extends RelationManager
     {
         return $table
             ->recordTitle(fn (Item $r) => "{$r->code} · {$r->title}")
-            ->modifyQueryUsing(fn ($q) => $q->with('cover'))
+            ->modifyQueryUsing(fn ($query) => $query->with('cover'))
             ->recordUrl(fn (Item $r) => ItemResource::getUrl('view', ['record' => $r]))
             ->columns([
                 ImageColumn::make('cover.thumb_path')->label('')->disk(config('acervo.disk'))->visibility('private')->imageSize(48)->square(),

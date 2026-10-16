@@ -25,13 +25,13 @@ class MovementsRelationManager extends RelationManager
     {
         return $table
             ->defaultSort('date', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with('item.cover'))
+            ->modifyQueryUsing(fn ($query) => $query->with('item.cover'))
             ->recordUrl(fn (Movement $r) => $r->item && ! $r->item->trashed() ? ItemResource::getUrl('view', ['record' => $r->item]) : null)
             ->columns([
                 ImageColumn::make('photo')->label('')->state(fn (Movement $r) => $r->item?->cover?->thumbUrl())->square()->imageSize(40),
                 TextColumn::make('date')->label('Data')->date('d/m/Y'),
-                TextColumn::make('kind')->label('Tipo')->badge()->formatStateUsing(fn ($s) => Movement::KINDS[$s] ?? $s)
-                    ->color(fn ($s) => ['loan' => 'warning', 'sale' => 'danger'][$s] ?? 'success'),
+                TextColumn::make('kind')->label('Tipo')->badge()->formatStateUsing(fn ($state) => Movement::KINDS[$state] ?? $state)
+                    ->color(fn ($state) => ['loan' => 'warning', 'sale' => 'danger'][$state] ?? 'success'),
                 TextColumn::make('item.code')->label('Tombo')->fontFamily('mono'),
                 TextColumn::make('item.title')->label('Peça')->limit(50),
                 TextColumn::make('notes')->label('Observação')->placeholder('—'),

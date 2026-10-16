@@ -45,7 +45,7 @@ class MemberResource extends Resource
         $isOwner = fn (Membership $r) => $r->acervo->owner_id === $r->user_id;
 
         return $table
-            ->modifyQueryUsing(fn ($q) => $q->with(['user', 'acervo']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['user', 'acervo']))
             ->columns([
                 ImageColumn::make('user.avatar')->label('')->circular()->imageSize(36)
                     ->state(fn (Membership $r) => $r->user?->getFilamentAvatarUrl())
@@ -88,6 +88,12 @@ class MemberResource extends Resource
                     ->modalDescription('A pessoa sai deste acervo. Os cadastros feitos por ela continuam com o nome dela.')
                     ->after(fn (Membership $r) => ActivityLog::record('user', null, "Removeu {$r->user->name} do acervo")),
             ]);
+    }
+
+    /** Só a equipe do acervo aberto (o escopo automático do Filament está desligado no painel). */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('acervo_user.acervo_id', Acervo::current()?->id ?? 0);
     }
 
     public static function getPages(): array

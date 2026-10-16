@@ -34,7 +34,7 @@ class TagResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($q) => $q->withCount('items'))
+            ->modifyQueryUsing(fn ($query) => $query->withCount('items'))
             ->defaultSort('items_count', 'desc')
             ->recordUrl(fn (Tag $r) => ItemResource::getUrl('index', ['filters' => ['tags' => ['values' => [$r->id]]]]))
             ->columns([

@@ -22,6 +22,7 @@ class CreateAdmin extends Command
         $pass = $this->option('password') ?: password('Senha (mín. 8 caracteres)', required: true, validate: fn ($v) => strlen($v) >= 8 ? null : 'Use ao menos 8 caracteres');
 
         $user = User::updateOrCreate(['email' => $email], ['name' => $name, 'password' => $pass, 'role' => 'admin', 'active' => true]);
+        $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save();
         $this->info("Administrador pronto: {$user->email}");
 
         return self::SUCCESS;

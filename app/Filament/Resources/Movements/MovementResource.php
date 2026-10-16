@@ -46,12 +46,12 @@ class MovementResource extends Resource
     {
         return $table
             ->defaultSort('date', 'desc')
-            ->modifyQueryUsing(fn ($q) => $q->with(['item.cover', 'user', 'collector']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['item.cover', 'user', 'collector']))
             ->recordUrl(fn (Movement $r) => $r->item && ! $r->item->trashed() ? ItemResource::getUrl('view', ['record' => $r->item]) : null)
             ->columns([
                 TextColumn::make('date')->label('Data')->date('d/m/Y')->sortable(),
-                TextColumn::make('kind')->label('Tipo')->badge()->formatStateUsing(fn ($s) => Movement::KINDS[$s] ?? $s)
-                    ->color(fn ($s) => ['loan' => 'warning', 'sale' => 'danger'][$s] ?? 'success'),
+                TextColumn::make('kind')->label('Tipo')->badge()->formatStateUsing(fn ($state) => Movement::KINDS[$state] ?? $state)
+                    ->color(fn ($state) => ['loan' => 'warning', 'sale' => 'danger'][$state] ?? 'success'),
                 TextColumn::make('item.code')->label('Tombo')->fontFamily('mono')->searchable(),
                 TextColumn::make('item.title')->label('Peça')->searchable()->limit(50),
                 TextColumn::make('person')->label('Responsável')->searchable()
@@ -63,7 +63,7 @@ class MovementResource extends Resource
             ->filters([
                 SelectFilter::make('kind')->label('Tipo')->options(Movement::KINDS),
                 SelectFilter::make('loaned_now')->label('Situação atual')->options(['loaned' => 'Emprestadas agora', 'sold' => 'Vendidas'])
-                    ->query(fn ($q, array $d) => $d['value'] ? $q->whereHas('item', fn ($i) => $i->where('status', $d['value'])) : $q),
+                    ->query(fn ($query, array $data) => $data['value'] ? $query->whereHas('item', fn ($i) => $i->where('status', $data['value'])) : $query),
             ])
             ->emptyStateHeading('Nenhuma movimentação')
             ->emptyStateDescription('Use “Registrar movimentação” acima ou, na ficha da peça, Situação → Registrar empréstimo ou venda.');

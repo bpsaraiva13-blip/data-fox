@@ -32,62 +32,21 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
 
 ## Deploy no Laravel Cloud
 
-1. Em [cloud.laravel.com](https://cloud.laravel.com), crie uma aplicação a partir deste repositório (`main`).
-2. No canvas do ambiente:
-   - **Add database** → *Laravel Serverless Postgres* (mesma região).
-   - **Add bucket** → crie um bucket **privado** e marque como disco padrão.
-3. **Variáveis de ambiente** (Settings → Environment variables):
-   ```ini
-   APP_NAME="Data Fox"
-   APP_LOCALE=pt_BR
-   APP_FALLBACK_LOCALE=pt_BR
-   APP_TIMEZONE=America/Sao_Paulo
-   CACHE_STORE=database
-   SESSION_DRIVER=database
-   QUEUE_CONNECTION=database
-   ANTHROPIC_API_KEY=sk-ant-...        # opcional: sem ela o sistema funciona sem IA
-   # E-mail dos convites (qualquer SMTP, Resend, Postmark, SES…)
-   MAIL_MAILER=smtp
-   MAIL_HOST=smtp.seuprovedor.com
-   MAIL_PORT=587
-   MAIL_USERNAME=...
-   MAIL_PASSWORD=...
-   MAIL_FROM_ADDRESS=naoresponda@seudominio.com
-   MAIL_FROM_NAME="Data Fox"
-   # Backup: disco e quantos arquivos manter por acervo (opcional)
-   ACERVO_BACKUP_KEEP=14
-   ACERVO_AI_MODEL=claude-sonnet-5-5
-   ACERVO_AI_SEARCH_MODEL=claude-haiku-5-5
-   ```
-   O Cloud injeta sozinho as variáveis do banco (`DB_*`) e do bucket (`FILESYSTEM_DISK` e credenciais).
-4. **Build commands**:
-   ```sh
-   composer install --no-dev --optimize-autoloader
-   php artisan optimize
-   ```
-5. **Deploy commands**:
-   ```sh
-   php artisan migrate --force
-   ```
-6. **Fila (análises da IA em segundo plano)**: no App cluster, adicione um *background process*:
-   ```sh
-   php artisan queue:work --tries=4 --timeout=150 --sleep=3
-   ```
-   (Ou use as *Managed queues* do Cloud: ele troca `QUEUE_CONNECTION` para `cloud` automaticamente.)
-   A fila também gera os backups pedidos pela tela e os envios grandes entre acervos.
-   **Agendador**: ligue o *Scheduler* no App cluster. Ele roda o backup diário (03:30) e a limpeza da lixeira
-   (`model:prune`, 04:10), que apaga de vez o que foi excluído há mais de 30 dias.
-   **.zip grandes**: com o bucket como disco, defina `LIVEWIRE_UPLOAD_DISK=` com o nome do disco do bucket para o navegador
-   enviar direto para ele. Em servidor próprio, ajuste `upload_max_filesize`/`post_max_size` do PHP.
-7. Faça o deploy. Depois, em **Commands**, crie o primeiro administrador:
-   ```sh
-   php artisan datafox:admin --name="Bruno" --email="voce@email.com" --password="uma-senha-forte"
-   ```
-8. Acesse a URL do ambiente e entre com esse usuário. Na primeira entrada, crie (ou abra) o acervo.
-   Em **Equipe** você convida as pessoas; em **Administração → Usuários** (só administrador do sistema)
-   você vê todos os usuários e desativa acessos.
-9. **Vitrine**: em *Configurações do acervo* (menu do acervo) ative "Vitrine pública". O endereço é
-   `https://SEU-DOMINIO/vitrine/<slug-do-acervo>`; sem a opção, só quem é da equipe ou "Só vitrine" vê.
+O passo a passo completo (banco, bucket, fila, agendador, variáveis, primeiro administrador, domínio no
+Registro.br, Google e importação dos dados da versão web) está em **[DEPLOY.md](DEPLOY.md)**.
+
+Resumo:
+
+- Build: `composer install --no-dev --optimize-autoloader && php artisan optimize && php artisan filament:optimize`
+- Deploy: `php artisan migrate --force`
+- Fila: background process `php artisan queue:work --tries=3 --sleep=3` · Agendador ligado
+- Primeiro acesso: `php artisan datafox:admin --name=... --email=... --password=...`
+
+## Testes
+
+`php artisan test` (PostgreSQL, ver `.github/workflows/ci.yml`). Cobrem a jornada (primeiro administrador, acervo,
+convite, uso por perfil), as regras de acesso (isolamento entre acervos, caixas permitidas, bloqueio, vitrine,
+login com Google e duas etapas), o cadastro, a lixeira, o lote por .zip e a importação do backup da versão web.
 
 ## Acesso: senha, Google, Apple e verificação em duas etapas
 
@@ -97,6 +56,8 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
   1Password, Authy…). O administrador do sistema pode desligar em **Usuários** se alguém perder o celular.
 - **Entrar com Google / Apple**: só entra quem já tem conta com o mesmo e-mail ou tem convite pendente para ele.
   Os botões aparecem sozinhos quando as variáveis abaixo estão preenchidas.
+  Quem ativou as duas etapas digita o código do app também ao entrar com Google/Apple. O Google só é ligado a uma
+  conta cujo e-mail já foi confirmado, e trocar o e-mail em **Meu perfil** exige confirmar pelo novo endereço.
 - Em **Usuários**: último acesso (e como entrou), desativar acesso, desconectar de todos os aparelhos.
 
 ### Google
@@ -134,7 +95,7 @@ Laravel 13 + Filament 5, PostgreSQL, fotos em object storage (S3/R2) e IA da Ant
    ```
    Troque `s3` pelo nome do disco do bucket, se for outro. Use `--dry-run` para conferir antes.
    `--acervo` escolhe (ou cria) o acervo de destino; repita o comando com o backup de cada acervo da versão web.
-   O comando pode ser repetido: o que já foi importado é ignorado. Tombos, datas de cadastro, autores
+   Vêm também colecionadores, movimentações e coleções. O comando pode ser repetido: o que já foi importado é ignorado. Tombos, datas de cadastro, autores
    (pelo nome) e o histórico são preservados.
 
 ## Desenvolvimento local

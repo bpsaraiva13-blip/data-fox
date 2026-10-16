@@ -157,11 +157,41 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0
 #pick{height:min(820px,calc(100% - 24px))}#pick .modal-body{display:flex;flex-direction:column;gap:12px;min-height:0;flex:1}
 .pk-extra{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
 @media(max-width:620px){#pick{height:calc(100% - 16px)}#pick .modal-body{display:block;overflow:auto}#pick .modal-body>*+*{margin-top:10px}#pick .cp-grid{overflow:visible;flex:none}.pk-extra{grid-template-columns:1fr 1fr}.pk-extra .f:nth-child(4){grid-column:1/-1}}
-.trash-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
-.trash-row:first-child{border-radius:16px 16px 0 0}.trash-row:last-child{border-radius:0 0 16px 16px;border-bottom:0}.trash-row:only-child{border-radius:16px}
-.trash-row img,.trash-row .nph{width:56px;height:56px;border-radius:12px;object-fit:cover;background:var(--surface-2);display:block}
-.trash-row small{color:var(--muted)}.trash-days{font-family:ui-monospace,monospace;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.look-sw{display:flex;flex-wrap:wrap;gap:8px}
+.look-sw button,.look-custom{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:2px;cursor:pointer;color:var(--muted);width:58px}
+.look-sw button span,.look-custom input{width:36px;height:36px;border-radius:50%;background:var(--sw);display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s}
+.look-sw button[aria-checked="true"] span{box-shadow:0 0 0 2px var(--raise),0 0 0 4px var(--sw)}
+.look-sw button[aria-checked="true"] small{color:var(--ink);font-weight:600}
+.look-sw button:active span{transform:scale(.92)}
+.look-sw small{font-size:11px}
+.look-custom input{padding:0;border:0;cursor:pointer;-webkit-appearance:none;appearance:none;background:conic-gradient(red,#ff0,lime,cyan,blue,#f0f,red)}
+.look-custom input::-webkit-color-swatch-wrapper{padding:0}.look-custom input::-webkit-color-swatch{border:0;border-radius:50%;opacity:0}
+.look-custom input::-moz-color-swatch{border:0;border-radius:50%;opacity:0}
+.look-th button{padding:7px 14px;font-size:13px}.look-th button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.trash-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
+.trash-row:last-child{border-bottom:0}
+.trash-row img,.trash-row .nph,.tr-stack img,.tr-stack .nph{width:48px;height:48px;border-radius:12px;object-fit:cover;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);flex:none}
+.trash-row .nph .ico,.tr-stack .nph .ico{width:20px;height:20px}
+.tr-txt{min-width:0}.tr-txt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-txt small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-kind{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-right:6px;color:var(--ink)}
+.tr-acts{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.trash-days{font-family:ui-monospace,monospace;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
 .trash-days.soon{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.tr-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.tr-kinds{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto}
+.tr-kinds .chip{cursor:pointer;padding:6px 12px;font-size:13px}.tr-kinds .chip.on{background:var(--ink);color:var(--bg);border-color:transparent}
+.tr-kinds .chip .mono{opacity:.7;font-size:11.5px}
+#trash-q{max-width:280px}
+.tr-day{margin-bottom:20px}
+.tr-day h4{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px;margin:0 4px 8px;font-size:14px}.tr-day h4 small{color:var(--muted);font-weight:400;font-size:12.5px}.tr-day h4 small.soon{color:var(--danger)}.tr-day h4 span{white-space:nowrap}
+.tr-list{background:var(--raise);border-radius:16px;box-shadow:0 1px 2px var(--line);overflow:hidden}
+.tr-batch{border-bottom:1px solid var(--line)}.tr-batch:last-child{border-bottom:0}
+.tr-bhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;background:color-mix(in srgb,var(--surface-2) 45%,transparent)}
+.tr-stack{display:flex;width:76px}.tr-stack>*{width:40px!important;height:40px!important;border:2px solid var(--raise);margin-left:-22px;border-radius:11px!important}.tr-stack>*:first-child{margin-left:0}
+.tr-batch [data-tbopen] .ico{transition:transform .2s}.tr-batch.open [data-tbopen] .ico{transform:rotate(180deg)}
+.tr-bitems{border-top:1px solid var(--line);padding-left:14px}
+.tr-bfoot{display:flex;justify-content:flex-end;padding:8px 12px}
 .iss-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 14px}
 .jobs{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;max-height:42vh;overflow:auto}.jobs:empty{display:none}
 .job{border:0;text-align:left;background:var(--surface);border-radius:14px;padding:9px 11px;display:flex;flex-direction:column;gap:6px;cursor:pointer;font:inherit;color:inherit;box-shadow:0 1px 0 var(--line);animation:jobin .35s cubic-bezier(.2,.8,.2,1);transition:opacity .4s,transform .4s}
@@ -355,7 +385,7 @@ textarea.inp{resize:vertical;min-height:84px;line-height:1.45}
 .bx:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .bx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .bx{min-height:210px}
-.bx .top{display:flex;align-items:center;gap:14px;padding:22px 18px 8px}
+.bx .bx-top{display:flex;align-items:center;gap:14px;padding:22px 18px 8px}
 .bx .mono-badge{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none;font-weight:800;font-size:20px;letter-spacing:-.02em;background:color-mix(in srgb,var(--c,var(--accent)) 16%,transparent);color:var(--c,var(--accent));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .bx:hover .mono-badge{transform:rotate(-6deg) scale(1.06)}
 .bx .bar{height:6px;border-radius:999px;background:var(--surface-2);margin:16px 18px 0;overflow:hidden}
@@ -632,8 +662,149 @@ a.btn.primary{color:var(--accent-ink)}
   .tr{grid-template-columns:minmax(0,1fr) auto}
   .tr .bar{display:none}
 }
+/* ---------- celular ---------- */
+.tabbar,.actsheet,.jobpill,.f-toggle,.bmore,.bx-n{display:none}
+@media (hover:none){.card{transform:none!important}.card:hover{transform:none!important}}
+@media (max-width:760px){
+  :root{--tabh:calc(62px + env(safe-area-inset-bottom,0px))}
+  body{overscroll-behavior-y:contain}
+  .iconbtn.menu-btn,.top-actions{display:none!important}
+  .top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(1.4) blur(8px);padding-block:8px;padding-top:calc(8px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line)}
+  .search{order:0;flex:1;height:44px}
+  .search input{font-size:16px}
+  .view{padding-block:14px calc(var(--tabh) + 28px)}
+  .view-head{margin-bottom:12px;gap:10px}.view-head h2{font-size:26px}.view-head p{font-size:13.5px}
+  .view-head .btn{min-height:40px}
+  .eyebrow{font-size:10.5px}
+  /* números do topo numa linha só */
+  .stats{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:0 16px;scroll-snap-type:x mandatory}
+  .stats::-webkit-scrollbar{display:none}
+  .stat{flex:none;min-width:118px;padding:10px 12px;scroll-snap-align:start}.stat b{font-size:20px}.stat span{font-size:11.5px}
+  /* filtros recolhidos */
+  .f-toggle{display:inline-flex;margin:0 0 10px}.f-toggle b{font-size:11px;background:var(--accent);color:var(--accent-ink);border-radius:99px;padding:0 6px;min-width:18px;text-align:center}.f-toggle b:empty{display:none}
+  .toolbar{display:none;margin-bottom:12px;gap:8px}
+  .toolbar.open{display:grid;grid-template-columns:1fr 1fr;animation:jobin .25s ease}
+  .toolbar.open .sel{width:100%;min-height:42px;font-size:15px}
+  .toolbar.open>div[style*="flex:1"]{display:none}
+  .toolbar.open .seg{justify-self:end}
+  .banner{font-size:12.5px;padding:10px 12px;border-radius:14px;margin-bottom:12px}
+  /* cartões de peça */
+  .grid{gap:10px}
+  .card{border-radius:16px}
+  /* barra inferior */
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:39;height:var(--tabh);padding:6px max(6px,env(safe-area-inset-left,0px)) env(safe-area-inset-bottom,0px);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-top:1px solid var(--line)}
+  .tabbar button{position:relative;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 10.5px/1 inherit;color:var(--muted);border-radius:14px;-webkit-tap-highlight-color:transparent}
+  .tabbar button .ico{width:22px;height:22px}
+  .tabbar button[aria-current="page"]{color:var(--accent)}
+  .tabbar button:active{transform:scale(.94)}
+  .tabbar .fab{align-self:center;justify-self:center;width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-ink);box-shadow:0 8px 22px -6px color-mix(in srgb,var(--accent) 70%,transparent);margin-top:-22px;transition:transform .2s}
+  .tabbar .fab .ico{width:26px;height:26px}
+  .tabbar .fab.open{transform:rotate(45deg)}
+  .tb-dot{position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--brass,#A8710E);box-shadow:0 0 0 2px var(--surface)}
+  .actsheet{display:flex;flex-direction:column;gap:4px;position:fixed;left:8px;right:8px;bottom:calc(var(--tabh) + 8px);z-index:39;background:var(--raise);border-radius:22px;padding:8px;box-shadow:var(--shadow);transform:translateY(20px);opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s}
+  .actsheet.show{transform:none;opacity:1;pointer-events:auto}
+  .actsheet .as-grip{width:40px;height:4px;border-radius:9px;background:var(--line-2);margin:4px auto 6px}
+  .actsheet button{display:flex;gap:14px;align-items:center;border:0;background:none;text-align:left;padding:12px;border-radius:14px;color:var(--ink);font:inherit}
+  .actsheet button:active{background:var(--surface-2)}
+  .actsheet button .ico{width:22px;height:22px;flex:none;color:var(--accent)}
+  .actsheet b{display:block;font-size:15px}.actsheet small{color:var(--muted);font-size:12.5px}
+
+  /* lixeira no celular */
+  .trash-row{grid-template-columns:44px minmax(0,1fr) auto;gap:10px;padding:9px 8px 9px 10px}
+  .trash-row img,.trash-row .nph{width:44px;height:44px}
+  .tr-acts .lbl{display:none}.tr-acts .btn.sm{padding:0;width:38px;height:38px;justify-content:center}
+  .tr-acts .btn.sm.keep{width:auto;padding:0 12px}.tr-acts .keep .lbl{display:inline}
+  .tr-acts .trash-days{display:none}
+  .tr-bhead{grid-template-columns:minmax(0,1fr) auto;padding:10px}.tr-stack{display:none}
+  .tr-bitems{padding-left:0}
+  .tr-bhead .tr-txt b{white-space:normal;line-height:1.25}
+  #trash-q{max-width:none;flex:1 1 100%;order:-1}
+  .tr-kinds{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+  .tr-kinds .chip{flex:none}
+  #view-lixeira .view-head p{display:none}
+  /* caixas no celular: cartões compactos + menu ⋯ */
+  #view-caixas .view-head{flex-wrap:wrap;align-items:center}
+  #view-caixas .view-head>div:first-child{flex:1 1 100%}
+  #view-caixas .view-head p{display:none}
+  #view-caixas .view-head>div[style*="flex:1"]{display:none}
+  #view-caixas .view-head .seg{order:3;margin-left:auto}
+  #box-batch{order:1;padding-inline:12px}
+  #new-box{order:2}
+  .boxes{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .bx{min-height:0;border-radius:18px}
+  .bx .act,.bx .in,.bx .go{display:none}
+  .bx .bx-top{flex-direction:column;align-items:flex-start;gap:10px;padding:14px 14px 10px}
+  .bx .bx-top>div{padding-right:0!important;width:100%}
+  .bx .mono-badge{width:42px;height:42px;border-radius:13px;font-size:16px}
+  .bx h3{font-size:15.5px;line-height:1.25;white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .bx small{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bx .bx-n{display:block;margin-top:6px;color:var(--ink-2,var(--muted))}
+  .bx .bx-n b{color:var(--ink);font-size:14px}
+  .bx .bar{margin:0 14px 14px;height:4px}
+  .bmore{display:grid;place-items:center;position:absolute;top:8px;right:6px;width:40px;height:40px;border:0;border-radius:12px;background:none;color:var(--muted)}
+  .bmore:active{background:var(--surface-2)}
+  .bmore .ico{width:20px;height:20px}
+  .bxlist{border-radius:18px}
+  .bxhead{display:none}
+  .bxrow,.bxhead{grid-template-columns:40px minmax(0,1fr) auto 40px;gap:10px;padding:10px 6px 10px 12px}
+  .bxrow .acts{display:none}
+  .bxrow .bmore{position:static}
+  .bxrow .mono{color:var(--muted);font-size:13px}
+  #boxsheet .bs-head{display:flex;gap:12px;align-items:center;padding:4px 12px 10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  #boxsheet .bs-head .mono-badge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;font-weight:800;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+  #boxsheet .bs-head b{display:block;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #boxsheet{max-height:calc(100dvh - var(--tabh) - 40px);overflow:auto}
+  #boxsheet button.danger b,#boxsheet button.danger .ico{color:var(--danger,#b3261e)}
+  .jobpill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + 10px);z-index:38;display:flex;gap:8px;align-items:center;border:0;border-radius:99px;padding:8px 14px;background:var(--label,#15211A);color:var(--label-ink,#fff);font:600 12.5px/1 inherit;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+  .jobpill[hidden]{display:none}.jobpill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .jobpill .sp{border-color:rgba(255,255,255,.3);border-top-color:#fff}
+  .toasts{left:12px;right:12px;bottom:calc(var(--tabh) + 12px);max-width:none;align-items:stretch}
+  .bulkbar{bottom:calc(var(--tabh) + 10px);max-width:calc(100% - 16px);overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .side{z-index:47}
+  /* janelas em tela cheia, rodapé fixo e campos sem zoom do iPhone */
+  .modal{left:0;top:0;width:100%!important;height:100%!important;max-height:100%!important;border-radius:0;transform:translateY(24px);padding-top:env(safe-area-inset-top,0px)}
+  .modal.show{transform:none}
+  .modal.sm,#mini{top:auto;bottom:0;height:auto!important;max-height:92%!important;border-radius:22px 22px 0 0}
+  #mini:has(.cpick){height:100%!important;max-height:100%!important;border-radius:0}
+  .modal-head{padding:12px 16px;position:sticky;top:0;background:var(--bg);z-index:2}.modal-head h2{font-size:20px}
+  .modal-body{padding:16px;-webkit-overflow-scrolling:touch}
+  .modal-foot{padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));position:sticky;bottom:0;background:var(--bg)}
+  .modal-foot .btn{min-height:44px}
+  .inp,.sel,textarea.inp,select.inp{font-size:16px}
+  .btn{min-height:40px}.btn.sm{min-height:36px}
+  .iconbtn{width:40px;height:40px}
+  .sheet{width:100%;border-radius:0}
+  .sheet-head{position:sticky;top:0;z-index:3;background:var(--bg);gap:6px}.sheet-head .tag-label{white-space:nowrap}
+  .sheet-head .btn{font-size:0;gap:0;padding-inline:11px}.sheet-head .btn .ico{width:18px;height:18px;font-size:initial}
+  .gal-main{border-radius:0;margin:0 -16px;max-width:none;aspect-ratio:1}
+  .gal-thumbs{justify-content:center}.gal-thumbs button{width:9px;height:9px;border-radius:50%;border:0;background:var(--line-2)}.gal-thumbs button img{display:none}.gal-thumbs button.on{background:var(--accent)}
+  .cp-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #lock .pad{grid-template-columns:repeat(3,76px)}
+}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.card{transform:none!important}}
 </style>
+<style id="accent-css"></style>
+<script>
+/* cor de destaque e tema escolhidos pelo usuário (aplicados antes de desenhar a página) */
+const ACCENTS=[["#1F4D36","Verde"],["#1E4E79","Azul"],["#1D5C63","Petróleo"],["#4B3A8F","Violeta"],["#7A2E4A","Vinho"],["#9A4A26","Terracota"],["#8A6A12","Mostarda"],["#2F3437","Grafite"]];
+const DEF_ACCENT="#1F4D36";
+function hexRgb(h){h=String(h||"").replace("#","");if(h.length===3)h=h.split("").map(c=>c+c).join("");const n=parseInt(h,16);return isNaN(n)||h.length!==6?null:[n>>16&255,n>>8&255,n&255]}
+function mixRgb(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}
+function toHex(c){return"#"+c.map(v=>v.toString(16).padStart(2,"0")).join("")}
+function lum(c){const f=v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2])}
+/* escurece a cor até ter contraste suficiente com branco (botões e textos em destaque) */
+function deepen(c){let x=c;for(let i=0;i<20&&lum(x)>.11;i++)x=mixRgb(x,[0,0,0],.12);return x}
+function accentCss(hex){const raw=hexRgb(hex);if(!raw||hex.toLowerCase()===DEF_ACCENT.toLowerCase())return"";
+  const W=[255,255,255],K=[0,0,0],DBG=[18,20,18],b=deepen(raw),rgba=(c,a)=>`rgba(${c.join(",")},${a})`;
+  const L=`--accent:${toHex(b)};--accent-soft:${rgba(b,.09)};--accent-ink:#FFFFFF;--sage:${toHex(mixRgb(b,W,.45))};--mint:${toHex(mixRgb(b,W,.84))};--mint-ink:${toHex(b)};--brass:${toHex(mixRgb(b,W,.28))};--brass-soft:${rgba(mixRgb(b,W,.28),.14)};--label:${toHex(b)};--label-ink:${toHex(mixRgb(b,W,.84))};`;
+  let a=mixRgb(raw,W,.45);for(let i=0;i<12&&lum(a)<.32;i++)a=mixRgb(a,W,.15);
+  const D=`--accent:${toHex(a)};--accent-soft:${rgba(a,.13)};--accent-ink:${toHex(mixRgb(raw,K,.85))};--sage:${toHex(mixRgb(raw,W,.3))};--mint:${toHex(mixRgb(raw,DBG,.72))};--mint-ink:${toHex(mixRgb(a,W,.45))};--brass:${toHex(a)};--brass-soft:${rgba(a,.13)};--label:${toHex(mixRgb(raw,DBG,.6))};--label-ink:${toHex(mixRgb(a,W,.55))};`;
+  return`:root{${L}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${D}}}:root[data-theme="dark"]{${D}}`}
+function applyLook(accent,theme){try{document.getElementById("accent-css").textContent=accentCss(accent||DEF_ACCENT)}catch(e){}
+  const r=document.documentElement;if(theme==="light"||theme==="dark")r.setAttribute("data-theme",theme);else r.removeAttribute("data-theme");
+  try{localStorage.setItem("datafox.look",JSON.stringify({accent:accent||"",theme:theme||""}))}catch(e){}}
+try{const lk=JSON.parse(localStorage.getItem("datafox.look")||"null");if(lk)applyLook(lk.accent,lk.theme)}catch(e){}
+</script>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
@@ -645,6 +816,11 @@ a.btn.primary{color:var(--accent-ink)}
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 005-5c0-4-4-7.2-9-7.2z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7.2" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></symbol>
@@ -688,6 +864,7 @@ a.btn.primary{color:var(--accent-ink)}
       <button data-view="lixeira"><svg class="ico"><use href="#i-trash"/></svg>Lixeira<span class="count mono" id="n-trash">0</span></button>
       <button data-view="equipe"><svg class="ico"><use href="#i-users"/></svg>Equipe</button>
       <button data-act="vitrine"><svg class="ico"><use href="#i-eye"/></svg>Vitrine</button>
+      <button data-act="look"><svg class="ico"><use href="#i-palette"/></svg>Aparência</button>
     </nav>
     <div class="side-sec grow"><div id="side-boxes" hidden></div></div>
     <div id="jobs" class="jobs" aria-live="polite"></div>
@@ -718,6 +895,7 @@ a.btn.primary{color:var(--accent-ink)}
         <div><div class="eyebrow" id="acervo-eyebrow">Todo o acervo</div><h2 id="acervo-title">Peças catalogadas</h2></div>
       </div>
       <div class="stats" id="stats"></div>
+      <button class="btn sm f-toggle" id="f-toggle" aria-expanded="false" aria-controls="toolbar"><svg class="ico"><use href="#i-select"/></svg><span>Filtros</span><b class="mono" id="f-count"></b></button>
       <div class="toolbar" id="toolbar">
         <select class="sel" id="f-cat" aria-label="Categoria"><option value="">Todas as categorias</option></select>
         <select class="sel" id="f-cond" aria-label="Estado"><option value="">Qualquer estado</option></select>
@@ -783,6 +961,7 @@ a.btn.primary{color:var(--accent-ink)}
 
     <section class="view" id="view-lixeira" hidden>
       <div class="view-head"><div><div class="eyebrow">Recuperação</div><h2>Lixeira</h2><p>Peças, fotos e caixas excluídas ficam aqui por 30 dias. Depois disso são apagadas de vez, com os arquivos.</p></div><div style="flex:1"></div><button class="btn danger" id="trash-empty"><svg class="ico"><use href="#i-trash"/></svg>Esvaziar lixeira</button></div>
+      <div class="tr-bar" id="trash-bar" hidden><div class="tr-kinds" id="trash-kinds" role="group" aria-label="Tipo"></div><input class="inp" id="trash-q" type="search" placeholder="Buscar na lixeira…" autocomplete="off"></div>
       <div id="trash-root"></div>
     </section>
 
@@ -808,6 +987,23 @@ a.btn.primary{color:var(--accent-ink)}
 
 <div class="scrim" id="scrim"></div>
 <aside class="sheet" id="detail" aria-label="Ficha da peça"></aside>
+<nav class="tabbar" id="tabbar" aria-label="Navegação principal">
+  <button data-tab="acervo" aria-current="page"><svg class="ico"><use href="#i-grid"/></svg><span>Acervo</span></button>
+  <button data-tab="caixas"><svg class="ico"><use href="#i-box"/></svg><span>Caixas</span></button>
+  <button data-tab="new" class="fab" aria-label="Cadastrar"><svg class="ico"><use href="#i-plus"/></svg></button>
+  <button data-tab="cam"><svg class="ico"><use href="#i-camera"/></svg><span>Câmera</span></button>
+  <button data-tab="more"><svg class="ico"><use href="#i-menu"/></svg><span>Mais</span><i class="tb-dot" id="tb-dot" hidden></i></button>
+</nav>
+<div class="actsheet" id="actsheet" role="dialog" aria-modal="true" aria-label="Cadastrar">
+  <div class="as-grip"></div>
+  <button data-as="new"><svg class="ico"><use href="#i-plus"/></svg><span><b>Nova peça</b><small>Fotos e ficha de uma peça</small></span></button>
+  <button data-as="cam"><svg class="ico"><use href="#i-camera"/></svg><span><b>Fotografar peças</b><small>Uma foto atrás da outra, com a câmera</small></span></button>
+  <button data-as="batch"><svg class="ico"><use href="#i-upload"/></svg><span><b>Enviar em lote</b><small>Várias fotos, uma pasta ou um .zip</small></span></button>
+  <button data-as="compare"><svg class="ico"><use href="#i-compare"/></svg><span><b>Comparar imagem</b><small>Ver se uma peça já está no acervo</small></span></button>
+  <button data-as="mov"><svg class="ico"><use href="#i-swap"/></svg><span><b>Registrar movimentação</b><small>Empréstimo, venda ou devolução</small></span></button>
+</div>
+<div class="actsheet" id="boxsheet" role="dialog" aria-modal="true" aria-label="Ações da caixa"></div>
+<button class="jobpill" id="jobpill" hidden></button>
 <div class="modal" id="editor" role="dialog" aria-modal="true" aria-labelledby="ed-title"></div>
 <div class="modal" id="batch" role="dialog" aria-modal="true" aria-labelledby="b-title"></div>
 <div class="modal" id="share" role="dialog" aria-modal="true" aria-labelledby="sh-title"></div>
@@ -870,7 +1066,7 @@ function job(label,{onOpen,onCancel}={}){const j={id:++jobSeq,label,done:0,total
   fail(msg){this.status="err";this.msg=msg||"Falhou";drawJobs()}};
   JOBS.set(j.id,j);drawJobs();if(innerWidth<=900)toast(`${label} em segundo plano`);return j}
 function dropJob(id){const el=document.querySelector(`.job[data-job="${id}"]`);if(el){el.classList.add("out");setTimeout(()=>{JOBS.delete(id);drawJobs()},380)}else{JOBS.delete(id);drawJobs()}}
-let jobsRaf=0;function drawJobs(){cancelAnimationFrame(jobsRaf);jobsRaf=requestAnimationFrame(()=>{const root=$("#jobs");if(!root)return;
+let jobsRaf=0;function drawJobs(){cancelAnimationFrame(jobsRaf);jobsRaf=requestAnimationFrame(()=>{syncJobPill();const root=$("#jobs");if(!root)return;
   root.innerHTML=[...JOBS.values()].map(j=>{const pct=j.total?Math.round(j.done/j.total*100):0;
     return`<div class="job ${j.status}" data-job="${j.id}" role="button" tabindex="0" title="${j.onOpen?"Abrir":""}"><div class="jt">${j.status==="run"?`<i class="sp"></i>`:j.status==="ok"?ICON("check"):ICON("alert")}<span>${esc(j.label)}</span>${j.total&&j.status==="run"?`<small>${pct}%</small>`:""}${j.status==="run"&&j.onCancel?`<button class="jx" data-jcancel="${j.id}" aria-label="Interromper">×</button>`:j.status!=="run"?`<button class="jx" data-jclose="${j.id}" aria-label="Dispensar">×</button>`:""}</div>
     <div class="jb"><i class="${j.total||j.status!=="run"?"":"ind"}" style="width:${j.status==="run"?pct:100}%"></i></div>${j.msg?`<div class="jm">${esc(j.msg)}</div>`:""}</div>`}).join("");
@@ -981,7 +1177,7 @@ function renderStats(){
 }
 function fillSelect(sel,opts,keep){const v=sel.value;sel.innerHTML=keep+opts.map(([val,l])=>`<option value="${esc(val)}">${esc(l)}</option>`).join("");sel.value=opts.some(o=>o[0]===v)?v:""}
 function fillWho(){const ids=[...new Set([...S.items.values()].map(i=>i.createdBy).filter(Boolean))];fillSelect($("#f-who"),ids.map(i=>[i,who(i)]),'<option value="">Qualquer pessoa</option>')}
-function renderFilters(){
+function renderFilters(){try{syncFilterCount()}catch(e){}
   const cats=[...new Set([...CATS,...[...S.items.values()].map(i=>i.category).filter(Boolean)])].filter(c=>[...S.items.values()].some(i=>i.category===c));
   fillSelect($("#f-cat"),cats.map(c=>[c,c]),'<option value="">Todas as categorias</option>');
   fillSelect($("#f-cond"),CONDS.map(c=>[c,c]),'<option value="">Qualquer estado</option>');
@@ -1037,11 +1233,11 @@ function renderItems(){
 /* ---------- views ---------- */
 function setView(v){
   if(v===S.view&&v!=="comparar")return;
-  const go=()=>{S.view=v;$$(".view").forEach(s=>s.hidden=s.id!=="view-"+v);$$("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v?"page":"false"));
-    if(v==="acervo"){S.animate=true;renderItems()}if(v==="caixas")renderBoxes();if(v==="tags")renderTags();if(v==="atividade")renderActivity();if(v==="comparar")renderCompare();if(v==="colecoes")renderColls();if(v==="conferencia")renderInv();if(v==="movimentos")renderMov();if(v==="pendencias")renderIssues();if(v==="lixeira")renderTrash();if(v==="colecionadores")renderPeople();if(v==="equipe")renderTeam();closeSide()};
-  if(document.startViewTransition&&!RM)document.startViewTransition(go);else go();
+  const go=()=>{S.view=v;queueMicrotask(syncTabbar);$$(".view").forEach(s=>s.hidden=s.id!=="view-"+v);$$("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v?"page":"false"));
+    if(v==="acervo")renderItems();if(v==="caixas")renderBoxes();if(v==="tags")renderTags();if(v==="atividade")renderActivity();if(v==="comparar")renderCompare();if(v==="colecoes")renderColls();if(v==="conferencia")renderInv();if(v==="movimentos")renderMov();if(v==="pendencias")renderIssues();if(v==="lixeira")renderTrash();if(v==="colecionadores")renderPeople();if(v==="equipe")renderTeam();closeSide()};
+  go();
 }
-$("#nav").addEventListener("click",e=>{const a=e.target.closest("button[data-act]");if(a&&a.dataset.act==="vitrine"){openVitrine();closeSide();return}const b=e.target.closest("button[data-view]");if(b)setView(b.dataset.view)});
+$("#nav").addEventListener("click",e=>{const a=e.target.closest("button[data-act]");if(a&&a.dataset.act==="vitrine"){openVitrine();closeSide();return}if(a&&a.dataset.act==="look"){closeSide();openLook();return}const b=e.target.closest("button[data-view]");if(b)setView(b.dataset.view)});
 $("#side-boxes").addEventListener("click",e=>{const b=e.target.closest("[data-box]");if(!b)return;S.f.box=b.dataset.box;S.animate=true;if(S.view!=="acervo")setView("acervo");renderSide();renderFilters();renderItems()});
 $("#menu-btn").onclick=()=>{$("#side").classList.add("show");showScrim(closeSide)};
 function closeSide(){if($("#side").classList.contains("show")){$("#side").classList.remove("show");hideScrim()}}
@@ -1121,7 +1317,7 @@ $("#bulk-del").onclick=()=>{if(!S.sel.size||!guardWrite())return;mini("Excluir p
 
 /* mini dialog */
 function mini(title,body,okLabel,onOk,danger){
-  const m=$("#mini");m.innerHTML=`<div class="modal-head"><h2 style="font-size:21px">${esc(title)}</h2><div style="flex:1"></div><button class="iconbtn" data-x aria-label="Fechar">${ICON("x")}</button></div><div class="modal-body">${body}</div><div class="modal-foot"><button class="btn ghost" data-x>Cancelar</button><button class="btn ${danger?"danger solid":"primary"}" id="mini-ok">${esc(okLabel)}</button></div>`;
+  closeSide();const m=$("#mini");m.innerHTML=`<div class="modal-head"><h2 style="font-size:21px">${esc(title)}</h2><div style="flex:1"></div><button class="iconbtn" data-x aria-label="Fechar">${ICON("x")}</button></div><div class="modal-body">${body}</div><div class="modal-foot"><button class="btn ghost" data-x>Cancelar</button><button class="btn ${danger?"danger solid":"primary"}" id="mini-ok">${esc(okLabel)}</button></div>`;
   const close=()=>{m.classList.remove("show");if(!$("#editor").classList.contains("show")&&!$("#detail").classList.contains("show")&&!$("#batch").classList.contains("show")&&!$("#merge").classList.contains("show")&&!$("#cam").classList.contains("show"))hideScrim();else showScrim(prevScrim)};
   const prevScrim=scrimCb;m.classList.add("show");showScrim(close);
   $$("[data-x]",m).forEach(b=>b.onclick=close);
@@ -1795,7 +1991,7 @@ async function runBackup(){
     const peopleIds=[...new Set([...items.flatMap(i=>[i.createdBy,i.updatedBy]),...boxes.map(b=>b.createdBy),...actAll.map(a=>a.by)].filter(Boolean))];
     const people={};try{const ps=peopleIds.length&&S.user?await S.user.profiles(peopleIds):{};for(const id of peopleIds)people[id]=ps?.[id]?.name||(S.me?.id===id?S.me.name:"")||""}catch(e){}
     const zip=new JSZip();
-    zip.file("data.json",JSON.stringify({app:"data-fox",format:1,exportedAt:new Date().toISOString(),scope:BKs.box,people,boxes,items,activity:actAll,movements:S.movements,collectors:[...(S.people2||new Map()).values()]},null,1));
+    zip.file("data.json",JSON.stringify({app:"data-fox",format:1,exportedAt:new Date().toISOString(),scope:BKs.box,people,boxes,items,activity:actAll,movements:S.movements.filter(m=>BKs.box==="all"||ids.has(m.itemId)),collectors:[...(S.people2||new Map()).values()],collections:[...(S.collections||new Map()).values()].map(c=>({...c,itemIds:(c.itemIds||[]).filter(x=>BKs.box==="all"||ids.has(x))}))},null,1));
     if(BKs.photos){const list=items.flatMap(i=>(i.photos||[]).map(p=>p.id));let k=0;const folder=zip.folder("photos");
       const worker=async q=>{while(q.length&&!BKs.cancel){const id=q.shift();try{const b=await fetchBlob(id);folder.file(id+".jpg",b)}catch(e){}k++;st().textContent=`Baixando fotos ${k} de ${list.length}…`;bar().style.width=Math.round(k/list.length*80)+"%"}};
       const q=[...list];await Promise.all([worker(q),worker(q),worker(q),worker(q)])}
@@ -1879,6 +2075,7 @@ $("#go-compare").onclick=()=>setView("comparar");
 let boxLayout="grid";try{boxLayout=localStorage.getItem("datafox.boxlayout")||"grid"}catch(e){}
 function boxBadge(b){const n=boxNum(b.name);if(n!=null)return String(n);const w=(b.name||"?").replace(/^\s*(caixa|cx\.?)\s+/i,"").trim();return(w[0]||"?").toUpperCase()}
 function setBoxLayout(l){boxLayout=l;try{localStorage.setItem("datafox.boxlayout",l)}catch(e){}$("#bx-grid").setAttribute("aria-pressed",l==="grid");$("#bx-list").setAttribute("aria-pressed",l==="list");renderBoxes()}
+let boxBarsShown=false;
 function renderBoxes(){
   const root=$("#boxes-root");const bs=sortedBoxes();
   $("#bx-grid").setAttribute("aria-pressed",boxLayout==="grid");$("#bx-list").setAttribute("aria-pressed",boxLayout==="list");
@@ -1886,14 +2083,34 @@ function renderBoxes(){
   const counts=new Map();for(const it of S.items.values())counts.set(it.boxId,(counts.get(it.boxId)||0)+1);const max=Math.max(1,...bs.map(b=>counts.get(b.id)||0));
   const acts=b=>`<button class="btn sm ghost" data-blabel="${esc(b.id)}" aria-label="Etiqueta da caixa ${esc(b.name)}">${ICON("qr")}</button><button class="btn sm ghost" data-bcat="${esc(b.id)}" aria-label="Catálogo em PDF da caixa ${esc(b.name)}">${ICON("file")}</button>`+(S.canWrite?`<button class="btn sm ghost" data-bbatch="${esc(b.id)}" aria-label="Enviar lote para ${esc(b.name)}">${ICON("upload")}Lote</button>${homeOf(b.id)?`<button class="btn sm ghost" data-bunlink="${esc(b.id)}" title="Remover o vínculo deste acervo" aria-label="Remover vínculo de ${esc(b.name)}">${ICON("x")}Vínculo</button>`:""}${!homeOf(b.id)&&xferTargets().length?`<button class="btn sm ghost" data-blink="${esc(b.id)}" title="Vincular a outro acervo" aria-label="Vincular ${esc(b.name)} a outro acervo">${ICON("link")}</button>`:""}${!homeOf(b.id)&&xferTargets().length?`<button class="btn sm ghost" data-bxfer="${esc(b.id)}" aria-label="Enviar ${esc(b.name)} a outro acervo" title="Enviar a outro acervo">${ICON("swap")}</button>`:""}<button class="btn sm ghost" data-bedit="${esc(b.id)}" aria-label="Editar ${esc(b.name)}">${ICON("edit")}</button>${homeOf(b.id)?"":`<button class="btn sm ghost danger" data-bdel="${esc(b.id)}" aria-label="Excluir ${esc(b.name)}">${ICON("trash")}</button>`}`:"");
   if(boxLayout==="list"){
-    root.innerHTML=`<div class="bxlist"><div class="bxhead"><span></span><span>Caixa</span><span class="hide-sm">Local</span><span>Peças</span><span class="hide-sm">Criada</span><span></span></div>${bs.map(b=>{const n=counts.get(b.id)||0;return`<div class="bxrow" tabindex="0" role="button" data-bopen="${esc(b.id)}" style="--c:${esc(b.color||"var(--accent)")}"><span class="mono-badge">${esc(boxBadge(b))}</span><span style="min-width:0"><b>${esc(b.name)}</b>${linkNote(b)}</span><small class="hide-sm">${esc(b.location||"—")}</small><span class="mono">${n}</span><small class="hide-sm">${rel(b.createdAt)}</small><span class="acts">${acts(b)}</span></div>`}).join("")}</div>`;
+    root.innerHTML=`<div class="bxlist"><div class="bxhead"><span></span><span>Caixa</span><span class="hide-sm">Local</span><span>Peças</span><span class="hide-sm">Criada</span><span></span></div>${bs.map(b=>{const n=counts.get(b.id)||0;return`<div class="bxrow" tabindex="0" role="button" data-bopen="${esc(b.id)}" style="--c:${esc(b.color||"var(--accent)")}"><span class="mono-badge">${esc(boxBadge(b))}</span><span style="min-width:0"><b>${esc(b.name)}</b>${linkNote(b)}</span><small class="hide-sm">${esc(b.location||"—")}</small><span class="mono">${n}</span><small class="hide-sm">${rel(b.createdAt)}</small><span class="acts">${acts(b)}</span><button class="bmore" data-bmore="${esc(b.id)}" aria-label="Ações da caixa ${esc(b.name)}"><svg class="ico"><use href="#i-dots"/></svg></button></div>`}).join("")}</div>`;
     return;
   }
-  root.innerHTML=`<div class="boxes">${bs.map(b=>{const n=counts.get(b.id)||0;return`<div class="bx" tabindex="0" role="button" data-bopen="${esc(b.id)}" style="--c:${esc(b.color||"var(--accent)")}"><div class="top"><span class="mono-badge">${esc(boxBadge(b))}</span><div style="min-width:0;padding-right:20px"><h3 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.name)}</h3><small>${esc(b.location||"Sem local definido")}${linkNote(b)}</small></div><span class="go"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></div><div class="bar"><i data-w="${n/max*100}"></i></div><div class="in"><small><b class="mono" style="color:var(--ink)">${n}</b> peça${n===1?"":"s"} · criada ${rel(b.createdAt)}</small></div>${acts(b)?`<div class="act">${acts(b)}</div>`:""}</div>`}).join("")}</div>`;
+  root.innerHTML=`<div class="boxes">${bs.map(b=>{const n=counts.get(b.id)||0;return`<div class="bx" tabindex="0" role="button" data-bopen="${esc(b.id)}" style="--c:${esc(b.color||"var(--accent)")}"><div class="bx-top"><span class="mono-badge">${esc(boxBadge(b))}</span><div style="min-width:0;padding-right:20px"><h3 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.name)}</h3><small>${esc(b.location||"Sem local definido")}${linkNote(b)}</small><small class="bx-n"><b class="mono">${n}</b> peça${n===1?"":"s"}</small></div><span class="go"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span><button class="bmore" data-bmore="${esc(b.id)}" aria-label="Ações da caixa ${esc(b.name)}"><svg class="ico"><use href="#i-dots"/></svg></button></div><div class="bar"><i data-w="${n/max*100}"></i></div><div class="in"><small><b class="mono" style="color:var(--ink)">${n}</b> peça${n===1?"":"s"} · criada ${rel(b.createdAt)}</small></div>${acts(b)?`<div class="act">${acts(b)}</div>`:""}</div>`}).join("")}</div>`;
+  if(boxBarsShown){$$(".bx .bar i",root).forEach(i=>{i.style.transition="none";i.style.width=i.dataset.w+"%"});return}boxBarsShown=true;
   requestAnimationFrame(()=>requestAnimationFrame(()=>$$(".bx .bar i",root).forEach(i=>i.style.width=i.dataset.w+"%")));
 }
 function openBox(id){S.f.box=id;S.animate=true;setView("acervo");renderSide();renderFilters();renderItems()}
-$("#boxes-root").onclick=e=>{
+function boxSheet(id){const b=boxOf(id);if(!b)return;const n=boxCount(b.id),lk=!!homeOf(b.id),x=!lk&&xferTargets().length&&S.canWrite;
+  const it=(attr,ic,t,d,cls="")=>`<button ${attr}="${esc(b.id)}"${cls?` class="${cls}"`:""}>${ICON(ic)}<span><b>${t}</b><small>${d}</small></span></button>`;
+  const sh=$("#boxsheet");
+  sh.innerHTML=`<div class="as-grip"></div><div class="bs-head" style="--c:${esc(b.color||"var(--accent)")}"><span class="mono-badge">${esc(boxBadge(b))}</span><span style="min-width:0"><b>${esc(b.name)}</b><small>${n} peça${n===1?"":"s"} · ${esc(b.location||"sem local definido")}</small></span></div>`
+   +it("data-bopen","box","Abrir caixa","Ver as peças desta caixa")
+   +(S.canWrite?it("data-bbatch","upload","Enviar lote","Fotos, pasta ou .zip direto nesta caixa"):"")
+   +it("data-blabel","qr","Etiqueta QR","PDF para colar na caixa")
+   +it("data-bcat","file","Catálogo em PDF","Todas as peças da caixa")
+   +(S.canWrite?it("data-bedit","edit","Editar","Nome, cor e local físico"):"")
+   +(x?it("data-blink","link","Vincular a outro acervo","As peças aparecem nos dois"):"")
+   +(x?it("data-bxfer","swap","Enviar a outro acervo","Muda a caixa e as peças de acervo"):"")
+   +(S.canWrite&&lk?it("data-bunlink","x","Remover vínculo","A caixa deixa de aparecer aqui"):"")
+   +(S.canWrite&&!lk?it("data-bdel","trash","Excluir caixa",`Fica ${TRASH_DAYS} dias na lixeira`,"danger"):"");
+  requestAnimationFrame(()=>sh.classList.add("show"));
+}
+function closeBoxSheet(){$("#boxsheet").classList.remove("show")}
+document.addEventListener("pointerdown",e=>{if($("#boxsheet").classList.contains("show")&&!e.target.closest("#boxsheet"))closeBoxSheet()},true);
+$("#boxsheet").onclick=e=>{if(!e.target.closest("button"))return;closeBoxSheet();boxAction(e)};
+$("#boxes-root").onclick=e=>{const m=e.target.closest("[data-bmore]");if(m){e.stopPropagation();boxSheet(m.dataset.bmore);return}boxAction(e)};
+function boxAction(e){
   const bb=e.target.closest("[data-bbatch]");if(bb){openBatch(bb.dataset.bbatch);return}
   const bl=e.target.closest("[data-blabel]");if(bl){exportBoxLabel(bl.dataset.blabel);return}
   const bc=e.target.closest("[data-bcat]");if(bc){const b=boxOf(bc.dataset.bcat);exportCatalog([...S.items.values()].filter(i=>i.boxId===b.id).sort((x,y)=>(x.code||"").localeCompare(y.code||"")),"Caixa "+b.name);return}
@@ -1903,7 +2120,7 @@ $("#boxes-root").onclick=e=>{
   const ed=e.target.closest("[data-bedit]");if(ed){boxForm(ed.dataset.bedit);return}
   const dl=e.target.closest("[data-bdel]");if(dl){const b=boxOf(dl.dataset.bdel),n=boxCount(b.id);mini("Excluir caixa",`<p>Excluir <b>${esc(b.name)}</b>?${n?` As ${n} peça(s) dentro dela ficam como <b>Sem caixa</b>.`:""} A caixa fica ${TRASH_DAYS} dias na lixeira.</p>`,"Excluir",async()=>{for(const it of [...S.items.values()].filter(i=>i.boxId===b.id))await dref("items",it.id).update({boxId:""});await trashBox(b);logAct("box",null,`Excluiu a caixa ${b.name}`);if(S.f.box===b.id)S.f.box="all";toast("Caixa excluída")},true);return}
   const o=e.target.closest("[data-bopen]");if(o)openBox(o.dataset.bopen);
-};
+}
 $("#boxes-root").onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-bopen]")){e.preventDefault();openBox(e.target.dataset.bopen)}};
 $("#bx-grid").onclick=()=>setBoxLayout("grid");$("#bx-list").onclick=()=>setBoxLayout("list");
 $("#new-box").onclick=()=>boxForm();$("#box-batch").onclick=()=>openBatch();$("#go-batch").onclick=()=>openBatch();
@@ -2327,15 +2544,52 @@ async function purgeTrash(t){const del=x=>x&&S.assets?.delete(x).catch(()=>{});
 function autoPurge(){if(!S.canWrite||trashPurged===S.aid)return;trashPurged=S.aid;const old=S.trash.filter(t=>trashLeft(t)<=0);if(!old.length)return;
   const j=job(`Limpando a lixeira (${old.length} com mais de ${TRASH_DAYS} dias)`);let n=0;
   (async()=>{for(const t of old){try{await purgeTrash(t)}catch(e){}j.set(++n,old.length)}j.finish(`${n} apagado(s) de vez`)})()}
-function renderTrash(){const root=$("#trash-root");if(!root)return;$("#trash-empty").hidden=!S.canWrite||!S.trash.length;
-  if(!S.trash.length){root.innerHTML=`<div class="empty">${ICON("trash").replace('class="ico"','class="ico" style="width:40px;height:40px"')}<h3>Lixeira vazia</h3><p>O que for excluído fica aqui por ${TRASH_DAYS} dias.</p></div>`;return}
-  const K={item:"Peça",photo:"Foto",box:"Caixa",person:"Colecionador"};
-  root.innerHTML=`<div>${S.trash.map(t=>{const d=trashLeft(t);return`<div class="trash-row">${t.thumb?`<img src="${blobUrl(t.thumb)}" alt="" loading="lazy" decoding="async">`:`<span class="nph"></span>`}
-    <div style="min-width:0"><b>${esc(t.label||"")}</b><br><small>${K[t.kind]||""} · excluída ${rel(t.deletedAt)} por ${esc(who(t.deletedBy))}${t.why?" · "+esc(t.why):""}</small></div>
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="trash-days ${d<=5?"soon":""}">${d} dia${d===1?"":"s"}</span>${S.canWrite?`<button class="btn sm" data-trest="${esc(t.id)}">${ICON("check")}Restaurar</button><button class="btn sm ghost danger" data-tdel="${esc(t.id)}" aria-label="Apagar de vez">${ICON("trash")}</button>`:""}</div></div>`}).join("")}</div>`}
+const TR={kind:"all",q:"",open:new Set()};
+const TRK={item:["Peça","Peças","box"],photo:["Foto","Fotos","image"],box:["Caixa","Caixas","box"],person:["Colecionador","Colecionadores","users"]};
+function trashName(t){if(t.kind==="box")return t.data?.name||String(t.label||"").replace(/^Caixa\s+/,"");if(t.kind==="person")return t.data?.name||t.label||"";return t.label||""}
+function trashThumb(t,cls=""){return t.thumb?`<img class="${cls}" src="${blobUrl(t.thumb)}" alt="" loading="lazy" decoding="async" data-tk="${t.kind}">`:`<span class="nph ${cls}">${ICON(TRK[t.kind]?.[2]||"trash")}</span>`}
+function trashDay(iso){const d=new Date(iso),t=new Date();const k=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime();const diff=Math.round((k(t)-k(d))/864e5);
+  return diff<=0?"Hoje":diff===1?"Ontem":d.toLocaleDateString("pt-BR",{day:"numeric",month:"long"})}
+/* exclusões feitas juntas (mesmo motivo, mesma pessoa, poucos minutos entre uma e outra) viram um lote */
+function trashClusters(list){const out=[];let cur=null;
+  for(const t of list){const at=new Date(t.deletedAt).getTime();
+    if(cur&&cur.why===(t.why||"")&&cur.by===t.deletedBy&&cur.kind===t.kind&&Math.abs(cur.last-at)<=5*60e3){cur.items.push(t);cur.last=at}
+    else{cur={why:t.why||"",by:t.deletedBy,kind:t.kind,last:at,items:[t]};out.push(cur)}}
+  return out}
+function trashRow(t){const d=trashLeft(t),k=TRK[t.kind]||["Item"];
+  return`<div class="trash-row">${trashThumb(t)}<div class="tr-txt"><b>${esc(trashName(t))}</b><small><span class="tr-kind">${k[0]}</span>${t.why?esc(t.why)+" · ":""}${rel(t.deletedAt)} · ${esc(who(t.deletedBy))}</small></div>
+    <div class="tr-acts"><span class="trash-days ${d<=5?"soon":""}" title="Apagado de vez em ${d} dia${d===1?"":"s"}">${d} d</span>${S.canWrite?`<button class="btn sm" data-trest="${esc(t.id)}" aria-label="Restaurar ${esc(trashName(t))}">${ICON("undo")}<span class="lbl">Restaurar</span></button><button class="btn sm ghost danger" data-tdel="${esc(t.id)}" aria-label="Apagar de vez">${ICON("trash")}</button>`:""}</div></div>`}
+function renderTrash(){const root=$("#trash-root");if(!root)return;const all=S.trash||[];$("#trash-empty").hidden=!S.canWrite||!all.length;$("#trash-bar").hidden=!all.length;
+  if(!all.length){root.innerHTML=`<div class="empty">${ICON("trash").replace('class="ico"','class="ico" style="width:40px;height:40px"')}<h3>Lixeira vazia</h3><p>O que for excluído fica aqui por ${TRASH_DAYS} dias.</p></div>`;return}
+  const cnt={};for(const t of all)cnt[t.kind]=(cnt[t.kind]||0)+1;
+  if(TR.kind!=="all"&&!cnt[TR.kind])TR.kind="all";
+  $("#trash-kinds").innerHTML=`<button class="chip ${TR.kind==="all"?"on":""}" data-tk="all">Tudo <span class="mono">${all.length}</span></button>`+Object.keys(TRK).filter(k=>cnt[k]).map(k=>`<button class="chip ${TR.kind===k?"on":""}" data-tk="${k}">${TRK[k][cnt[k]===1?0:1]} <span class="mono">${cnt[k]}</span></button>`).join("");
+  const q=norm(TR.q.trim());const list=all.filter(t=>(TR.kind==="all"||t.kind===TR.kind)&&(!q||norm(trashName(t)+" "+(t.why||"")).includes(q)));
+  if(!list.length){root.innerHTML=`<div class="empty"><h3>Nada encontrado</h3><p>Nenhum item da lixeira com esse filtro.</p></div>`;return}
+  const days=[];for(const t of list){const dk=trashDay(t.deletedAt);let g=days[days.length-1];if(!g||g.k!==dk){g={k:dk,items:[]};days.push(g)}g.items.push(t)}
+  root.innerHTML=days.map(g=>{const d=trashLeft(g.items[0]);
+    return`<section class="tr-day"><h4><span>${esc(g.k)}</span><small class="${d<=5?"soon":""}">${g.items.length===1?"1 item":g.items.length+" itens"} · ${d<=0?"apagando hoje":`some${g.items.length===1?"":"m"} em ${d} dia${d===1?"":"s"}`}</small></h4><div class="tr-list">${trashClusters(g.items).map(c=>{
+      if(c.items.length<4)return c.items.map(trashRow).join("");
+      const key=c.items[0].id,open=TR.open.has(key),n=c.items.length,k=TRK[c.kind]||["Item","Itens"];
+      return`<div class="tr-batch ${open?"open":""}"><div class="tr-bhead"><div class="tr-stack">${c.items.slice(0,3).map(t=>trashThumb(t)).join("")}</div>
+        <div class="tr-txt"><b>${n} ${k[1].toLowerCase()} excluíd${c.kind==="person"?"o":"a"}s junt${c.kind==="person"?"o":"a"}s</b><small>${c.why?esc(c.why)+" · ":""}${rel(c.items[n-1].deletedAt)} · ${esc(who(c.by))}</small></div>
+        <div class="tr-acts">${S.canWrite?`<button class="btn sm keep" data-tbrest="${esc(key)}">${ICON("undo")}<span class="lbl">Restaurar ${n}</span></button>`:""}<button class="btn sm ghost" data-tbopen="${esc(key)}" aria-expanded="${open}" aria-label="${open?"Esconder":"Ver"} itens">${ICON("chev")}</button></div></div>
+        ${open?`<div class="tr-bitems">${c.items.map(trashRow).join("")}${S.canWrite?`<div class="tr-bfoot"><button class="btn sm ghost danger" data-tbdel="${esc(key)}">${ICON("trash")}Apagar estas ${n} de vez</button></div>`:""}</div>`:""}</div>`}).join("")}</div></section>`}).join("");
+  TR.lastClusters=new Map();for(const g of days)for(const c of trashClusters(g.items))TR.lastClusters.set(c.items[0].id,c.items)}
+$("#trash-kinds").addEventListener("click",e=>{const b=e.target.closest("[data-tk]");if(!b)return;TR.kind=b.dataset.tk;renderTrash()});
+$("#trash-q").addEventListener("input",e=>{TR.q=e.target.value;renderTrash()});
+$("#trash-root").addEventListener("error",e=>{const i=e.target;if(i.tagName==="IMG"&&!i.dataset.bad){i.dataset.bad=1;const sp=document.createElement("span");sp.className="nph "+(i.className||"");sp.innerHTML=ICON(TRK[i.dataset.tk]?.[2]||"image");i.replaceWith(sp)}},true);
+function trashBulk(list,restore){if(!list?.length||!guardWrite())return;const n=list.length;
+  const run=()=>{let stop=false;const j=job(restore?`Restaurando ${n} da lixeira`:`Apagando ${n} de vez`,{onCancel:()=>{stop=true}});let k=0,ok=0;
+    (async()=>{for(const t of list){if(stop)break;try{const r=restore?await restoreTrash(t):(await purgeTrash(t),true);if(r!==false)ok++}catch(e){}j.set(++k,n)}
+      j.finish(restore?`${ok} restaurado(s)`:`${ok} apagado(s)`);logAct(restore?"create":"delete",null,restore?`Restaurou ${ok} item(ns) da lixeira`:`Apagou de vez ${ok} item(ns) da lixeira`)})()};
+  if(restore)run();else mini("Apagar de vez",`<p>Apagar definitivamente estes <b>${n}</b> itens, com as fotos? Não dá para desfazer.</p>`,"Apagar",run,true)}
 $("#trash-root").addEventListener("click",async e=>{const r=e.target.closest("[data-trest]"),d=e.target.closest("[data-tdel]");
+  const bo=e.target.closest("[data-tbopen]");if(bo){const k=bo.dataset.tbopen;TR.open.has(k)?TR.open.delete(k):TR.open.add(k);renderTrash();return}
+  const br=e.target.closest("[data-tbrest]");if(br){trashBulk(TR.lastClusters?.get(br.dataset.tbrest),true);return}
+  const bd=e.target.closest("[data-tbdel]");if(bd){trashBulk(TR.lastClusters?.get(bd.dataset.tbdel),false);return}
   if(r){const t=S.trash.find(x=>x.id===r.dataset.trest);if(!t||!guardWrite())return;r.disabled=true;try{if(await restoreTrash(t))toast("Restaurado")}catch(err){toast(errMsg(err),true)}r.disabled=false;return}
-  if(d){const t=S.trash.find(x=>x.id===d.dataset.tdel);if(!t||!guardWrite())return;mini("Apagar de vez",`<p>Apagar <b>${esc(t.label)}</b> definitivamente, com as fotos? Não dá para desfazer.</p>`,"Apagar",async()=>{await purgeTrash(t);toast("Apagado")},true)}});
+  if(d){const t=S.trash.find(x=>x.id===d.dataset.tdel);if(!t||!guardWrite())return;mini("Apagar de vez",`<p>Apagar <b>${esc(trashName(t))}</b> definitivamente${t.kind==="item"?", com as fotos":""}? Não dá para desfazer.</p>`,"Apagar",async()=>{await purgeTrash(t);toast("Apagado")},true)}});
 $("#trash-empty").onclick=()=>{if(!guardWrite()||!S.trash.length)return;const all=[...S.trash];
   mini("Esvaziar lixeira",`<p>Apagar de vez os <b>${all.length}</b> item(ns) da lixeira, com as fotos? Não dá para desfazer.</p>`,"Esvaziar",()=>{const j=job(`Esvaziando a lixeira (${all.length})`);let n=0;
     (async()=>{for(const t of all){try{await purgeTrash(t)}catch(e){}j.set(++n,all.length)}j.finish(`${n} apagado(s)`);logAct("delete",null,`Esvaziou a lixeira (${n})`)})()},true)};
@@ -2435,6 +2689,34 @@ addEventListener("keydown",e=>{if(!LOCK.on)return;if(/^\d$/.test(e.key)){e.preve
 ["pointerdown","keydown","wheel","touchstart"].forEach(t=>addEventListener(t,()=>{if(!LOCK.on){LOCK.last=Date.now();if(myPin())markUnlocked()}},{passive:true,capture:true}));
 setInterval(()=>{const m=lockAfterMin();if(myPin()&&!LOCK.on&&m>0&&Date.now()-LOCK.last>m*60000){try{sessionStorage.removeItem(LOCK_KEY)}catch(e){}showLock("unlock")}},20000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkLock()});
+
+/* ---------- celular: barra inferior, menu de cadastro, filtros e gestos ---------- */
+const isPhone=()=>matchMedia("(max-width:760px)").matches;
+function closeActSheet(){$("#actsheet").classList.remove("show");$('#tabbar [data-tab="new"]').classList.remove("open")}
+$("#tabbar").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;const t=b.dataset.tab;navigator.vibrate?.(8);
+  if(t==="new"){const on=!$("#actsheet").classList.contains("show");$("#actsheet").classList.toggle("show",on);b.classList.toggle("open",on);return}
+  closeActSheet();
+  if(t==="more"){$("#side").classList.add("show");showScrim(closeSide);return}
+  if(t==="cam"){openCam();return}
+  if(detailId)closeDetail();setView(t);window.scrollTo?.({top:0,behavior:"smooth"});$(".view:not([hidden])")?.scrollTo?.({top:0,behavior:"smooth"})});
+$("#actsheet").addEventListener("click",e=>{const b=e.target.closest("[data-as]");if(!b)return;closeActSheet();
+  ({new:()=>openEditor(),cam:()=>openCam(),batch:()=>openBatch(),compare:()=>setView("comparar"),mov:()=>{setView("movimentos");setTimeout(openMoveBatch,200)}})[b.dataset.as]?.()});
+document.addEventListener("pointerdown",e=>{if($("#actsheet").classList.contains("show")&&!e.target.closest("#actsheet,#tabbar"))closeActSheet()},true);
+function syncTabbar(){const v=S.view;$$("#tabbar [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===v||(b.dataset.tab==="more"&&!["acervo","caixas"].includes(v))?"page":"false"))}
+$("#f-toggle").onclick=()=>{const t=$("#toolbar"),on=!t.classList.contains("open");t.classList.toggle("open",on);$("#f-toggle").setAttribute("aria-expanded",on)};
+function syncFilterCount(){const f=S.f;const n=[f.cat,f.cond,f.status,f.who].filter(Boolean).length+(f.sort&&f.sort!=="recent"?1:0);const el=$("#f-count");if(el)el.textContent=n||""}
+/* tarefas em segundo plano: pílula acima da barra (a barra lateral fica escondida no celular) */
+function syncJobPill(){const pill=$("#jobpill");if(!pill)return;const run=[...JOBS.values()].filter(j=>j.status==="run");const dot=$("#tb-dot");if(dot)dot.hidden=!JOBS.size;
+  if(!isPhone()||!run.length){pill.hidden=true;return}const j=run[0];const pct=j.total?Math.round(j.done/j.total*100):0;
+  pill.hidden=false;pill.innerHTML=`<i class="sp"></i><span>${esc(j.label)}${j.total?` · ${pct}%`:""}${run.length>1?` (+${run.length-1})`:""}</span>`}
+$("#jobpill").onclick=()=>{$("#side").classList.add("show");showScrim(closeSide);setTimeout(()=>$("#jobs")?.scrollIntoView({block:"nearest"}),300)};
+/* deslizar para trocar de foto na ficha e para fechar a ficha */
+(()=>{let x0=0,y0=0,t0=0,el=null;
+  document.addEventListener("touchstart",e=>{const g=e.target.closest("#d-main");const sh=e.target.closest("#detail");if(!sh)return;el=g?"gal":"sheet";x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now()},{passive:true});
+  document.addEventListener("touchend",e=>{if(!el)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0,fast=Date.now()-t0<600;const kind=el;el=null;
+    if(!fast||Math.abs(dx)<50||Math.abs(dy)>Math.abs(dx))return;
+    if(kind==="gal"){const btns=$$("#detail [data-g]");if(btns.length<2)return;const next=(galIdx+(dx<0?1:-1)+btns.length)%btns.length;btns[next].click();return}
+    if(kind==="sheet"&&dx>90)closeDetail()},{passive:true})})();
 
 /* ---------- vitrine ---------- */
 let VIT={forced:false,item:null,coll:null};
@@ -2615,7 +2897,9 @@ async function removeAttachment(id,attId){const it=S.items.get(id);mini("Remover
 
 /* ---------- lembrete de backup ---------- */
 function renderBackupNudge(){const el=$("#mode-banner");if(!el||!S.db)return;const last=S.meta?.backup?.at;const days=last?(Date.now()-new Date(last))/864e5:Infinity;
-  if(isAdmin()&&S.items.size&&days>7){el.innerHTML=`<div class="banner">${ICON("download")}<span style="flex:1">${last?`Último backup há ${Math.floor(days)} dias.`:"Este acervo ainda não tem backup."} Faça um backup completo para guardar dados e fotos fora daqui.</span><button class="btn sm" id="nudge-bk">Fazer backup</button></div>`;$("#nudge-bk").onclick=openBackup}else el.innerHTML=""}
+  let snooze=0;try{snooze=+localStorage.getItem("datafox.nudge."+S.aid)||0}catch(e){}
+  if(isAdmin()&&S.items.size&&days>7&&Date.now()-snooze>864e5){el.innerHTML=`<div class="banner">${ICON("download")}<span style="flex:1">${last?`Último backup há ${Math.floor(days)} dias.`:"Este acervo ainda não tem backup."} Faça um backup completo para guardar dados e fotos fora daqui.</span><button class="btn sm" id="nudge-bk">Fazer backup</button><button class="iconbtn" id="nudge-x" aria-label="Lembrar amanhã" title="Lembrar amanhã" style="width:32px;height:32px;background:none">${ICON("x")}</button></div>`;$("#nudge-bk").onclick=openBackup;
+    $("#nudge-x").onclick=()=>{try{localStorage.setItem("datafox.nudge."+S.aid,String(Date.now()))}catch(e){}el.innerHTML=""}}else el.innerHTML=""}
 
 /* ---------- acervos, membros e permissões ---------- */
 const ROLES={admin:"Administrador",editor:"Editor",viewer:"Somente leitura",showcase:"Só vitrine"};
@@ -2822,19 +3106,38 @@ $("#team-root").addEventListener("click",async e=>{
 });
 $("#team-invite").onclick=openInvite;$("#team-add").onclick=addFromOrg;
 /* meu perfil */
+let LOOKPREVIEW=null;
+/* fechou o perfil sem salvar: volta à aparência salva */
+function watchLookClose(){const m=$("#mini");const ob=new MutationObserver(()=>{if(!m.classList.contains("show")||!m.querySelector("#pf-acc")){ob.disconnect();if(LOOKPREVIEW){LOOKPREVIEW=null;const mp=S.profiles[S.me?.id]||{};applyLook(mp.accent,mp.theme)}}});ob.observe(m,{attributes:true,childList:true,subtree:false})}
+function lookHTML(pf){return`<div class="f"><label>Cor de destaque</label><div class="look-sw" id="pf-acc" role="radiogroup" aria-label="Cor de destaque">${ACCENTS.map(([c,n])=>`<button type="button" role="radio" data-acc="${c}" style="--sw:${c}" aria-checked="${(pf.accent||DEF_ACCENT).toLowerCase()===c.toLowerCase()}" title="${n}"><span></span><small>${n}</small></button>`).join("")}<label class="look-custom" title="Outra cor"><input type="color" id="pf-acc-c" value="${esc(pf.accent||DEF_ACCENT)}"><small>Outra</small></label></div>
+     <label style="margin-top:12px">Tema</label><div class="seg look-th" id="pf-th" role="group" aria-label="Tema">${[["","Automático"],["light","Claro"],["dark","Escuro"]].map(([v,l])=>`<button type="button" data-th="${v}" aria-pressed="${(pf.theme||"")===v}">${l}</button>`).join("")}</div>
+     <small style="color:var(--muted);display:block;margin-top:6px">Vale só para você. A mudança aparece na hora; salve para manter.</small></div>`}
+function bindLook(pf){
+  LOOKPREVIEW={accent:pf.accent||"",theme:pf.theme||""};const look=()=>{applyLook(LOOKPREVIEW.accent,LOOKPREVIEW.theme);$$("#pf-acc [data-acc]").forEach(b=>b.setAttribute("aria-checked",b.dataset.acc.toLowerCase()===(LOOKPREVIEW.accent||DEF_ACCENT).toLowerCase()));$$("#pf-th [data-th]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.th===LOOKPREVIEW.theme))};
+  $("#pf-acc").onclick=e=>{const b=e.target.closest("[data-acc]");if(!b)return;LOOKPREVIEW.accent=b.dataset.acc===DEF_ACCENT?"":b.dataset.acc;$("#pf-acc-c").value=b.dataset.acc;look()};
+  $("#pf-acc-c").oninput=e=>{LOOKPREVIEW.accent=e.target.value;look()};
+  $("#pf-th").onclick=e=>{const b=e.target.closest("[data-th]");if(!b)return;LOOKPREVIEW.theme=b.dataset.th;look()};
+  watchLookClose();
+}
+function openLook(){if(!S.me?.id){toast("Entre com a sua conta para personalizar.",true);return}const pf=S.profiles[S.me.id]||{};
+  mini("Aparência",lookHTML(pf),"Salvar",async()=>{const data={...(S.profiles[S.me.id]||{}),accent:LOOKPREVIEW?LOOKPREVIEW.accent:(pf.accent||""),theme:LOOKPREVIEW?LOOKPREVIEW.theme:(pf.theme||""),updatedAt:new Date().toISOString()};
+    LOOKPREVIEW=null;await S.db.doc("profiles/"+S.me.id).set(data);applyLook(data.accent,data.theme);toast("Aparência salva")});
+  bindLook(pf)}
 function openProfile(){if(!S.me?.id)return;const pf=S.profiles[S.me.id]||{};let newAvatar=null;
   mini("Meu perfil",`<div style="display:flex;flex-direction:column;gap:12px">
    <div style="display:flex;gap:14px;align-items:center"><img id="pf-img" src="${avatar(S.me.id)}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover"><label class="btn sm" style="cursor:pointer">${ICON("camera")}Trocar foto<input type="file" id="pf-file" accept="image/*" hidden></label>${pf.avatar?`<button class="btn sm ghost" id="pf-rmimg">Usar a da conta</button>`:""}</div>
    <div class="f"><label for="mini-in">Nome de exibição</label><input class="inp" id="mini-in" value="${esc(pf.name||S.me.name||"")}" placeholder="${esc(S.me.name||"")}"></div>
    <div class="f"><label for="pf-phone">WhatsApp (opcional, aparece para a equipe)</label><input class="inp mono" id="pf-phone" value="${esc(pf.phone||"")}" inputmode="tel"></div>
    <div class="f"><label>Meus acervos</label>${myAcervos().map(a=>`<div class="att">${ICON("box")}<span>${esc(a.name)}</span><small class="pill2 n">${esc(ROLES[memberOf(a)?.role]||"")}</small>${a.ownerId!==S.me.id?`<button class="btn sm ghost danger" data-leave="${esc(a.id)}">Sair</button>`:""}</div>`).join("")}<button class="btn sm" id="pf-new" style="margin-top:6px">${ICON("plus")}Criar novo acervo</button></div>
+${lookHTML(pf)}
    <div class="f"><label>Segurança</label><div class="att">${ICON("user")}<span>${pf.pin?`PIN de acesso ativo (${pf.pin.len} números)`:"Sem PIN — o Data Fox abre direto com a sua conta Claude"}</span></div>
      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn sm" id="pf-pin">${pf.pin?"Trocar PIN":"Criar PIN"}</button>${pf.pin&&!pinRequired()?`<button class="btn sm ghost danger" id="pf-pinrm">Remover PIN</button>`:""}${pf.pin?`<button class="btn sm ghost" id="pf-locknow">Bloquear agora</button>`:""}</div>
      <label for="pf-lock" style="margin-top:8px">Bloquear depois de ficar sem uso por</label><select class="inp" id="pf-lock">${[[5,"5 minutos"],[15,"15 minutos"],[30,"30 minutos"],[60,"1 hora"],[0,"Só ao abrir o Data Fox"]].map(([v,l])=>`<option value="${v}" ${lockAfterMin()===v?"selected":""}>${l}</option>`).join("")}</select></div>
    <p class="notes" style="margin:0">Entrar no Data Fox exige estar conectado à sua conta Claude. O PIN é uma trava a mais neste navegador (por exemplo, num computador compartilhado). Na versão Laravel há senha, login com Google/Apple e verificação em duas etapas.</p></div>`,"Salvar perfil",async()=>{
-     const data={...(S.profiles[S.me.id]||{}),name:$("#mini-in").value.trim(),phone:$("#pf-phone").value.trim(),lockAfter:+$("#pf-lock").value,updatedAt:new Date().toISOString()};
+     const data={...(S.profiles[S.me.id]||{}),accent:LOOKPREVIEW?LOOKPREVIEW.accent:(pf.accent||""),theme:LOOKPREVIEW?LOOKPREVIEW.theme:(pf.theme||""),name:$("#mini-in").value.trim(),phone:$("#pf-phone").value.trim(),lockAfter:+$("#pf-lock").value,updatedAt:new Date().toISOString()};
      if(newAvatar===false)data.avatar=null;else if(newAvatar){const a=await S.assets.upload(newAvatar,{type:"image/jpeg"});data.avatar=a.id}else if(pf.avatar)data.avatar=pf.avatar;
-     await S.db.doc("profiles/"+S.me.id).set(data);toast("Perfil salvo")});
+     LOOKPREVIEW=null;await S.db.doc("profiles/"+S.me.id).set(data);applyLook(data.accent,data.theme);toast("Perfil salvo")});
+  bindLook(pf);
   $("#pf-file").onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!S.assets){toast("Seu acesso não permite enviar fotos.",true);return}const bmp=await toBitmap(f);const c=drawTo(bmp,320);newAvatar=await toBlob(c,.85);$("#pf-img").src=URL.createObjectURL(newAvatar)};
   $("#pf-rmimg")&&($("#pf-rmimg").onclick=()=>{newAvatar=false;$("#pf-img").src=S.me.avatarUrl||avatar(null)});
   $("#pf-new").onclick=()=>{$("#mini [data-x]").click();setTimeout(newAcervo,300)};
@@ -2843,7 +3146,7 @@ function openProfile(){if(!S.me?.id)return;const pf=S.profiles[S.me.id]||{};let 
   $("#pf-locknow")&&($("#pf-locknow").onclick=()=>{$("#mini [data-x]").click();setTimeout(lockNow,200)});
   $$("[data-leave]",$("#mini")).forEach(b=>b.onclick=async()=>{const aid=b.dataset.leave,a=S.acervos.get(aid);const members=JSON.parse(JSON.stringify(a.members||{}));delete members[S.me.id];await S.db.doc("acervos/"+aid).update({members});toast("Você saiu de "+a.name);$("#mini [data-x]").click();if(aid===S.aid){const m=myAcervos();if(m[0])switchAcervo(m[0].id)}});
 }
-$("#me").onclick=openProfile;$("#me").onkeydown=e=>{if(e.key==="Enter")openProfile()};
+$("#me").onclick=()=>{closeSide();openProfile()};$("#me").onkeydown=e=>{if(e.key==="Enter"){closeSide();openProfile()}};
 
 /* ---------- boot ---------- */
 function renderMe(){
@@ -2861,7 +3164,7 @@ async function boot(){
   renderMe();
   if(!db){$("#mode-banner").innerHTML=`<div class="banner">${ICON("box")}<span>O acervo está sem conexão com o banco de dados. Abra a página publicada no claude.ai, com sua conta, para ver e cadastrar peças.</span></div>`;S.loaded.items=S.loaded.boxes=true;renderAll();return}
   if(!S.me?.id){showGate("signin");return}
-  db.collection("profiles").onSnapshot(s=>{S.profiles=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));renderMe();refreshPeopleUI();checkLock()},()=>{});
+  db.collection("profiles").onSnapshot(s=>{S.profiles=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));{const mp=S.me?.id&&S.profiles[S.me.id];if(mp&&!LOOKPREVIEW)applyLook(mp.accent,mp.theme)}renderMe();refreshPeopleUI();checkLock()},()=>{});
   db.collection("invites").onSnapshot(s=>{S.invites=s.docs.map(d=>({id:d.id,...d.data()}));if(S.view==="equipe")renderTeam();checkInviteHash()},()=>{});
   let first=true;
   db.collection("acervos").onSnapshot(async s=>{

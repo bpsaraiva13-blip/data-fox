@@ -13,7 +13,7 @@ class EditProfile extends BaseEditProfile
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            FileUpload::make('avatar_path')->label('Foto')->image()->avatar()->imageEditor()
+            FileUpload::make('avatar_path')->label('Foto')->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'])->avatar()->imageEditor()
                 ->disk(config('acervo.disk'))->directory('acervo/avatars')->visibility('private')->maxSize(5 * 1024),
             $this->getNameFormComponent(),
             $this->getEmailFormComponent(),

@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use App\Models\Acervo;
 use App\Models\ActivityLog;
 use App\Models\Box;
+use App\Models\Collector;
+use App\Models\ItemCollection;
+use App\Models\Movement;
 use App\Models\Item;
 use App\Models\User;
 use App\Services\PhotoManager;
@@ -163,6 +166,72 @@ class ImportBackup extends Command
         $bar->finish();
         $this->newLine();
 
+        // Colecionadores
+        $collectorMap = [];
+        $cut = fn ($v, int $n) => ($v = trim((string) $v)) === '' ? null : mb_substr($v, 0, $n);
+        foreach ($data['collectors'] ?? [] as $c) {
+            if (! filled($c['name'] ?? null)) {
+                continue;
+            }
+            $col = Collector::withTrashed()->withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('import_ref', $c['id'])->first();
+            if (! $col) {
+                [$uid] = $userFor($c['createdBy'] ?? null);
+                $col = new Collector;
+                $col->forceFill([
+                    'acervo_id' => $aid, 'import_ref' => $c['id'], 'created_by' => $uid,
+                    'name' => mb_substr($c['name'], 0, 250), 'nick' => $cut($c['nick'] ?? null, 250),
+                    'kind' => in_array($c['kind'] ?? '', ['collector', 'buyer', 'seller', 'dealer', 'other'], true) ? $c['kind'] : 'collector',
+                    'doc' => $cut($c['doc'] ?? null, 20), 'birth' => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($c['birth'] ?? '')) ? $c['birth'] : null,
+                    'interests' => array_values(array_filter((array) ($c['interests'] ?? []))) ?: null,
+                    'phone' => $cut($c['phone'] ?? null, 30), 'phone2' => $cut($c['phone2'] ?? null, 30),
+                    'instagram' => $cut($c['instagram'] ?? null, 60), 'email' => $cut($c['email'] ?? null, 250),
+                    'cep' => $cut($c['cep'] ?? null, 9), 'street' => $cut($c['street'] ?? null, 250), 'number' => $cut($c['number'] ?? null, 20),
+                    'complement' => $cut($c['complement'] ?? null, 250), 'district' => $cut($c['district'] ?? null, 250),
+                    'city' => $cut($c['city'] ?? null, 250), 'uf' => $cut(mb_strtoupper((string) ($c['uf'] ?? '')), 2),
+                    'notes' => $cut($c['notes'] ?? null, 10000),
+                    'created_at' => $c['createdAt'] ?? now(), 'updated_at' => $c['updatedAt'] ?? ($c['createdAt'] ?? now()),
+                ])->saveQuietly();
+            }
+            $collectorMap[$c['id']] = $col->id;
+        }
+
+        // Movimentações (empréstimos, vendas, devoluções)
+        $moves = 0;
+        foreach ($data['movements'] ?? [] as $m) {
+            $itemId = $itemMap[$m['itemId'] ?? ''] ?? null;
+            if (! $itemId || Movement::withoutGlobalScope('acervo')->where('acervo_id', $aid)->where('import_ref', $m['id'])->exists()) {
+                continue;
+            }
+            [$uid] = $userFor($m['by'] ?? null);
+            $date = preg_match('/^\d{4}-\d{2}-\d{2}/', (string) ($m['date'] ?? '')) ? substr($m['date'], 0, 10) : Carbon::parse($m['at'] ?? now())->toDateString();
+            Movement::withoutGlobalScope('acervo')->forceCreate([
+                'acervo_id' => $aid, 'item_id' => $itemId, 'import_ref' => $m['id'],
+                'kind' => in_array($m['kind'] ?? '', ['loan', 'sale', 'return', 'undo'], true) ? $m['kind'] : 'loan',
+                'date' => $date, 'person' => mb_substr(($m['person'] ?? '') ?: '—', 0, 250),
+                'collector_id' => $collectorMap[$m['collectorId'] ?? ''] ?? null,
+                'notes' => $cut($m['notes'] ?? null, 250), 'user_id' => $uid,
+                'created_at' => $m['at'] ?? now(), 'updated_at' => $m['at'] ?? now(),
+            ]);
+            $moves++;
+        }
+
+        // Coleções
+        foreach ($data['collections'] ?? [] as $c) {
+            if (! filled($c['name'] ?? null)) {
+                continue;
+            }
+            $coll = ItemCollection::withoutGlobalScope('acervo')->where('acervo_id', $aid)
+                ->where(fn ($q) => $q->where('import_ref', $c['id'])->orWhere('name', mb_substr($c['name'], 0, 250)))->first();
+            if (! $coll) {
+                [$uid] = $userFor($c['createdBy'] ?? null);
+                $coll = new ItemCollection;
+                $coll->forceFill(['acervo_id' => $aid, 'import_ref' => $c['id'], 'name' => mb_substr($c['name'], 0, 250),
+                    'description' => $cut($c['description'] ?? null, 250), 'created_by' => $uid, 'created_at' => $c['createdAt'] ?? now()])->save();
+            }
+            $ids = collect($c['itemIds'] ?? [])->map(fn ($x) => $itemMap[$x] ?? null)->filter()->unique()->values()->all();
+            $coll->items()->syncWithoutDetaching($ids);
+        }
+
         // Histórico
         $acts = 0;
         foreach ($data['activity'] ?? [] as $a) {
@@ -185,7 +254,8 @@ class ImportBackup extends Command
         ActivityLog::forceCreate(['acervo_id' => $aid, 'type' => 'create', 'label' => 'Importou backup com '.count($itemMap).' peça(s)', 'user_id' => $fallback->id, 'user_name' => $fallback->name, 'created_at' => now()]);
 
         $zip->close();
-        $this->info(sprintf('Concluído: %d peças, %d caixas, %d registros de atividade%s.', count($itemMap), count($boxMap), $acts, $failed ? ", {$failed} com falha" : ''));
+        $this->info(sprintf('Concluído: %d peças, %d caixas, %d colecionadores, %d movimentações, %d coleções, %d registros de atividade%s.',
+            count($itemMap), count($boxMap), count($collectorMap), $moves, count($data['collections'] ?? []), $acts, $failed ? ", {$failed} com falha" : ''));
 
         return $failed ? self::FAILURE : self::SUCCESS;
     }

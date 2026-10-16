@@ -61,7 +61,7 @@ class Trash extends Page
     {
         return match ($tab) {
             'boxes' => Box::onlyTrashed(),
-            'photos' => ItemPhoto::onlyTrashed()->whereHas('item', fn ($q) => ItemAccess::restrict($q)->withTrashed()),
+            'photos' => ItemPhoto::onlyTrashed()->whereHas('item', fn ($query) => ItemAccess::restrict($query)->withTrashed()),
             'collectors' => Collector::onlyTrashed(),
             default => ItemAccess::restrict(Item::onlyTrashed()),
         };
@@ -76,19 +76,20 @@ class Trash extends Page
     /** @return Collection<int, array{id:int, title:string, sub:string, thumb:?string, deleted:\Carbon\Carbon, left:int}> */
     public function rows(): Collection
     {
-        $q = static::query($this->tab)->latest('deleted_at')->limit(300);
+        $query = static::query($this->tab)->latest('deleted_at')->limit(300);
         $left = fn ($d) => max(0, self::DAYS - (int) floor($d->diffInDays(now())));
 
         return match ($this->tab) {
-            'boxes' => $q->get()->map(fn (Box $b) => ['id' => $b->id, 'title' => $b->name, 'sub' => count($b->trashed_item_ids ?? []).' peça(s) estavam nela', 'thumb' => null, 'deleted' => $b->deleted_at, 'left' => $left($b->deleted_at)]),
-            'photos' => $q->with('item')->get()->map(fn (ItemPhoto $p) => ['id' => $p->id, 'title' => 'Foto de '.($p->item?->code ?? '?'), 'sub' => (string) $p->item?->title, 'thumb' => $p->thumbUrl(), 'deleted' => $p->deleted_at, 'left' => $left($p->deleted_at)]),
-            'collectors' => $q->get()->map(fn (Collector $c) => ['id' => $c->id, 'title' => $c->name, 'sub' => collect([$c->city, $c->phone])->filter()->implode(' · '), 'thumb' => null, 'deleted' => $c->deleted_at, 'left' => $left($c->deleted_at)]),
-            default => $q->with(['box', 'photos' => fn ($p) => $p->withTrashed()])->get()->map(fn (Item $i) => ['id' => $i->id, 'title' => "{$i->code} · {$i->title}", 'sub' => $i->box?->name ?? 'Sem caixa', 'thumb' => $i->photos->first()?->thumbUrl(), 'deleted' => $i->deleted_at, 'left' => $left($i->deleted_at)]),
+            'boxes' => $query->get()->map(fn (Box $b) => ['id' => $b->id, 'title' => $b->name, 'sub' => count($b->trashed_item_ids ?? []).' peça(s) estavam nela', 'thumb' => null, 'deleted' => $b->deleted_at, 'left' => $left($b->deleted_at)]),
+            'photos' => $query->with('item')->get()->map(fn (ItemPhoto $p) => ['id' => $p->id, 'title' => 'Foto de '.($p->item?->code ?? '?'), 'sub' => (string) $p->item?->title, 'thumb' => $p->thumbUrl(), 'deleted' => $p->deleted_at, 'left' => $left($p->deleted_at)]),
+            'collectors' => $query->get()->map(fn (Collector $c) => ['id' => $c->id, 'title' => $c->name, 'sub' => collect([$c->city, $c->phone])->filter()->implode(' · '), 'thumb' => null, 'deleted' => $c->deleted_at, 'left' => $left($c->deleted_at)]),
+            default => $query->with(['box', 'photos' => fn ($p) => $p->withTrashed()])->get()->map(fn (Item $i) => ['id' => $i->id, 'title' => "{$i->code} · {$i->title}", 'sub' => $i->box?->name ?? 'Sem caixa', 'thumb' => $i->photos->first()?->thumbUrl(), 'deleted' => $i->deleted_at, 'left' => $left($i->deleted_at)]),
         };
     }
 
     public function restore(int $id): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         $label = '';
         switch ($this->tab) {
             case 'boxes':
@@ -128,6 +129,7 @@ class Trash extends Page
 
     public function forceDelete(int $id): void
     {
+        abort_unless(auth()->user()?->canEdit(), 403);
         $m = static::query($this->tab)->findOrFail($id);
         if (method_exists($m, 'pruning')) {
             (fn () => $this->pruning())->call($m);   // apaga os arquivos junto

@@ -65,7 +65,7 @@ class UserResource extends Resource
             TextColumn::make('logins')->label('Entra com')->state(fn (User $r) => collect(['Senha', $r->google_id ? 'Google' : null, $r->apple_id ? 'Apple' : null, $r->app_authentication_secret ? '2 etapas' : null])->filter()->values()->all())
                 ->badge()->color('gray')->toggleable(),
             TextColumn::make('created_at')->label('Criado')->since(),
-        ])->modifyQueryUsing(fn ($q) => $q->with('acervos'))
+        ])->modifyQueryUsing(fn ($query) => $query->with('acervos'))
             ->recordActions([
                 \Filament\Actions\ActionGroup::make([
                     \Filament\Actions\Action::make('logout_all')->label('Desconectar de todos os aparelhos')->icon(Heroicon::OutlinedArrowRightStartOnRectangle)

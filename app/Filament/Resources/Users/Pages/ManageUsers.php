@@ -12,6 +12,8 @@ class ManageUsers extends ManageRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('Novo usuário')];
+        // criado pelo administrador do sistema: o e-mail é considerado confirmado
+        return [CreateAction::make()->label('Novo usuário')
+            ->after(fn (\App\Models\User $record) => $record->forceFill(['email_verified_at' => now()])->saveQuietly())];
     }
 }

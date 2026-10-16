@@ -62,7 +62,7 @@ class CompareImage extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('data')->components([
-            FileUpload::make('photo')->hiddenLabel()->image()->maxSize(15 * 1024)
+            FileUpload::make('photo')->hiddenLabel()->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'])->maxSize(15 * 1024)
                 ->placeholder('Solte a foto da peça aqui ou clique para escolher')
                 ->live()
                 ->afterStateUpdated(fn () => $this->compareUpload()),
