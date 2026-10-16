@@ -51,11 +51,16 @@
       if (!gone) { gone = true; location.reload(); }
       throw { code: "signed_out", message: "Sua sessão expirou. Entre de novo." };
     }
-    let data = null;
-    try { data = await r.json(); } catch (e) {}
+    let data = null, raw = "";
+    try { raw = await r.text(); data = raw ? JSON.parse(raw) : null; } catch (e) {}
     if (!r.ok) {
       const er = data?.error || {};
-      throw { code: er.code || (r.status === 403 ? "permission_denied" : "server_error"), message: er.message || data?.message || "Algo deu errado no servidor." };
+      const where = String(url).split("?")[0];
+      let msg = er.message || (data?.errors && Object.values(data.errors)[0]?.[0]) || data?.message;
+      if (r.status === 413) msg = "O arquivo é grande demais para o servidor (erro 413).";
+      if (!msg || msg === "Server Error") msg = `Algo deu errado no servidor (erro ${r.status} em ${where}).`;
+      console.error("Data Fox:", r.status, where, raw.slice(0, 500));
+      throw { code: er.code || (r.status === 403 ? "permission_denied" : "server_error"), status: r.status, message: msg };
     }
     return data;
   }
