@@ -67,3 +67,4 @@ a{color:var(--accent)}
   .au-mobile-logo b{display:block}.au-mobile-logo small{display:block;color:var(--muted);font-size:12px}
   .au-card h1{font-size:28px}
 }
+.au-acervos{display:flex;flex-wrap:wrap;gap:6px;margin:-8px 0 20px}

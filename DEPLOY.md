@@ -101,8 +101,12 @@ Depois de mudar variáveis, faça **Redeploy**.
    php artisan datafox:admin --name="Bruno" --email="voce@email.com" --password="uma-senha-forte"
    ```
 3. Abra o endereço `*.laravel.cloud`, entre e crie o seu acervo (botão **Criar meu acervo**).
-   A equipe entra por **Equipe → Convidar**: o link do convite leva a pessoa a criar a conta e já cai no acervo.
-4. Recomendado: em **Meu perfil**, ative a verificação em duas etapas.
+4. Cadastre a equipe em **Usuários** (menu do Data Fox, só para administradores do sistema) → **Novo usuário**:
+   nome, e-mail, os acervos (perfil e caixas de cada um) e como a pessoa entra — de preferência pelo **link de
+   primeiro acesso** (vale 7 dias; você copia ou manda pelo WhatsApp, e ele vai por e-mail se o envio estiver
+   configurado). Para mudar os acervos depois, clique na pessoa. Quem administra só um acervo usa
+   **Equipe → Adicionar pessoa** (pelo e-mail: quem já tem conta entra na hora; quem não tem recebe um convite).
+5. Recomendado: em **Meu perfil**, ative a verificação em duas etapas.
 
 ## 6. Apontar o domínio (Registro.br)
 

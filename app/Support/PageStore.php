@@ -67,6 +67,16 @@ class PageStore
         return (int) (microtime(true) * 1000);
     }
 
+    /** Registra uma linha na Atividade do acervo (tela Atividade da interface). */
+    public static function logActivity(int $acervoId, ?User $by, string $label, string $type = 'user'): void
+    {
+        DB::table('docs')->insert([
+            'acervo_id' => $acervoId, 'col' => 'activity', 'doc_id' => self::newId(), 'rev' => self::nextRev(),
+            'data' => json_encode(['type' => $type, 'itemId' => null, 'label' => $label, 'at' => now()->toIso8601String(), 'by' => $by ? self::uid($by) : null]),
+            'updated_by' => $by?->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
     /**
      * @return array{kind:string, aid?:string, col?:string, id?:?string}
      */
@@ -399,7 +409,7 @@ class PageStore
     public static function inviteData(Invitation $i): array
     {
         return array_filter([
-            'aid' => (string) $i->acervo_id, 'role' => $i->role, 'boxes' => $i->boxes, 'label' => $i->name ?: $i->email,
+            'aid' => (string) $i->acervo_id, 'role' => $i->role, 'boxes' => $i->boxes, 'label' => $i->name ?: $i->email, 'email' => $i->email,
             'expiresAt' => $i->expires_at?->toIso8601String(), 'createdAt' => $i->created_at?->toIso8601String(),
             'createdBy' => $i->invited_by ? self::uid($i->invited_by) : null,
             'usedBy' => $i->accepted_by ? self::uid($i->accepted_by) : null, 'usedAt' => $i->accepted_at?->toIso8601String(),
@@ -680,6 +690,16 @@ class PageStore
         if (array_key_exists('label', $data)) {
             $inv->name = mb_substr((string) $data['label'], 0, 120) ?: null;
         }
+        // convite para um e-mail: só essa pessoa cria a conta por ele (e recebe o e-mail, se o envio estiver configurado)
+        $mail = false;
+        if (! $inv->exists && isset($data['email'])) {
+            $email = mb_strtolower(trim((string) $data['email']));
+            if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new StoreError('invalid_argument', 'Esse e-mail não parece válido.');
+            }
+            $inv->email = $email;
+            $mail = ! empty($data['sendEmail']);
+        }
         if ($expires || ! $inv->expires_at) {
             $inv->expires_at = $expires ?? now()->addDays(7);
         }
@@ -687,6 +707,9 @@ class PageStore
             $inv->revoked_at ??= now();
         }
         $inv->save();
+        if ($mail && \App\Http\Controllers\App\UsersController::mailReady()) {
+            rescue(fn () => \Illuminate\Support\Facades\Mail::to($inv->email)->send(new \App\Mail\InvitationMail($inv->load('acervo', 'inviter'))));
+        }
 
         return ['id' => $code];
     }

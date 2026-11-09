@@ -53,4 +53,18 @@ class PeopleController extends Controller
             'id' => PageStore::uid($u), 'name' => (($u->profile['name'] ?? '') ?: $u->name).' · '.$u->email, 'avatarUrl' => '', 'guest' => false,
         ])->values()]);
     }
+
+    /** Equipe → Adicionar pessoa: diz se o e-mail já tem conta (só para quem administra algum acervo). */
+    public function lookup(Request $request)
+    {
+        $email = mb_strtolower(trim((string) $request->query('email')));
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL) || ! (new PageStore($request->user()))->acervosWith(['admin'])) {
+            return response()->json(['exists' => false]);
+        }
+        $u = User::whereRaw('lower(email) = ?', [$email])->first(['id', 'name', 'email', 'profile', 'active']);
+
+        return response()->json($u ? [
+            'exists' => true, 'id' => PageStore::uid($u), 'name' => (($u->profile['name'] ?? '') ?: $u->name), 'active' => (bool) $u->active,
+        ] : ['exists' => false]);
+    }
 }

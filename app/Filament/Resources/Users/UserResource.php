@@ -47,7 +47,45 @@ class UserResource extends Resource
                 ->dehydrated(fn ($state) => filled($state))
                 ->minLength(8)
                 ->helperText(fn (string $operation) => $operation === 'edit' ? 'Deixe em branco para manter a senha atual.' : null),
+            self::acervosRepeater('acervos_init')->visibleOn('create')->columnSpanFull()
+                ->helperText('Os acervos em que a pessoa entra. Depois, use a ação "Acervos" da lista (ou a tela Usuários do Data Fox).'),
         ]);
+    }
+
+    /** Linhas acervo + perfil (+ bloqueio, na edição). As caixas de cada acervo ficam na tela Usuários/Equipe do Data Fox. */
+    public static function acervosRepeater(string $name, bool $withStatus = false): \Filament\Forms\Components\Repeater
+    {
+        return \Filament\Forms\Components\Repeater::make($name)->label('Acervos')
+            ->schema(array_filter([
+                Select::make('aid')->label('Acervo')->required()->distinct()
+                    ->options(fn () => \App\Models\Acervo::orderBy('name')->pluck('name', 'id')->all()),
+                Select::make('role')->label('Perfil no acervo')->required()->default('editor')->options(\App\Models\Acervo::ROLES),
+                $withStatus ? Toggle::make('blocked')->label('Bloqueado')->inline(false) : null,
+            ]))
+            ->columns($withStatus ? 3 : 2)->defaultItems(0)->addActionLabel('Vincular a um acervo')->reorderable(false);
+    }
+
+    /** Aplica as linhas do repeater: cria/atualiza vínculos e tira dos acervos que saíram (nunca o dono). */
+    public static function syncAcervos(User $user, array $rows, bool $removeMissing): void
+    {
+        $by = auth()->user();
+        $keep = [];
+        foreach ($rows as $r) {
+            $a = \App\Models\Acervo::find((int) ($r['aid'] ?? 0));
+            if (! $a) {
+                continue;
+            }
+            $keep[] = $a->id;
+            $current = \App\Models\Membership::where('acervo_id', $a->id)->where('user_id', $user->id)->first();
+            \App\Support\Memberships::set($user, $a, [
+                'role' => $r['role'] ?? 'viewer', 'status' => ! empty($r['blocked']) ? 'blocked' : 'active', 'boxes' => $current?->allowedBoxes(),
+            ], $by);
+        }
+        if ($removeMissing) {
+            foreach ($user->memberships()->whereNotIn('acervo_id', $keep)->with('acervo')->get() as $m) {
+                \App\Support\Memberships::remove($user, $m->acervo, $by);
+            }
+        }
     }
 
     public static function table(Table $table): Table
@@ -83,6 +121,15 @@ class UserResource extends Resource
                         ->visible(fn (User $r) => $r->google_id || $r->apple_id)->requiresConfirmation()
                         ->action(fn (User $r) => $r->forceFill(['google_id' => null, 'apple_id' => null])->save()),
                 ])->iconButton(),
+                \Filament\Actions\Action::make('acervos')->label('Acervos')->icon(Heroicon::OutlinedRectangleStack)->color('gray')
+                    ->modalHeading(fn (User $r) => 'Acervos de '.$r->name)->modalSubmitActionLabel('Salvar')
+                    ->modalDescription('Perfil e bloqueio em cada acervo. O dono de um acervo continua sempre como administrador dele.')
+                    ->fillForm(fn (User $r) => ['rows' => $r->memberships()->get()->map(fn ($m) => ['aid' => $m->acervo_id, 'role' => $m->role, 'blocked' => $m->status === 'blocked'])->all()])
+                    ->schema([self::acervosRepeater('rows', true)->hiddenLabel()])
+                    ->action(function (User $r, array $data) {
+                        self::syncAcervos($r, $data['rows'] ?? [], true);
+                        \Filament\Notifications\Notification::make()->success()->title('Acervos atualizados')->send();
+                    }),
                 EditAction::make(),
                 DeleteAction::make()->hidden(fn (User $r) => $r->is(auth()->user())),
             ]);

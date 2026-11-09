@@ -97,6 +97,12 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             ->withPivot(['id', 'role', 'status', 'boxes', 'invited_by'])->withTimestamps();
     }
 
+    /** Participações (uma por acervo), para editar perfil, caixas e situação. */
+    public function memberships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Membership::class);
+    }
+
     public function getTenants(Panel $panel): array|Collection
     {
         return $this->acervos()->wherePivot('status', 'active')->orderBy('name')->get();

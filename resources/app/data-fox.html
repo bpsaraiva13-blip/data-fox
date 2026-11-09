@@ -784,6 +784,65 @@ a.btn.primary{color:var(--accent-ink)}
   #lock .pad{grid-template-columns:repeat(3,76px)}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.card{transform:none!important}}
+/* usuários do sistema */
+#mini.wide{width:min(720px,calc(100% - 24px))}
+.us-list{gap:0}
+.us-row{display:grid;grid-template-columns:40px minmax(0,1.1fr) minmax(0,1.6fr) 170px 18px;gap:14px;align-items:center;padding:12px 16px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;color:inherit;font:inherit;width:100%;cursor:pointer;transition:background .15s}
+.us-row:last-child{border-bottom:0}.us-row:hover{background:var(--surface)}.us-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.us-row.off{opacity:.6}
+.ua{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13.5px;letter-spacing:.02em;background:hsl(var(--h) 38% 88%);color:hsl(var(--h) 45% 26%);object-fit:cover;flex:none}
+:root[data-theme=dark] .ua{background:hsl(var(--h) 25% 24%);color:hsl(var(--h) 45% 82%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .ua{background:hsl(var(--h) 25% 24%);color:hsl(var(--h) 45% 82%)}}
+.ua.lg{width:52px;height:52px;font-size:17px}
+.us-who{min-width:0;display:flex;flex-direction:column;gap:1px}
+.us-who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.us-who small{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.us-sys{align-self:flex-start;margin-top:4px;font-size:11px;padding:1px 8px}
+.us-acs{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.us-acs .chip{font-size:12px;padding:2px 9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+.us-acs .chip.blk{text-decoration:line-through;opacity:.6}
+.us-none{display:inline-flex;align-items:center;gap:5px;color:var(--warn);font-size:12.5px;font-weight:600}.us-none .ico{width:14px;height:14px}
+.us-st{display:flex;flex-direction:column;align-items:flex-start;gap:3px}.us-st small{color:var(--muted);font-size:12px}
+.us-go{color:var(--muted);transform:rotate(-90deg);display:grid}.us-go .ico{width:16px;height:16px}
+#us-q{max-width:320px}
+@media (max-width:820px){.us-row{grid-template-columns:38px minmax(0,1fr) auto;row-gap:8px;padding:12px}.us-acs{grid-column:2/-1;grid-row:2}.us-go{display:none}.us-st{grid-column:3;grid-row:1}#us-q{max-width:none;flex:1 1 100%}}
+/* formulário de usuário e vínculos */
+.uf{display:flex;flex-direction:column;gap:16px}.uf [hidden]{display:none!important}
+.uf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:620px){.uf-grid{grid-template-columns:1fr}}
+.uf-sec{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.uf-h{display:flex;flex-direction:column;gap:1px}.uf-h b{font-size:15px}.uf-h small{color:var(--muted);font-size:12.5px}
+.uf-help{color:var(--muted);font-size:12px;line-height:1.45}
+.uf-sec>.btn.ghost{align-self:flex-start;padding-left:4px}
+.uf-opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-2);border-radius:var(--r-sm);cursor:pointer;background:var(--raise);transition:border-color .15s,background .15s}
+.uf-opt:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--raise))}
+.uf-opt input{margin-top:3px;accent-color:var(--accent)}.uf-opt span{display:flex;flex-direction:column;gap:2px}.uf-opt small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.uf-pw{display:flex;gap:6px}
+.uf-sys{align-items:flex-start}.uf-sys span{display:flex;flex-direction:column}.uf-sys small{color:var(--muted);font-size:12.5px}
+.uf-sys input{margin-top:3px;accent-color:var(--accent)}
+.ac-row{background:var(--raise);border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 8px 8px 12px}
+.ac-row+.ac-row{margin-top:6px}.ac-row.blk{opacity:.7}.ac-row.blk .ac-name b{text-decoration:line-through}
+.ac-main{display:grid;grid-template-columns:minmax(0,1fr) 150px auto auto;gap:8px;align-items:center}
+.ac-name{min-width:0;display:flex;flex-direction:column}.ac-name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.ac-name small{color:var(--muted);font-size:12px}
+.ac-main .inp{padding:7px 9px;font-size:13.5px}
+.ac-acts{display:flex;gap:2px;align-items:center}.ac-acts .iconbtn{width:32px;height:32px;background:none}
+.ac-boxes{padding:10px 2px 4px;display:flex;flex-direction:column;gap:8px}
+.ac-boxes .chips label{cursor:pointer;position:relative}.ac-boxes .chips input{position:absolute;opacity:0;pointer-events:none}
+.ac-boxes .chips.dis{opacity:.45;pointer-events:none}
+.ac-empty{display:flex;gap:8px;align-items:center;margin:0;color:var(--warn);font-size:13px}.ac-empty .ico{width:16px;height:16px;flex:none}
+@media (max-width:620px){.ac-main{grid-template-columns:minmax(0,1fr) auto}.ac-main .ac-name{grid-column:1;grid-row:1}.ac-acts{grid-column:2;grid-row:1;justify-content:flex-end}.ac-main .ac-role{grid-column:1;grid-row:2}.ac-main .ac-bx{grid-column:2;grid-row:2}}
+.ud-top{display:flex;gap:14px;align-items:center}.ud-top b.ud-mail{font-size:15px;overflow-wrap:anywhere}.ud-top b{font-size:17px;display:block}.ud-top small{color:var(--muted);font-size:12.5px}
+.ud-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.ub-btns{display:flex;flex-wrap:wrap;gap:6px}
+.ub-btns .btn.armed{color:var(--danger);border-color:var(--danger)}
+.ub-link{display:flex;flex-direction:column;gap:8px;background:var(--surface-2);border-radius:var(--r-sm);padding:12px}
+.ub-ok{display:flex;gap:8px;align-items:center;margin:0;font-size:13.5px}.ub-ok .ico{color:var(--ok);flex:none}
+.ud-danger{border-top:1px solid var(--line);padding-top:12px;display:flex;justify-content:flex-end}
+.ap-st:empty{display:none}
+.ap-msg{display:flex;gap:8px;align-items:flex-start;margin:0;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface-2);font-size:13.5px;line-height:1.45}
+.ap-msg .ico{width:16px;height:16px;flex:none;margin-top:2px}
+.ap-msg.ok{background:color-mix(in srgb,var(--ok) 12%,transparent)}.ap-msg.ok .ico{color:var(--ok)}
+.ap-msg.w{background:color-mix(in srgb,var(--warn) 12%,transparent)}.ap-msg.w .ico{color:var(--warn)}
+.ap-msg.no{background:color-mix(in srgb,var(--danger) 11%,transparent)}.ap-msg.no .ico{color:var(--danger)}
 </style>
 <style id="accent-css"></style>
 <script>
@@ -865,6 +924,7 @@ try{const lk=JSON.parse(localStorage.getItem("datafox.look")||"null");if(lk)appl
       <button data-view="atividade"><svg class="ico"><use href="#i-clock"/></svg>Atividade</button>
       <button data-view="lixeira"><svg class="ico"><use href="#i-trash"/></svg>Lixeira<span class="count mono" id="n-trash">0</span></button>
       <button data-view="equipe"><svg class="ico"><use href="#i-users"/></svg>Equipe</button>
+      <button data-view="usuarios" hidden><svg class="ico"><use href="#i-user"/></svg>Usuários</button>
       <button data-act="vitrine"><svg class="ico"><use href="#i-eye"/></svg>Vitrine</button>
       <button data-act="look"><svg class="ico"><use href="#i-palette"/></svg>Aparência</button>
     </nav>
@@ -950,6 +1010,11 @@ try{const lk=JSON.parse(localStorage.getItem("datafox.look")||"null");if(lk)appl
     <section class="view" id="view-equipe" hidden>
       <div class="view-head"><div><div class="eyebrow">Acesso</div><h2 id="team-title">Equipe</h2><p>Quem acessa este acervo, com que perfil e em quais caixas.</p></div><div style="flex:1"></div><button class="btn" id="team-add"><svg class="ico"><use href="#i-search"/></svg>Adicionar da organização</button><button class="btn primary" id="team-invite"><svg class="ico"><use href="#i-plus"/></svg>Convidar</button></div>
       <div id="team-root"></div>
+    </section>
+    <section class="view" id="view-usuarios" hidden>
+      <div class="view-head"><div><div class="eyebrow">Administração do sistema</div><h2>Usuários</h2><p>Todas as contas que entram no Data Fox e os acervos de cada uma.</p></div><div style="flex:1"></div><button class="btn primary" id="us-new"><svg class="ico"><use href="#i-plus"/></svg>Novo usuário</button></div>
+      <div class="tr-bar"><input class="inp" id="us-q" type="search" placeholder="Buscar por nome ou e-mail…" autocomplete="off"><div class="tr-kinds" id="us-kinds" role="group" aria-label="Filtro"></div></div>
+      <div id="us-root"></div>
     </section>
     <section class="view" id="view-caixas" hidden>
       <div class="view-head"><div><div class="eyebrow">Armazenamento</div><h2>Caixas</h2><p>Cada peça fica em uma caixa. Renomeie, defina a cor e o local físico.</p></div><div style="flex:1"></div><div class="seg" role="group" aria-label="Visualização das caixas"><button id="bx-grid" aria-pressed="true" aria-label="Cartões"><svg class="ico"><use href="#i-grid"/></svg></button><button id="bx-list" aria-pressed="false" aria-label="Lista"><svg class="ico"><use href="#i-list"/></svg></button></div><button class="btn" id="box-batch"><svg class="ico"><use href="#i-upload"/></svg>Enviar caixa em lote</button><button class="btn primary" id="new-box"><svg class="ico"><use href="#i-plus"/></svg>Nova caixa</button></div>
@@ -1239,7 +1304,7 @@ function renderItems(){
 function setView(v){
   if(v===S.view&&v!=="comparar")return;
   const go=()=>{S.view=v;queueMicrotask(syncTabbar);$$(".view").forEach(s=>s.hidden=s.id!=="view-"+v);$$("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v?"page":"false"));
-    if(v==="acervo")renderItems();if(v==="caixas")renderBoxes();if(v==="tags")renderTags();if(v==="atividade")renderActivity();if(v==="comparar")renderCompare();if(v==="colecoes")renderColls();if(v==="conferencia")renderInv();if(v==="movimentos")renderMov();if(v==="pendencias")renderIssues();if(v==="lixeira")renderTrash();if(v==="colecionadores")renderPeople();if(v==="equipe")renderTeam();closeSide()};
+    if(v==="acervo")renderItems();if(v==="caixas")renderBoxes();if(v==="tags")renderTags();if(v==="atividade")renderActivity();if(v==="comparar")renderCompare();if(v==="colecoes")renderColls();if(v==="conferencia")renderInv();if(v==="movimentos")renderMov();if(v==="pendencias")renderIssues();if(v==="lixeira")renderTrash();if(v==="colecionadores")renderPeople();if(v==="equipe")renderTeam();if(v==="usuarios"){renderUsers();if(U.list)loadUsers()}closeSide()};
   go();
 }
 $("#nav").addEventListener("click",e=>{const a=e.target.closest("button[data-act]");if(a&&a.dataset.act==="vitrine"){openVitrine();closeSide();return}if(a&&a.dataset.act==="look"){closeSide();openLook();return}const b=e.target.closest("button[data-view]");if(b)setView(b.dataset.view)});
@@ -1322,7 +1387,7 @@ $("#bulk-del").onclick=()=>{if(!S.sel.size||!guardWrite())return;mini("Excluir p
 
 /* mini dialog */
 function mini(title,body,okLabel,onOk,danger){
-  closeSide();const m=$("#mini");m.innerHTML=`<div class="modal-head"><h2 style="font-size:21px">${esc(title)}</h2><div style="flex:1"></div><button class="iconbtn" data-x aria-label="Fechar">${ICON("x")}</button></div><div class="modal-body">${body}</div><div class="modal-foot"><button class="btn ghost" data-x>Cancelar</button><button class="btn ${danger?"danger solid":"primary"}" id="mini-ok">${esc(okLabel)}</button></div>`;
+  closeSide();const m=$("#mini");m.classList.remove("wide");m.innerHTML=`<div class="modal-head"><h2 style="font-size:21px">${esc(title)}</h2><div style="flex:1"></div><button class="iconbtn" data-x aria-label="Fechar">${ICON("x")}</button></div><div class="modal-body">${body}</div><div class="modal-foot"><button class="btn ghost" data-x>Cancelar</button><button class="btn ${danger?"danger solid":"primary"}" id="mini-ok">${esc(okLabel)}</button></div>`;
   const close=()=>{m.classList.remove("show");if(!$("#editor").classList.contains("show")&&!$("#detail").classList.contains("show")&&!$("#batch").classList.contains("show")&&!$("#merge").classList.contains("show")&&!$("#cam").classList.contains("show"))hideScrim();else showScrim(prevScrim)};
   const prevScrim=scrimCb;m.classList.add("show");showScrim(close);
   $$("[data-x]",m).forEach(b=>b.onclick=close);
@@ -3095,7 +3160,7 @@ function renderTeam(){
   <div class="att" style="margin-top:16px">${ICON("user")}<span><b>Exigir PIN de acesso</b><br><small style="color:var(--muted)">Todos deste acervo precisam criar um PIN, pedido ao abrir o Data Fox e após ${lockAfterMin()} min sem uso.</small></span><label class="chk" style="margin-left:auto"><input type="checkbox" id="team-reqpin" ${a.requirePin?"checked":""}></label></div>
   <h3 style="font-size:17px;margin:22px 0 10px">Convites pendentes</h3>
   ${invs.length?`<div class="team">${invs.map(i=>`<div class="tm" data-inv="${esc(i.id)}"><span class="act-ico box">${ICON("file")}</span><div style="min-width:0"><b>${esc(i.label||"Convite sem nome")}</b><small>${ROLES[i.role]} · ${Array.isArray(i.boxes)?i.boxes.length+" caixa(s)":"todas as caixas"} · vence ${fmtDate(i.expiresAt)}</small></div><div class="hide-sm"></div><div class="hide-sm"></div><div class="hide-sm"></div><div style="display:flex;gap:4px"><button class="btn sm ghost" data-copy>${ICON("copy")}Link</button><button class="btn sm ghost danger" data-revoke>Revogar</button></div></div>`).join("")}</div>`:`<p class="notes">Nenhum convite pendente.</p>`}
-  ${SRV?`<p class="notes" style="margin-top:18px">O servidor do Data Fox confere essas permissões em cada leitura e gravação.</p>`:`<p class="notes" style="margin-top:18px">As permissões são aplicadas por esta página. Para quem tiver acesso de edição à página no claude.ai, elas organizam o trabalho, mas não são uma barreira técnica. Na versão Laravel, o servidor faz essa verificação.</p>`}`;
+  ${SRV?`<p class="notes" style="margin-top:18px">O servidor do Data Fox confere essas permissões em cada leitura e gravação.${isSysAdmin()?` Para ver todas as contas e os acervos de cada uma, abra <a href="#" data-go-users>Usuários</a>.`:""}</p>`:`<p class="notes" style="margin-top:18px">As permissões são aplicadas por esta página. Para quem tiver acesso de edição à página no claude.ai, elas organizam o trabalho, mas não são uma barreira técnica. Na versão Laravel, o servidor faz essa verificação.</p>`}`;
 }
 $("#team-root").addEventListener("change",async e=>{if(e.target.id==="team-reqpin"){const on=e.target.checked;try{await S.db.doc("acervos/"+S.aid).update({requirePin:on});logAct("user",null,on?"Passou a exigir PIN de acesso":"Deixou de exigir PIN de acesso");toast(on?"PIN obrigatório neste acervo":"PIN não é mais obrigatório")}catch(err){toast(errMsg(err),true)}return}
   const r=e.target.closest("[data-role]");if(!r)return;const uid=r.closest("[data-uid]").dataset.uid;try{await setMembers(m=>{m[uid]={...(m[uid]||{}),role:r.value}},`Mudou o perfil de ${who(uid)} para ${ROLES[r.value]}`);toast("Perfil atualizado")}catch(err){toast(errMsg(err),true)}});
@@ -3106,11 +3171,195 @@ $("#team-root").addEventListener("click",async e=>{
     if(e.target.closest("[data-block]")){const bl=m.status!=="blocked";await setMembers(x=>{x[uid]={...x[uid],status:bl?"blocked":"active"}},`${bl?"Bloqueou":"Desbloqueou"} ${who(uid)}`);toast(bl?"Acesso bloqueado":"Acesso liberado")}
     if(e.target.closest("[data-rm]"))mini("Remover do acervo",`<p>Remover <b>${esc(who(uid))}</b> deste acervo? O histórico de cadastros dessa pessoa continua registrado.</p>`,"Remover",async()=>{await setMembers(x=>{delete x[uid]},`Removeu ${who(uid)} do acervo`);toast("Pessoa removida")},true);
     if(e.target.closest("[data-boxes]")){mini("Caixas de "+who(uid),`<div class="f">${boxPicker(Array.isArray(m.boxes)?m.boxes:null)}</div>`,"Salvar",async()=>{const b=readBoxPicker($("#mini"));await setMembers(x=>{x[uid]={...x[uid],boxes:b}},`Mudou as caixas de ${who(uid)}`);toast("Acesso às caixas atualizado")});wireBoxPicker($("#mini"))}}
+  if(e.target.closest("[data-go-users]")){e.preventDefault();setView("usuarios");return}
   if(inv){const i=S.invites.find(x=>x.id===inv.dataset.inv);
     if(e.target.closest("[data-copy]"))showInviteLink(i);
     if(e.target.closest("[data-revoke]")){await S.db.doc("invites/"+i.id).update({revoked:true});toast("Convite revogado")}}
 });
-$("#team-invite").onclick=openInvite;$("#team-add").onclick=addFromOrg;
+$("#team-invite").onclick=openInvite;$("#team-add").onclick=()=>SRV?addPerson():addFromOrg();
+/* ---------- usuários do sistema (só no Laravel, para administradores do sistema) ---------- */
+const U={list:null,acervos:[],mail:false,q:"",kind:"all",boxes:{},loading:false};
+const isSysAdmin=()=>!!(SRV&&SRV.user?.isAdmin);
+async function uapi(method,url,body){let r;
+  try{r=await fetch(url,{method,headers:{"X-CSRF-TOKEN":SRV.csrf,Accept:"application/json",...(body?{"Content-Type":"application/json"}:{})},credentials:"same-origin",body:body?JSON.stringify(body):undefined})}catch(e){throw{message:"Sem conexão com o servidor."}}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw{message:(j?.errors&&Object.values(j.errors)[0]?.[0])||j?.error?.message||j?.message||`Não foi possível concluir (erro ${r.status}).`};
+  return j}
+async function loadUsers(){if(U.loading)return;U.loading=true;
+  try{const j=await uapi("GET","/api/users");U.list=j.users;U.acervos=j.acervos;U.mail=!!j.mail}catch(e){toast(errMsg(e),true);U.list=U.list||[]}
+  U.loading=false;if(S.view==="usuarios")renderUsers()}
+const acName=aid=>U.acervos.find(a=>a.id===String(aid))?.name||S.acervos.get(String(aid))?.name||"Acervo";
+const uInitials=n=>String(n||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+const uHue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
+const uAva=(u,cls="")=>{const pf=S.profiles[u.id];return pf?.avatar?`<img class="ua ${cls}" src="${esc(blobUrl(pf.avatar))}" alt="">`:`<span class="ua ${cls}" style="--h:${uHue(u.email)}" aria-hidden="true">${esc(uInitials(u.displayName||u.name))}</span>`};
+function uStatus(u){return!u.active?`<span class="pill2 no">Desativado</span>`:u.pending?`<span class="pill2 w" title="Ainda não entrou no sistema">Aguardando 1º acesso</span>`:`<span class="pill2 ok">Ativo</span>`}
+const ROLE_HELP="Administrador gerencia a equipe do acervo · Editor cadastra e altera peças · Somente leitura só consulta · Só vitrine vê as peças marcadas para a vitrine.";
+function renderUsers(){
+  const root=$("#us-root");if(!isSysAdmin()){root.innerHTML=`<div class="empty"><h3>Somente administradores do sistema</h3></div>`;return}
+  if(!U.list){root.innerHTML=`<div class="empty"><span class="spin"></span><p>Carregando usuários…</p></div>`;loadUsers();return}
+  const kinds=[["all","Todos",()=>true],["pending","Aguardando 1º acesso",u=>u.active&&u.pending],["none","Sem acervo",u=>!u.acervos.length],["off","Desativados",u=>!u.active],["admin","Administradores do sistema",u=>u.systemAdmin]];
+  $("#us-kinds").innerHTML=kinds.map(([k,l,f])=>{const n=U.list.filter(f).length;return k!=="all"&&!n?"":`<button class="chip ${U.kind===k?"on":""}" data-k="${k}" aria-pressed="${U.kind===k}">${l} <span class="mono">${n}</span></button>`}).join("");
+  const kf=(kinds.find(k=>k[0]===U.kind)||kinds[0])[2],q=norm(U.q.trim());
+  const list=U.list.filter(kf).filter(u=>!q||norm(u.name+" "+u.displayName+" "+u.email).includes(q));
+  root.innerHTML=list.length?`<div class="team us-list">${list.map(u=>`<button type="button" class="us-row ${u.active?"":"off"}" data-u="${u.key}">
+    ${uAva(u)}
+    <span class="us-who"><b>${esc(u.displayName||u.name)}${u.id===S.me?.id?" (você)":""}</b><small>${esc(u.email)}</small>${u.systemAdmin?`<span class="pill2 m us-sys">Admin do sistema</span>`:""}</span>
+    <span class="us-acs">${u.acervos.length?u.acervos.map(m=>`<span class="chip ${m.status==="blocked"?"blk":""}" title="${m.status==="blocked"?"Bloqueado neste acervo":""}">${esc(acName(m.aid))} · ${esc(ROLES[m.role]||m.role)}${Array.isArray(m.boxes)?` · ${m.boxes.length} cx`:""}</span>`).join(""):`<span class="us-none">${ICON("alert")}Sem acervo</span>`}</span>
+    <span class="us-st">${uStatus(u)}<small class="hide-sm">${u.lastLoginAt?"entrou "+rel(u.lastLoginAt):"nunca entrou"}</small></span>
+    <span class="us-go" aria-hidden="true">${ICON("chev")}</span></button>`).join("")}</div>
+    <p class="notes">${U.list.length} conta(s). Clique numa pessoa para mudar os acervos, gerar um novo link de acesso ou desativar.</p>`
+    :`<div class="empty"><h3>Ninguém encontrado</h3><p>${U.q?"Confira a busca":"Nenhuma conta neste filtro"}.</p></div>`;
+}
+$("#us-root").addEventListener("click",e=>{const r=e.target.closest("[data-u]");if(r)openUser(+r.dataset.u)});
+$("#us-kinds").addEventListener("click",e=>{const b=e.target.closest("[data-k]");if(!b)return;U.kind=b.dataset.k;renderUsers()});
+$("#us-q").addEventListener("input",e=>{U.q=e.target.value;renderUsers()});
+$("#us-new").onclick=()=>openUserForm();
+
+/* vínculos com acervos: linhas com acervo, perfil, caixas (e bloqueio, na ficha) */
+async function acBoxes(aid){if(!U.boxes[aid]){try{U.boxes[aid]=(await uapi("GET",`/api/users/acervos/${aid}/boxes`)).boxes}catch(e){toast(errMsg(e),true);return[]}}return U.boxes[aid]}
+function acRows(host,rows,opts={}){
+  const used=()=>rows.map(r=>String(r.aid));
+  const draw=()=>{host.innerHTML=rows.length?rows.map((r,i)=>{const free=U.acervos.filter(a=>a.id===String(r.aid)||!used().includes(a.id));const bl=r.status==="blocked";
+    return`<div class="ac-row ${bl?"blk":""}" data-i="${i}"><div class="ac-main">
+      <div class="ac-name">${r.isNew?`<select class="inp ac-aid" aria-label="Acervo">${free.map(a=>`<option value="${a.id}" ${a.id===String(r.aid)?"selected":""}>${esc(a.name)}</option>`).join("")}</select>`:`<b>${esc(acName(r.aid))}</b><small>${r.owner?"Dono do acervo":bl?"Bloqueado neste acervo":"Vinculado"}</small>`}</div>
+      <select class="inp ac-role" aria-label="Perfil" ${r.owner?"disabled":""}>${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${r.role===k?"selected":""}>${v}</option>`).join("")}</select>
+      <button type="button" class="btn sm ac-bx" ${r.owner?"disabled":""} aria-expanded="false">${ICON("box")}${Array.isArray(r.boxes)?`${r.boxes.length} caixa(s)`:"Todas as caixas"}</button>
+      <div class="ac-acts">${r.owner?"":`${opts.status&&!r.isNew?`<button type="button" class="btn sm ghost ac-bl">${bl?"Desbloquear":"Bloquear"}</button>`:""}<button type="button" class="iconbtn ac-rm" aria-label="Tirar deste acervo" title="Tirar deste acervo">${ICON("x")}</button>`}</div>
+    </div><div class="ac-boxes" hidden></div></div>`}).join(""):`<p class="ac-empty">${ICON("alert")}Sem acervo, a pessoa entra no sistema mas não vê nenhuma peça.</p>`};
+  const row=e=>{const el=e.target.closest(".ac-row");return el?[el,rows[+el.dataset.i]]:[]};
+  host.onchange=async e=>{const[el,r]=row(e);if(!r)return;
+    if(e.target.classList.contains("ac-aid")){r.aid=e.target.value;r.boxes=null;draw();return}
+    if(e.target.classList.contains("ac-role")){r.role=e.target.value;return}
+    if(e.target.classList.contains("ac-all")||e.target.classList.contains("ac-b")){const box=$(".ac-boxes",el);
+      if(e.target.classList.contains("ac-all"))r.boxes=e.target.checked?null:[];else r.boxes=$$(".ac-b:checked",box).map(i=>i.value);
+      box.querySelector(".chips").classList.toggle("dis",r.boxes===null);$$(".ac-b",box).forEach(i=>{if(r.boxes===null)i.checked=false;i.nextElementSibling.classList.toggle("on",i.checked)});
+      $(".ac-bx",el).innerHTML=ICON("box")+(Array.isArray(r.boxes)?`${r.boxes.length} caixa(s)`:"Todas as caixas")}};
+  host.onclick=async e=>{const[el,r]=row(e);if(!r)return;
+    if(e.target.closest(".ac-rm")){rows.splice(rows.indexOf(r),1);draw();return}
+    if(e.target.closest(".ac-bl")){r.status=r.status==="blocked"?"active":"blocked";draw();return}
+    const bx=e.target.closest(".ac-bx");if(bx){const box=$(".ac-boxes",el);if(!box.hidden){box.hidden=true;bx.setAttribute("aria-expanded","false");return}
+      box.hidden=false;bx.setAttribute("aria-expanded","true");box.innerHTML=`<span class="spin"></span>`;const list=await acBoxes(r.aid);const all=!Array.isArray(r.boxes);
+      box.innerHTML=`<label class="chk"><input type="checkbox" class="ac-all" ${all?"checked":""}>Todas as caixas (inclusive as que forem criadas)</label>
+        <div class="chips ${all?"dis":""}">${[...list,{id:"none",name:"Sem caixa"}].map(b=>`<label><input type="checkbox" class="ac-b" value="${esc(b.id)}" ${!all&&r.boxes.includes(b.id)?"checked":""}><span class="chip ${!all&&r.boxes.includes(b.id)?"on":""}">${esc(b.name)}</span></label>`).join("")}</div>
+        ${list.length?"":`<small class="notes">Este acervo ainda não tem caixas.</small>`}`}};
+  draw();
+  return{add(){const free=U.acervos.find(a=>!used().includes(a.id));if(!free){toast(U.acervos.length?"A pessoa já está em todos os acervos.":"Ainda não há acervos no sistema.",true);return}rows.push({aid:free.id,role:"editor",boxes:null,status:"active",isNew:true});draw()},rows};
+}
+const ufErr=(msg)=>{throw{message:msg}};
+const accessText=(u,link)=>`Olá, ${String(u.name).split(" ")[0]}! Criei o seu acesso ao ${SRV.brand?.name||"Data Fox"}${u.acervos?.length?` (${u.acervos.map(m=>acName(m.aid)).join(", ")})`:""}.\n\nAbra o link para criar a sua senha e entrar:\n${link}\n\nSeu e-mail de acesso é ${u.email}. O link vale 7 dias.`;
+function accessBox(u,res){const t=accessText(u,res.link);
+  return`<div class="ub-link">${res.mailed?`<p class="ub-ok">${ICON("check")}Enviamos o link para <b>${esc(u.email)}</b>. Se preferir, mande também pelo WhatsApp.</p>`:`<p class="notes" style="margin:0">Envie este link para a pessoa. Ele vale 7 dias e só pode ser usado uma vez.</p>`}
+    <input class="inp mono ub-url" value="${esc(res.link)}" readonly aria-label="Link de acesso">
+    <div class="ub-btns"><button type="button" class="btn sm" data-copy="${esc(t)}">${ICON("copy")}Copiar mensagem</button><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/${esc((u.phone||"").replace(/\D/g,""))}?text=${encodeURIComponent(t)}">${ICON("chat")}WhatsApp</a><a class="btn sm" href="mailto:${esc(u.email)}?subject=${encodeURIComponent("Seu acesso ao "+(SRV.brand?.name||"Data Fox"))}&body=${encodeURIComponent(t)}">${ICON("file")}E-mail</a></div></div>`}
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-copy]");if(!b||!b.closest("#mini"))return;try{await navigator.clipboard.writeText(b.dataset.copy);toast("Mensagem copiada")}catch(err){$(".ub-url",b.closest(".ub-link"))?.select()}});
+function upsertUser(u){if(!U.list)return;const i=U.list.findIndex(x=>x.key===u.key);if(i<0)U.list.push(u);else U.list[i]=u;U.list.sort((a,b)=>(a.name||"").localeCompare(b.name||"","pt"))}
+
+/* novo usuário: dados, acervos e como entra, num formulário só */
+function openUserForm(pre={}){
+  if(!isSysAdmin())return;
+  if(!U.list){loadUsers().then(()=>openUserForm(pre));return}
+  const rows=pre.acervos||(S.aid&&U.acervos.some(a=>a.id===String(S.aid))?[{aid:String(S.aid),role:"editor",boxes:null,isNew:true}]:[]);
+  mini("Novo usuário",`<div class="uf">
+    <div class="uf-grid"><div class="f"><label for="uf-name">Nome</label><input class="inp" id="uf-name" autocomplete="off" value="${esc(pre.name||"")}" placeholder="ex.: Maria Souza"></div>
+      <div class="f"><label for="uf-email">E-mail</label><input class="inp" id="uf-email" type="email" inputmode="email" autocomplete="off" value="${esc(pre.email||"")}" placeholder="maria@email.com"></div></div>
+    <section class="uf-sec"><div class="uf-h"><b>Acervos</b><small>Onde a pessoa entra e o que pode fazer em cada um.</small></div><div id="uf-acs"></div>
+      <button type="button" class="btn sm ghost" id="uf-addac">${ICON("plus")}Vincular a outro acervo</button><small class="uf-help">${ROLE_HELP}</small></section>
+    <section class="uf-sec"><div class="uf-h"><b>Como a pessoa entra</b></div>
+      <label class="uf-opt"><input type="radio" name="uf-acc" value="link" checked><span><b>Enviar um link para ela criar a senha</b><small>Recomendado. O link vale 7 dias${U.mail?" e pode ir por e-mail":""}; dá para mandar pelo WhatsApp. Também funciona entrar com o Google usando o mesmo e-mail.</small></span></label>
+      <label class="uf-opt"><input type="radio" name="uf-acc" value="password"><span><b>Definir uma senha agora</b><small>Você passa a senha para a pessoa. Ela pode trocar depois em Meu perfil.</small></span></label>
+      <div class="f" id="uf-pw-f" hidden><label for="uf-pw">Senha (mínimo 8 caracteres)</label><div class="uf-pw"><input class="inp mono" id="uf-pw" autocomplete="new-password"><button type="button" class="btn sm" id="uf-gen">Gerar</button></div></div>
+      ${U.mail?`<label class="chk" id="uf-mail-l"><input type="checkbox" id="uf-mail" checked>Enviar o link por e-mail também</label>`:""}</section>
+    <label class="chk uf-sys"><input type="checkbox" id="uf-sys" ${pre.systemAdmin?"checked":""}><span>Administrador do sistema<small>Vê esta tela e gerencia todas as contas e acervos.</small></span></label>
+  </div>`,"Criar usuário",async()=>{
+    const name=$("#uf-name").value.trim(),email=$("#uf-email").value.trim(),access=$("input[name=uf-acc]:checked").value,password=$("#uf-pw").value;
+    if(!name){$("#uf-name").focus();ufErr("Digite o nome.")}
+    if(!/^\S+@\S+\.\S+$/.test(email)){$("#uf-email").focus();ufErr("Digite um e-mail válido.")}
+    if(access==="password"&&password.length<8){$("#uf-pw").focus();ufErr("A senha precisa de pelo menos 8 caracteres.")}
+    const res=await uapi("POST","/api/users",{name,email,access,password:access==="password"?password:null,send_email:!!$("#uf-mail")?.checked,system_admin:$("#uf-sys").checked,
+      acervos:ed.rows.map(r=>({aid:+r.aid,role:r.role,boxes:r.boxes}))});
+    upsertUser(res.user);if(S.view==="usuarios")renderUsers();
+    setTimeout(()=>userCreated(res,access==="password"?password:null),280)});
+  $("#mini").classList.add("wide");
+  const ed=acRows($("#uf-acs"),rows);$("#uf-addac").onclick=()=>ed.add();
+  $$("input[name=uf-acc]").forEach(r=>r.onchange=()=>{const pw=$("input[name=uf-acc]:checked").value==="password";$("#uf-pw-f").hidden=!pw;$("#uf-mail-l")&&($("#uf-mail-l").hidden=pw);if(pw&&!$("#uf-pw").value)$("#uf-gen").click()});
+  $("#uf-gen").onclick=()=>{$("#uf-pw").value=randCode(4)+"-"+randCode(4)+"-"+randCode(4)};
+}
+function userCreated(res,password){const u=res.user;
+  if(res.link){mini("Usuário criado",`<div class="uf"><div class="ud-top">${uAva(u,"lg")}<div><b>${esc(u.name)}</b><small>${esc(u.email)}</small></div></div>${accessBox(u,res)}</div>`,"Concluir",async()=>{});$("#mini").classList.add("wide");return}
+  const t=`Olá, ${u.name.split(" ")[0]}! Criei o seu acesso ao ${SRV.brand?.name||"Data Fox"}.\n\nEndereço: ${location.origin}\nE-mail: ${u.email}\nSenha: ${password}\n\nVocê pode trocar a senha em Meu perfil.`;
+  mini("Usuário criado",`<div class="uf"><div class="ud-top">${uAva(u,"lg")}<div><b>${esc(u.name)}</b><small>${esc(u.email)}</small></div></div><div class="ub-link"><p class="notes" style="margin:0">Passe estes dados para a pessoa:</p><textarea class="inp" rows="6" readonly>${esc(t)}</textarea><div class="ub-btns"><button type="button" class="btn sm" data-copy="${esc(t)}">${ICON("copy")}Copiar</button><a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(t)}">${ICON("chat")}WhatsApp</a></div></div></div>`,"Concluir",async()=>{});$("#mini").classList.add("wide")}
+
+/* ficha do usuário: dados, acervos (com bloqueio) e acesso; tudo salvo de uma vez */
+function openUser(key){const u=U.list?.find(x=>x.key===key);if(!u)return;const me=u.id===S.me?.id;
+  const rows=u.acervos.map(m=>({...m,boxes:Array.isArray(m.boxes)?[...m.boxes]:null}));
+  const via={password:"com senha",google:"com Google",apple:"com Apple"}[u.lastLoginVia]||"";
+  mini(u.displayName||u.name,`<div class="uf">
+    <div class="ud-top">${uAva(u,"lg")}<div style="min-width:0"><b class="ud-mail">${esc(u.email)}</b><small>${u.lastLoginAt?`Último acesso ${rel(u.lastLoginAt)} ${via}`:"Ainda não entrou no sistema"} · conta criada ${fmtDate(u.createdAt)}</small>
+      <div class="ud-pills">${uStatus(u)}${u.systemAdmin?`<span class="pill2 m">Admin do sistema</span>`:""}${u.twoFactor?`<span class="pill2 n">Duas etapas</span>`:""}${u.google?`<span class="pill2 n">Google</span>`:""}${u.apple?`<span class="pill2 n">Apple</span>`:""}</div></div></div>
+    <div class="uf-grid"><div class="f"><label for="uf-name">Nome</label><input class="inp" id="uf-name" value="${esc(u.name)}"></div><div class="f"><label for="uf-email">E-mail</label><input class="inp" id="uf-email" type="email" value="${esc(u.email)}"></div></div>
+    <section class="uf-sec"><div class="uf-h"><b>Acervos</b><small>Mude o perfil, as caixas ou tire a pessoa de um acervo.</small></div><div id="uf-acs"></div>
+      <button type="button" class="btn sm ghost" id="uf-addac">${ICON("plus")}Vincular a outro acervo</button><small class="uf-help">${ROLE_HELP}</small></section>
+    <section class="uf-sec"><div class="uf-h"><b>Acesso</b></div>
+      <div class="ub-btns">${u.active?`<button type="button" class="btn sm" id="ud-link">${ICON("link")}${u.pending?"Gerar novo link de primeiro acesso":"Gerar link para trocar a senha"}</button>`:""}<button type="button" class="btn sm ghost" id="ud-pwb">Definir senha</button>${me?"":`<button type="button" class="btn sm ghost" id="ud-out">Desconectar dos aparelhos</button>`}${u.twoFactor?`<button type="button" class="btn sm ghost" id="ud-2fa">Desligar duas etapas</button>`:""}</div>
+      <div class="f" id="ud-pw-f" hidden><label for="ud-pw">Nova senha (mínimo 8 caracteres)</label><input class="inp mono" id="ud-pw" autocomplete="new-password"></div>
+      <div id="ud-linkbox"></div>
+      ${me?"":`<label class="chk uf-sys"><input type="checkbox" id="uf-sys" ${u.systemAdmin?"checked":""}><span>Administrador do sistema<small>Vê esta tela e gerencia todas as contas e acervos.</small></span></label>
+      <label class="chk uf-sys"><input type="checkbox" id="ud-active" ${u.active?"checked":""}><span>Acesso ativo<small>Desativada, a conta não entra em nenhum acervo e é desconectada na hora.</small></span></label>`}</section>
+    ${me?"":`<div class="ud-danger"><button type="button" class="btn sm ghost danger" id="ud-del">${ICON("trash")}Excluir conta</button></div>`}
+  </div>`,"Salvar alterações",async()=>{
+    const body={},name=$("#uf-name").value.trim(),email=$("#uf-email").value.trim(),pw=$("#ud-pw").value;
+    if(!name)ufErr("Digite o nome.");if(!/^\S+@\S+\.\S+$/.test(email))ufErr("Digite um e-mail válido.");if(pw&&pw.length<8)ufErr("A senha precisa de pelo menos 8 caracteres.");
+    if(name!==u.name)body.name=name;if(email.toLowerCase()!==u.email)body.email=email;if(pw)body.password=pw;
+    if($("#uf-sys")&&$("#uf-sys").checked!==u.systemAdmin)body.system_admin=$("#uf-sys").checked;
+    if($("#ud-active")&&$("#ud-active").checked!==u.active)body.active=$("#ud-active").checked;
+    let last=null;if(Object.keys(body).length)last=(await uapi("PATCH",`/api/users/${u.key}`,body)).user;
+    for(const r of ed.rows){const o=u.acervos.find(m=>m.aid===String(r.aid));
+      if(!o||o.role!==r.role||(o.status||"active")!==(r.status||"active")||JSON.stringify(o.boxes??null)!==JSON.stringify(r.boxes??null))
+        last=(await uapi("PUT",`/api/users/${u.key}/acervos/${r.aid}`,{role:r.role,status:r.status||"active",boxes:r.boxes})).user}
+    for(const o of u.acervos)if(!ed.rows.some(r=>String(r.aid)===o.aid))last=(await uapi("DELETE",`/api/users/${u.key}/acervos/${o.aid}`)).user;
+    if(last){upsertUser(last);renderUsers();toast("Alterações salvas")}});
+  $("#mini").classList.add("wide");
+  const ed=acRows($("#uf-acs"),rows,{status:true});$("#uf-addac").onclick=()=>ed.add();
+  /* ações imediatas pedem um segundo clique para confirmar */
+  const twice=(btn,label,run)=>{if(!btn)return;const orig=btn.innerHTML;let armed=0;btn.onclick=async()=>{if(!armed){armed=setTimeout(()=>{armed=0;btn.innerHTML=orig;btn.classList.remove("armed")},4000);btn.textContent=label;btn.classList.add("armed");return}
+    clearTimeout(armed);armed=0;btn.disabled=true;btn.innerHTML=`<span class="spin"></span>`;try{await run()}catch(err){toast(errMsg(err),true)}btn.disabled=false;btn.innerHTML=orig;btn.classList.remove("armed")}};
+  $("#ud-link")&&($("#ud-link").onclick=async e=>{const b=e.currentTarget;b.disabled=true;try{const res=await uapi("POST",`/api/users/${u.key}/link`,{send_email:U.mail});$("#ud-linkbox").innerHTML=accessBox(u,res)}catch(err){toast(errMsg(err),true)}b.disabled=false});
+  $("#ud-pwb").onclick=()=>{$("#ud-pw-f").hidden=false;$("#ud-pw").focus()};
+  twice($("#ud-out"),"Confirmar: desconectar?",async()=>{await uapi("POST",`/api/users/${u.key}/sessions/clear`);toast("Sessões encerradas")});
+  twice($("#ud-2fa"),"Confirmar: desligar?",async()=>{upsertUser((await uapi("POST",`/api/users/${u.key}/two-factor/reset`)).user);renderUsers();toast("Duas etapas desligadas")});
+  twice($("#ud-del"),"Confirmar exclusão",async()=>{await uapi("DELETE",`/api/users/${u.key}`);U.list=U.list.filter(x=>x.key!==u.key);renderUsers();$("#mini [data-x]").click();toast("Conta excluída")});
+}
+
+/* Equipe → Adicionar pessoa: pelo e-mail. Tem conta: entra na hora. Não tem: cria a conta (admin do sistema) ou convite para o e-mail. */
+function addPerson(){if(!isAdmin())return;const a=curAcervo();let found=null,seq=0;
+  mini("Adicionar pessoa a "+a.name,`<div class="uf">
+    <div class="f"><label for="ap-email">E-mail da pessoa</label><input class="inp" id="ap-email" type="email" inputmode="email" autocomplete="off" placeholder="maria@email.com"></div>
+    <div class="ap-st" id="ap-st" aria-live="polite"></div>
+    <div class="f" id="ap-name-f" hidden><label for="ap-name">Nome</label><input class="inp" id="ap-name" autocomplete="off" placeholder="ex.: Maria Souza"></div>
+    <div class="f"><label for="ap-role">Perfil neste acervo</label><select class="inp" id="ap-role">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${k==="editor"?"selected":""}>${v}</option>`).join("")}</select><small class="uf-help">${ROLE_HELP}</small></div>
+    <div class="f"><label>Caixas que a pessoa vê</label>${boxPicker(null)}</div></div>`,"Adicionar",async()=>{
+      const email=$("#ap-email").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email)){$("#ap-email").focus();ufErr("Digite um e-mail válido.")}
+      if(!found||found.email!==email)found=await look(email);
+      const role=$("#ap-role").value,boxes=readBoxPicker($("#mini"));
+      if(found.exists){if(a.members?.[found.id]||a.ownerId===found.id)ufErr(`${found.name} já está neste acervo.`);if(!found.active)ufErr("Esta conta está desativada.");
+        await setMembers(m=>{m[found.id]={role,status:"active",boxes,addedAt:new Date().toISOString(),addedBy:S.me.id}},`Adicionou ${found.name} como ${ROLES[role]}`);toast(`${found.name} adicionado(a)`);if(U.list)loadUsers();return}
+      if(isSysAdmin()){const name=$("#ap-name").value.trim();if(!name){$("#ap-name").focus();ufErr("Digite o nome para criar a conta.")}
+        const res=await uapi("POST","/api/users",{name,email,access:"link",send_email:true,acervos:[{aid:+a.id,role,boxes}]});upsertUser(res.user);
+        setTimeout(()=>userCreated(res),280);return}
+      const code=randCode(12),now=new Date();const inv={aid:a.id,label:email,email,sendEmail:true,role,boxes,createdBy:S.me.id,createdAt:now.toISOString(),expiresAt:new Date(now.getTime()+7*864e5).toISOString()};
+      await S.db.doc("invites/"+code).set(inv);logAct("user",null,`Convidou ${email} (${ROLES[role]})`);setTimeout(()=>showInviteLink({id:code,...inv}),250)});
+  $("#mini").classList.add("wide");wireBoxPicker($("#mini"));
+  const ok=$("#mini-ok"),st=$("#ap-st");
+  async function look(email){const r=await fetch("/api/people/lookup?email="+encodeURIComponent(email),{headers:{Accept:"application/json"},credentials:"same-origin"}).then(r=>r.json()).catch(()=>({exists:false}));return{...r,email}}
+  const show=f=>{$("#ap-name-f").hidden=f.exists||!isSysAdmin();
+    if(f.exists){const inIt=a.members?.[f.id]||a.ownerId===f.id;st.innerHTML=inIt?`<p class="ap-msg">${ICON("check")}<span><b>${esc(f.name)}</b> já está neste acervo.</span></p>`:!f.active?`<p class="ap-msg no">${ICON("alert")}<span>A conta de <b>${esc(f.name)}</b> está desativada.</span></p>`:`<p class="ap-msg ok">${ICON("check")}<span><b>${esc(f.name)}</b> já tem conta e entra no acervo na hora.</span></p>`;ok.textContent="Adicionar";return}
+    st.innerHTML=isSysAdmin()?`<p class="ap-msg w">${ICON("user")}<span>Ainda não tem conta. Digite o nome e criamos a conta já com acesso a este acervo; você recebe o link para a pessoa criar a senha.</span></p>`:`<p class="ap-msg w">${ICON("user")}<span>Ainda não tem conta. Vamos gerar um convite para este e-mail: a pessoa cria a senha pelo link e já entra no acervo.</span></p>`;
+    ok.textContent=isSysAdmin()?"Criar conta e adicionar":"Gerar convite"};
+  let t;$("#ap-email").oninput=e=>{clearTimeout(t);const v=e.target.value.trim().toLowerCase();found=null;if(!/^\S+@\S+\.\S+$/.test(v)){st.innerHTML="";$("#ap-name-f").hidden=true;ok.textContent="Adicionar";return}
+    t=setTimeout(async()=>{const n=++seq;st.innerHTML=`<p class="ap-msg"><span class="spin"></span><span>Procurando…</span></p>`;const f=await look(v);if(n!==seq)return;found=f;show(f)},350)};
+}
+if(SRV){const ad=$("#team-add"),iv=$("#team-invite");ad.className="btn primary";ad.innerHTML=ICON("plus")+"Adicionar pessoa";iv.className="btn";iv.innerHTML=ICON("link")+"Link de convite";iv.after(ad);
+  $$('#nav [data-view="usuarios"]').forEach(b=>b.hidden=!isSysAdmin())}
 /* meu perfil */
 let LOOKPREVIEW=null;
 /* fechou o perfil sem salvar: volta à aparência salva */

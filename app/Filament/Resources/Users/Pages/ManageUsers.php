@@ -14,6 +14,14 @@ class ManageUsers extends ManageRecords
     {
         // criado pelo administrador do sistema: o e-mail é considerado confirmado
         return [CreateAction::make()->label('Novo usuário')
-            ->after(fn (\App\Models\User $record) => $record->forceFill(['email_verified_at' => now()])->saveQuietly())];
+            ->using(function (array $data) {
+                $rows = $data['acervos_init'] ?? [];
+                unset($data['acervos_init']);
+                $user = \App\Models\User::create($data);
+                $user->forceFill(['email_verified_at' => now()])->saveQuietly();
+                UserResource::syncAcervos($user, $rows, false);
+
+                return $user;
+            })];
     }
 }

@@ -18,6 +18,18 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/api/people/profiles', [UI\PeopleController::class, 'profiles'])->name('api.people.profiles');
     Route::get('/api/people/search', [UI\PeopleController::class, 'search'])->middleware('throttle:60,1')->name('api.people.search');
     Route::post('/api/site', [UI\SiteController::class, 'update'])->middleware('throttle:30,1')->name('api.site');
+    // tela Usuários (administradores do sistema)
+    Route::get('/api/users', [UI\UsersController::class, 'index'])->name('api.users');
+    Route::post('/api/users', [UI\UsersController::class, 'store'])->middleware('throttle:60,1');
+    Route::get('/api/users/acervos/{acervo}/boxes', [UI\UsersController::class, 'boxes'])->whereNumber('acervo');
+    Route::patch('/api/users/{user}', [UI\UsersController::class, 'update'])->whereNumber('user');
+    Route::delete('/api/users/{user}', [UI\UsersController::class, 'destroy'])->whereNumber('user');
+    Route::put('/api/users/{user}/acervos/{acervo}', [UI\UsersController::class, 'setMembership'])->whereNumber(['user', 'acervo']);
+    Route::delete('/api/users/{user}/acervos/{acervo}', [UI\UsersController::class, 'removeMembership'])->whereNumber(['user', 'acervo']);
+    Route::post('/api/users/{user}/link', [UI\UsersController::class, 'accessLink'])->whereNumber('user')->middleware('throttle:30,1');
+    Route::post('/api/users/{user}/sessions/clear', [UI\UsersController::class, 'endAllSessions'])->whereNumber('user');
+    Route::post('/api/users/{user}/two-factor/reset', [UI\UsersController::class, 'resetTwoFactor'])->whereNumber('user');
+    Route::get('/api/people/lookup', [UI\PeopleController::class, 'lookup'])->middleware('throttle:60,1');
     Route::post('/api/ai/json', [UI\AiController::class, 'json'])->middleware('throttle:60,1')->name('api.ai');
 });
 
@@ -26,6 +38,8 @@ Route::middleware('web')->group(function () {
     Route::get('/brand/icon', [UI\SiteController::class, 'icon'])->name('brand.icon');
     Route::get('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
     Route::post('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->middleware('throttle:20,1');
+    Route::get('/acesso/{token}', [\App\Http\Controllers\Auth\WelcomeController::class, 'show'])->name('welcome');
+    Route::post('/acesso/{token}', [\App\Http\Controllers\Auth\WelcomeController::class, 'store'])->middleware('throttle:10,1')->name('welcome.store');
     Route::get('/convite/{token}', [InvitationController::class, 'show'])->name('invitations.show');
     Route::post('/convite/{token}/aceitar', [InvitationController::class, 'accept'])->middleware('auth')->name('invitations.accept');
     Route::post('/convite/{token}/registrar', [InvitationController::class, 'register'])->middleware('throttle:10,1')->name('invitations.register');

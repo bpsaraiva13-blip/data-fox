@@ -102,6 +102,60 @@ with sync_playwright() as p:
     check(ok, "peça nova do Bruno aparece para a Ana em segundos")
     p2.screenshot(path="/tmp/e2e-mobile.png"); pg.screenshot(path="/tmp/e2e-desktop.png")
 
+
+    # Usuários: o administrador do sistema cria a conta já no acervo e a pessoa entra pelo link
+    pg.evaluate("document.querySelector('[data-view=\"usuarios\"]').click()")
+    pg.wait_for_function("document.querySelectorAll('#us-root .us-row').length>=2", timeout=15000)
+    check(pg.evaluate("!document.querySelector('[data-view=\"usuarios\"]').hidden"), "menu Usuários aparece para o administrador do sistema")
+    check("Acervo E2E · Somente leitura" in pg.inner_text("#us-root"), "lista mostra a Ana com o acervo e o perfil")
+    pg.screenshot(path="/tmp/e2e-usuarios.png")
+    pg.click("#us-new"); pg.wait_for_timeout(400)
+    check(pg.evaluate("document.querySelectorAll('#uf-acs .ac-row').length") == 1, "novo usuário já vem com o acervo aberto")
+    pg.fill("#uf-name", "Carla Dias"); pg.fill("#uf-email", "carla@exemplo.com")
+    pg.click("#uf-acs .ac-bx"); pg.wait_for_selector("#uf-acs .ac-all")
+    pg.uncheck("#uf-acs .ac-all"); pg.click("#uf-acs .ac-boxes .chips label >> nth=0")
+    check("1 caixa(s)" in pg.inner_text("#uf-acs .ac-bx"), "escolhe as caixas do acervo no cadastro")
+    pg.screenshot(path="/tmp/e2e-novo-usuario.png")
+    pg.click("#mini-ok")
+    pg.wait_for_selector("#mini .ub-url", timeout=15000)
+    link = pg.input_value("#mini .ub-url")
+    check("/acesso/" in link, "conta criada e link de primeiro acesso pronto")
+    pg.screenshot(path="/tmp/e2e-usuario-criado.png")
+    pg.click("#mini-ok"); pg.wait_for_timeout(500)
+    # ficha: vincular depois a outro acervo não é possível (só há um), mas muda o perfil
+    key = pg.evaluate("U.list.find(u=>u.email==='carla@exemplo.com').key")
+    pg.evaluate("openUser(%d)" % key); pg.wait_for_timeout(400)
+    pg.select_option("#uf-acs .ac-role", "editor"); pg.screenshot(path="/tmp/e2e-ficha.png")
+    pg.click("#mini-ok")
+    pg.wait_for_function("U.list.find(u=>u.email==='carla@exemplo.com').acervos[0].role==='editor'", timeout=15000)
+    check(True, "ficha do usuário salva o novo perfil")
+
+    p4 = b.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True).new_page()
+    p4.on("pageerror", lambda e: errs.append("p4: " + str(e)))
+    p4.goto(link)
+    check("Olá, Carla" in p4.content(), "link abre a tela de primeiro acesso")
+    p4.screenshot(path="/tmp/e2e-primeiro-acesso.png")
+    p4.fill("#password", "senha-da-carla"); p4.fill("#password_confirmation", "senha-da-carla")
+    p4.click("form.au-form button.au-btn")
+    p4.wait_for_function("typeof S!=='undefined' && S.role && S.loaded && S.loaded.items", timeout=20000)
+    check(p4.evaluate("S.role") == "editor", "Carla entra direto no acervo como editora")
+    check(p4.evaluate("S.allBoxes.size") == 1 and p4.evaluate("S.boxes.size") == 1, "Carla vê só a caixa liberada")
+    check(p4.evaluate("document.querySelector('[data-view=\"usuarios\"]').hidden"), "Usuários não aparece para quem não é administrador do sistema")
+
+    # Equipe → Adicionar pessoa: e-mail sem conta, o administrador do sistema cria ali mesmo
+    pg.evaluate("document.querySelector('[data-view=\"equipe\"]').click()"); pg.wait_for_timeout(300)
+    pg.click("#team-add"); pg.wait_for_timeout(300)
+    pg.fill("#ap-email", "dora@exemplo.com"); pg.wait_for_selector("#ap-st .ap-msg.w", timeout=10000)
+    check(not pg.evaluate("document.querySelector('#ap-name-f').hidden"), "e-mail sem conta: pede o nome para criar")
+    pg.fill("#ap-name", "Dora"); pg.screenshot(path="/tmp/e2e-adicionar-pessoa.png")
+    pg.click("#mini-ok"); pg.wait_for_selector("#mini .ub-url", timeout=15000)
+    pg.click("#mini-ok"); pg.wait_for_timeout(300)
+    try:
+        pg.wait_for_function("Object.keys(curAcervo().members||{}).length>=4", timeout=15000); ok = True
+    except Exception:
+        ok = False
+    check(ok, "Dora aparece na Equipe do acervo")
+
     p3 = b.new_context().new_page(); p3.goto(BASE + "/entrar")
     check("Frase nova do teste E2E." in p3.content(), "tela de entrar mostra a frase nova")
     check(not errs, "sem erros de JavaScript" + (": " + " | ".join(errs[:3]) if errs else ""))
