@@ -1041,6 +1041,7 @@ try{const lk=JSON.parse(localStorage.getItem("datafox.look")||"null");if(lk)appl
 
 <div class="bulkbar" id="bulkbar">
   <span id="bulk-n" class="mono">0 selecionadas</span>
+  <button class="btn sm" id="bulk-all"><svg class="ico"><use href="#i-select"/></svg><span>Todas</span></button>
   <select class="sel" id="bulk-box" aria-label="Mover para caixa" style="background-color:transparent;color:inherit"><option value="">Mover para…</option></select>
   <button class="btn sm" id="bulk-merge"><svg class="ico"><use href="#i-link"/></svg>Unir</button>
   <button class="btn sm" id="bulk-xfer"><svg class="ico"><use href="#i-swap"/></svg>Enviar</button>
@@ -1367,7 +1368,10 @@ ${JSON.stringify(catalog)}`,{modelTier:"default"});
 /* ---------- selection / bulk ---------- */
 $("#sel-mode").onclick=()=>{S.selecting=!S.selecting;S.sel.clear();updateBulk();renderItems()};
 function toggleSel(id){S.sel.has(id)?S.sel.delete(id):S.sel.add(id);updateBulk()}
-function updateBulk(){$("#bulk-n").textContent=`${S.sel.size} selecionada${S.sel.size===1?"":"s"}`;$("#bulkbar").classList.toggle("show",S.selecting);$("#sel-mode").innerHTML=S.selecting?ICON("x")+"Sair da seleção":ICON("select")+"Selecionar"}
+function updateBulk(){$("#bulk-n").textContent=`${S.sel.size} selecionada${S.sel.size===1?"":"s"}`;$("#bulkbar").classList.toggle("show",S.selecting);$("#sel-mode").innerHTML=S.selecting?ICON("x")+"Sair da seleção":ICON("select")+"Selecionar";
+  if(S.selecting){const v=visibleItems(),all=v.length&&v.every(i=>S.sel.has(i.id));$("#bulk-all span").textContent=all?"Nenhuma":`Todas (${v.length})`}}
+/* seleciona todas as peças do filtro atual (não só as que já apareceram na tela) */
+$("#bulk-all").onclick=()=>{const v=visibleItems(),all=v.length&&v.every(i=>S.sel.has(i.id));if(all)v.forEach(i=>S.sel.delete(i.id));else v.forEach(i=>S.sel.add(i.id));updateBulk();renderItems()};
 function fillBulkBoxes(){fillSelect($("#bulk-box"),[["__none","Sem caixa"],...sortedBoxes().map(b=>[b.id,b.name])],'<option value="">Mover para…</option>');$$("#bulk-box option").forEach(o=>o.style.color="#111")}
 $("#bulk-xfer").onclick=()=>{if(!S.sel.size)return;openTransfer({items:[...S.sel]})};
 $("#bulk-coll").onclick=()=>{if(!S.sel.size)return;openAddToColl([...S.sel])};
