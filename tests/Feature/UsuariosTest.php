@@ -162,4 +162,13 @@ class UsuariosTest extends TestCase
         $this->actingAs($this->user())->get('/')->assertOk()->assertSee('id="view-usuarios"', false)->assertSee('"isAdmin":true', false);
         $this->actingAs($this->user(['role' => 'editor']))->get('/')->assertOk()->assertSee('"isAdmin":false', false);
     }
+
+    public function test_esqueci_a_senha_com_o_visual_do_data_fox(): void
+    {
+        $this->get('/entrar')->assertOk()->assertSee('/esqueci-a-senha', false)->assertSee('datafox-look.js', false);
+        // sem envio de e-mail configurado: orienta a pedir o link ao administrador
+        $this->get('/esqueci-a-senha')->assertOk()->assertSee('Gerar link para trocar a senha');
+        config(['mail.default' => 'smtp']);
+        $this->get('/esqueci-a-senha')->assertOk()->assertSee('Enviar link');
+    }
 }

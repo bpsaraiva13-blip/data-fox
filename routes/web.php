@@ -38,6 +38,8 @@ Route::middleware('web')->group(function () {
     Route::get('/brand/icon', [UI\SiteController::class, 'icon'])->name('brand.icon');
     Route::get('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
     Route::post('/entrar', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->middleware('throttle:20,1');
+    Route::get('/esqueci-a-senha', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'show'])->name('password.forgot');
+    Route::post('/esqueci-a-senha', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'send'])->middleware('throttle:10,1');
     Route::get('/acesso/{token}', [\App\Http\Controllers\Auth\WelcomeController::class, 'show'])->name('welcome');
     Route::post('/acesso/{token}', [\App\Http\Controllers\Auth\WelcomeController::class, 'store'])->middleware('throttle:10,1')->name('welcome.store');
     Route::get('/convite/{token}', [InvitationController::class, 'show'])->name('invitations.show');

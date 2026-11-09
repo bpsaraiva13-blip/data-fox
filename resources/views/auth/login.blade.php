@@ -27,7 +27,7 @@
         </div>
         <div class="au-row">
             <label><input type="checkbox" name="remember" value="1" checked> Manter conectado</label>
-            <a href="{{ route('filament.admin.auth.password-reset.request') }}">Esqueci a senha</a>
+            <a href="{{ route('password.forgot') }}">Esqueci a senha</a>
         </div>
         <button class="au-btn" type="submit">Entrar</button>
     </form>

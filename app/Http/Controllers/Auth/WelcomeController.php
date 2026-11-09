@@ -14,11 +14,17 @@ use Illuminate\Validation\Rules\Password as PasswordRule;
 /** Primeiro acesso (conta criada por um administrador) e redefinição pelo link gerado na tela Usuários. */
 class WelcomeController extends Controller
 {
+    /** "r" = troca de senha pedida em Esqueci a senha (link de 60 min); sem ele, link de primeiro acesso (7 dias). */
+    private function broker(Request $request)
+    {
+        return Password::broker($request->boolean('r') ? 'users' : 'welcome');
+    }
+
     private function find(Request $request, string $token): ?User
     {
         $user = User::whereRaw('lower(email) = ?', [Str::lower((string) $request->query('email', $request->input('email')))])->first();
 
-        return $user && $user->active && Password::broker('welcome')->tokenExists($user, $token) ? $user : null;
+        return $user && $user->active && $this->broker($request)->tokenExists($user, $token) ? $user : null;
     }
 
     public function show(Request $request, string $token)
@@ -30,7 +36,7 @@ class WelcomeController extends Controller
         $acervos = $user->acervos()->wherePivot('status', 'active')->orderBy('name')->get()
             ->map(fn ($a) => ['name' => $a->name, 'role' => Acervo::ROLES[$a->pivot->role] ?? $a->pivot->role]);
 
-        return view('auth.welcome', ['state' => 'form', 'user' => $user, 'token' => $token, 'acervos' => $acervos]);
+        return view('auth.welcome', ['state' => 'form', 'user' => $user, 'token' => $token, 'acervos' => $acervos, 'reset' => $request->boolean('r')]);
     }
 
     public function store(Request $request, string $token)
@@ -42,7 +48,7 @@ class WelcomeController extends Controller
         $request->validate(['password' => ['required', 'confirmed', PasswordRule::min(8)]], [
             'password.required' => 'Crie uma senha.', 'password.confirmed' => 'As duas senhas não são iguais.', 'password.min' => 'A senha precisa de pelo menos 8 caracteres.',
         ]);
-        $status = Password::broker('welcome')->reset(
+        $status = $this->broker($request)->reset(
             ['email' => $user->email, 'token' => $token, 'password' => $request->input('password')],
             function (User $u, string $password) {
                 $u->forceFill(['password' => $password, 'remember_token' => Str::random(60), 'email_verified_at' => $u->email_verified_at ?? now()])->save();

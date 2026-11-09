@@ -8,7 +8,7 @@
         <p class="au-lead">Ele já foi usado ou passou do prazo. Peça um novo a quem administra o {{ $brand['name'] }}, ou entre com a sua senha.</p>
         <a class="au-btn" href="{{ route('login') }}" style="display:block;text-align:center;text-decoration:none">Ir para a tela de entrar</a>
     @else
-        <p class="au-eyebrow">Primeiro acesso</p>
+        <p class="au-eyebrow">{{ $reset ? 'Nova senha' : 'Primeiro acesso' }}</p>
         <h1>Olá, {{ \Illuminate\Support\Str::of($user->name)->before(' ') }}</h1>
         <p class="au-lead">Crie a sua senha para entrar no {{ $brand['name'] }}. Seu e-mail de acesso é <b>{{ $user->email }}</b>.</p>
 
@@ -22,7 +22,7 @@
 
         <form method="post" action="{{ route('welcome.store', ['token' => $token]) }}" class="au-form" novalidate>
             @csrf
-            <input type="hidden" name="email" value="{{ $user->email }}">
+            <input type="hidden" name="email" value="{{ $user->email }}">@if ($reset)<input type="hidden" name="r" value="1">@endif
             <div class="au-f">
                 <label for="password">Nova senha</label>
                 <div class="au-in">
@@ -34,7 +34,7 @@
                 <label for="password_confirmation">Repita a senha</label>
                 <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password">
             </div>
-            <button class="au-btn" type="submit">Criar senha e entrar</button>
+            <button class="au-btn" type="submit">{{ $reset ? 'Salvar senha e entrar' : 'Criar senha e entrar' }}</button>
         </form>
         <p class="au-note">A senha precisa de pelo menos 8 caracteres. Com o Google, use a conta do mesmo e-mail.</p>
     @endif
