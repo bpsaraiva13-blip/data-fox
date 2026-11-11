@@ -37,7 +37,7 @@ jobs:
       ACERVO_DISK: local
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -141,7 +141,7 @@ jobs:
           python3 tests/e2e/interface.py http://127.0.0.1:8000 2>&1 | tee -a /tmp/step.log || { echo '--- laravel.log' >> /tmp/step.log; tail -c 5000 storage/logs/laravel.log >> /tmp/step.log 2>/dev/null; exit 1; }
       - name: Telas do teste
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: telas-e2e
           path: /tmp/e2e-*.png
