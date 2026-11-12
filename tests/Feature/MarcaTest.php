@@ -54,4 +54,14 @@ class MarcaTest extends TestCase
     {
         $this->actingAs($this->user())->get('/')->assertOk()->assertSee('"tagline":', false);
     }
+
+    public function test_cor_do_administrador_vai_para_a_tela_de_entrar(): void
+    {
+        $admin = $this->user();
+        $this->actingAs($admin)->post('/api/site', ['name' => 'Azzurra', 'accent' => '#1e4e79'], ['Accept' => 'application/json'])
+            ->assertOk()->assertJsonPath('brand.accent', '#1E4E79');
+        $this->actingAs($admin)->post('/api/site', ['name' => 'Azzurra', 'accent' => 'azul'], ['Accept' => 'application/json'])->assertStatus(422);
+        auth()->logout();
+        $this->get('/entrar')->assertOk()->assertSee('window.DATAFOX_ACCENT="#1E4E79"', false);
+    }
 }

@@ -3374,7 +3374,7 @@ let LOOKPREVIEW=null;
 function watchLookClose(){const m=$("#mini");const ob=new MutationObserver(()=>{if(!m.classList.contains("show")||!m.querySelector("#pf-acc")){ob.disconnect();if(LOOKPREVIEW){LOOKPREVIEW=null;const mp=S.profiles[S.me?.id]||{};applyLook(mp.accent,mp.theme)}}});ob.observe(m,{attributes:true,childList:true,subtree:false})}
 function lookHTML(pf){return`<div class="f"><label>Cor de destaque</label><div class="look-sw" id="pf-acc" role="radiogroup" aria-label="Cor de destaque">${ACCENTS.map(([c,n])=>`<button type="button" role="radio" data-acc="${c}" style="--sw:${c}" aria-checked="${(pf.accent||DEF_ACCENT).toLowerCase()===c.toLowerCase()}" title="${n}"><span></span><small>${n}</small></button>`).join("")}<label class="look-custom" title="Outra cor"><input type="color" id="pf-acc-c" value="${esc(pf.accent||DEF_ACCENT)}"><small>Outra</small></label></div>
      <label style="margin-top:12px">Tema</label><div class="seg look-th" id="pf-th" role="group" aria-label="Tema">${[["","Automático"],["light","Claro"],["dark","Escuro"]].map(([v,l])=>`<button type="button" data-th="${v}" aria-pressed="${(pf.theme||"")===v}">${l}</button>`).join("")}</div>
-     <small style="color:var(--muted);display:block;margin-top:6px">Vale só para você. A mudança aparece na hora; salve para manter.</small></div>`}
+     <small style="color:var(--muted);display:block;margin-top:6px">Vale só para você${SRV?.user?.isAdmin?" (e, como você administra o sistema, a cor também vai para a tela de entrar)":""}. A mudança aparece na hora; salve para manter.</small></div>`}
 function bindLook(pf){
   LOOKPREVIEW={accent:pf.accent||"",theme:pf.theme||""};const look=()=>{applyLook(LOOKPREVIEW.accent,LOOKPREVIEW.theme);$$("#pf-acc [data-acc]").forEach(b=>b.setAttribute("aria-checked",b.dataset.acc.toLowerCase()===(LOOKPREVIEW.accent||DEF_ACCENT).toLowerCase()));$$("#pf-th [data-th]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.th===LOOKPREVIEW.theme))};
   $("#pf-acc").onclick=e=>{const b=e.target.closest("[data-acc]");if(!b)return;LOOKPREVIEW.accent=b.dataset.acc===DEF_ACCENT?"":b.dataset.acc;$("#pf-acc-c").value=b.dataset.acc;look()};
@@ -3400,17 +3400,18 @@ let BRANDSAVE=null;
 function bindBrand(){let file=null,remove=false,dirty=false;const prev=$("#bm-prev");["#bm-name","#bm-sub","#bm-tag"].forEach(q=>$(q).addEventListener("input",()=>dirty=true));
   $("#bm-file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>2*1024*1024){toast("A imagem pode ter até 2 MB.",true);return}file=f;remove=false;dirty=true;prev.innerHTML=`<img src="${URL.createObjectURL(f)}" alt="">`;toast("Logo escolhido. Clique em Salvar para aplicar.")};
   $("#bm-rm")&&($("#bm-rm").onclick=()=>{remove=true;dirty=true;file=null;prev.textContent=brandInitials($("#bm-name").value)});
-  const save=async()=>{const name=$("#bm-name").value.trim();if(!name)throw{message:"Dê um nome ao sistema."}
-    const f=new FormData();f.append("name",name);f.append("sub",$("#bm-sub").value.trim());f.append("tagline",$("#bm-tag").value.trim());if(file)f.append("logo",file);if(remove)f.append("remove_logo","1");
+  const save=async accent=>{const name=$("#bm-name").value.trim();if(!name)throw{message:"Dê um nome ao sistema."}
+    const f=new FormData();f.append("name",name);f.append("sub",$("#bm-sub").value.trim());f.append("tagline",$("#bm-tag").value.trim());if(accent!==undefined)f.append("accent",accent||"");if(file)f.append("logo",file);if(remove)f.append("remove_logo","1");
     let r;try{r=await fetch("/api/site",{method:"POST",body:f,headers:{"X-CSRF-TOKEN":SRV.csrf,Accept:"application/json"},credentials:"same-origin"})}catch(e){throw{message:"Sem conexão com o servidor."}}
     const j=await r.json().catch(()=>({}));
     if(!r.ok)throw{message:(j?.errors&&Object.values(j.errors)[0]?.[0])||j?.message||j?.error?.message||`Não foi possível salvar a marca (erro ${r.status}).`};
     SRV.brand=j.brand;applyBrand();file=null;remove=false;dirty=false;toast("Marca atualizada para todos")};
-  $("#bm-save").onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;try{await save()}catch(err){toast(errMsg(err),true)}btn.disabled=false};
-  BRANDSAVE=()=>dirty?save():Promise.resolve()}
+  $("#bm-save").onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;try{await save(LOOKPREVIEW?LOOKPREVIEW.accent:undefined)}catch(err){toast(errMsg(err),true)}btn.disabled=false};
+  /* a cor escolhida pelo administrador do sistema também vira a cor da tela de entrar */
+  BRANDSAVE=accent=>dirty||(accent||"")!==(SRV.brand.accent||"")?save(accent||""):Promise.resolve()}
 function openLook(){if(!S.me?.id){toast("Entre com a sua conta para personalizar.",true);return}const pf=S.profiles[S.me.id]||{};
   mini("Aparência",lookHTML(pf)+(SRV?.brand&&SRV.user?.isAdmin?brandHTML():""),"Salvar",async()=>{const data={...(S.profiles[S.me.id]||{}),accent:LOOKPREVIEW?LOOKPREVIEW.accent:(pf.accent||""),theme:LOOKPREVIEW?LOOKPREVIEW.theme:(pf.theme||""),updatedAt:new Date().toISOString()};
-    if(BRANDSAVE)await BRANDSAVE();
+    if(BRANDSAVE)await BRANDSAVE(data.accent&&data.accent.toLowerCase()!==DEF_ACCENT.toLowerCase()?data.accent:"");
     LOOKPREVIEW=null;await S.db.doc("profiles/"+S.me.id).set(data);applyLook(data.accent,data.theme);toast("Aparência salva")});
   BRANDSAVE=null;bindLook(pf);if(SRV?.brand&&SRV.user?.isAdmin)bindBrand()}
 function openProfile(){if(!S.me?.id)return;const pf=S.profiles[S.me.id]||{};let newAvatar=null;

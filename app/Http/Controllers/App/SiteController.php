@@ -36,11 +36,15 @@ class SiteController extends Controller
             'tagline' => ['nullable', 'string', 'max:160'],
             'logo' => ['nullable', 'file', 'max:2048', 'mimetypes:image/png,image/jpeg,image/webp'],
             'remove_logo' => ['nullable', 'boolean'],
+            'accent' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], ['logo.mimetypes' => 'Use uma imagem PNG, JPG ou WebP.', 'logo.max' => 'A imagem pode ter até 2 MB.']);
 
         $b = Site::brand();
         $disk = Storage::disk(config('acervo.disk'));
         $new = ['name' => trim($data['name']), 'sub' => trim((string) ($data['sub'] ?? '')), 'tagline' => trim((string) ($data['tagline'] ?? ''))];
+        if ($request->has('accent')) {
+            $new['accent'] = $data['accent'] ? strtoupper($data['accent']) : null;
+        }
         if ($request->boolean('remove_logo') && $b['logo']) {
             $disk->delete($b['logo']);
             $new += ['logo' => null, 'logo_mime' => null, 'v' => $b['v'] + 1];

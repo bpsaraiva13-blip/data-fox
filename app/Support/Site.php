@@ -16,6 +16,7 @@ class Site
         'logo' => null,       // caminho no disco das fotos
         'logo_mime' => null,
         'v' => 0,             // muda a cada troca de logo (evita cache antigo)
+        'accent' => null,     // cor de destaque da tela de entrar (a que o administrador escolheu em Aparência)
     ];
 
     public static function brand(): array
@@ -50,7 +51,7 @@ class Site
     {
         $b = self::brand();
 
-        return ['name' => $b['name'], 'sub' => $b['sub'], 'tagline' => $b['tagline'], 'logo' => $b['logo'] ? url('/brand/icon?v='.$b['v']) : null];
+        return ['name' => $b['name'], 'sub' => $b['sub'], 'tagline' => $b['tagline'], 'accent' => $b['accent'], 'logo' => $b['logo'] ? url('/brand/icon?v='.$b['v']) : null];
     }
 
     public static function iconUrl(): string

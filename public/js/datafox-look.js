@@ -17,5 +17,9 @@
   function applyLook(accent,theme){try{document.getElementById("accent-css").textContent=accentCss(accent||DEF_ACCENT)}catch(e){}
     const r=document.documentElement;if(theme==="light"||theme==="dark")r.setAttribute("data-theme",theme);else r.removeAttribute("data-theme");
     try{localStorage.setItem("datafox.look",JSON.stringify({accent:accent||"",theme:theme||""}))}catch(e){}}
-  try{var lk=JSON.parse(localStorage.getItem("datafox.look")||"null");if(lk)applyLook(lk.accent,lk.theme)}catch(e){}
+  /* a cor que a pessoa usou por último neste navegador; sem ela, a cor do sistema (Aparência do administrador) */
+  var lk=null;try{lk=JSON.parse(localStorage.getItem("datafox.look")||"null")}catch(e){}
+  if(lk&&lk.accent)applyLook(lk.accent,lk.theme);
+  else if(window.DATAFOX_ACCENT){try{document.getElementById("accent-css").textContent=accentCss(window.DATAFOX_ACCENT)}catch(e){}if(lk)applyLook(window.DATAFOX_ACCENT,lk.theme)}
+  else if(lk)applyLook(lk.accent,lk.theme);
 })();

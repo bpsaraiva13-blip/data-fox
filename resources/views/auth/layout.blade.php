@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/datafox-auth.css') }}?v={{ @filemtime(public_path('css/datafox-auth.css')) }}">
     <style id="accent-css"></style>
     {{-- mesma cor de destaque e tema de Aparência (guardados neste navegador pela interface) --}}
+    <script>window.DATAFOX_ACCENT=@json($brand['accent'] ?? null);</script>
     <script src="{{ asset('js/datafox-look.js') }}?v={{ @filemtime(public_path('js/datafox-look.js')) }}"></script>
 </head>
 <body>
