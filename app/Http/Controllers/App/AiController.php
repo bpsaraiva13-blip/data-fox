@@ -51,6 +51,12 @@ class AiController extends Controller
         if ($res->status() === 429 || $res->status() === 529) {
             return response()->json(['error' => ['code' => 'rate_limited', 'message' => 'A IA está sobrecarregada. Tente de novo em instantes.']], 429);
         }
+        // créditos ou limite de gasto da conta da IA esgotados: avisa para parar o lote (as peças continuam em Pendências)
+        if (in_array($res->status(), [400, 402, 403], true) && preg_match('/credit balance|usage limit|spend limit|billing/i', $res->body())) {
+            report(new \RuntimeException('IA sem créditos: '.substr($res->body(), 0, 300)));
+
+            return response()->json(['error' => ['code' => 'quota', 'message' => 'Os créditos da IA acabaram (ou chegaram ao limite de gasto). As peças continuam em Pendências para reprocessar depois.']], 429);
+        }
         if (! $res->successful()) {
             report(new \RuntimeException('IA: '.$res->status().' '.substr($res->body(), 0, 300)));
 

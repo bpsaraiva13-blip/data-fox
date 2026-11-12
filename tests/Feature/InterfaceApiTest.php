@@ -286,6 +286,15 @@ class InterfaceApiTest extends TestCase
         $this->actingAs($this->user())->postJson('/api/ai/json', ['prompt' => 'oi'])->assertStatus(503);
     }
 
+    public function test_ia_sem_creditos_avisa_para_parar_o_lote(): void
+    {
+        config(['acervo.ai.api_key' => 'sk-teste']);
+        \Illuminate\Support\Facades\Http::fake(['api.anthropic.com/*' => \Illuminate\Support\Facades\Http::response(
+            ['type' => 'error', 'error' => ['type' => 'invalid_request_error', 'message' => 'Your credit balance is too low to access the Anthropic API.']], 400)]);
+        $this->actingAs($this->user())->postJson('/api/ai/json', ['prompt' => 'oi'])
+            ->assertStatus(429)->assertJsonPath('error.code', 'quota');
+    }
+
     public function test_painel_admin_so_para_administradores(): void
     {
         $u = $this->user(['role' => 'editor']);

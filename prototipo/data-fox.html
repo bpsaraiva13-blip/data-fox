@@ -2942,11 +2942,11 @@ async function reanalyze(id,quiet){const it=S.items.get(id);if(!it)return false;
 /* reprocessa em lote as peças cuja análise da IA falhou */
 function reprocessAiFails(ids){if(!guardWrite())return;if(!S.sample||!S.imgLimits){toast("A análise por IA não está disponível nesta visualização.",true);return}
   const list=(ids||[...S.items.values()].filter(i=>i.aiFail||(i.batch&&!i.ai&&!i.description&&(i.photos||[]).length)).map(i=>i.id));if(!list.length){toast("Nenhuma peça com falha na IA.");return}
-  let stop=false,ok=0,bad=0,done=0;const q=[...list];const j=job(`IA · reprocessando ${list.length} peça(s)`,{onCancel:()=>{stop=true}});
-  const worker=async()=>{while(q.length&&!stop){const id=q.shift();let r=false;try{r=await reanalyze(id,"throw")}catch(e){if(e?.code==="rate_limited"){q.push(id);await sleep(15000)}else if(e?.code==="images_unavailable"){stop=true}}
+  let stop=false,quota=false,ok=0,bad=0,done=0;const q=[...list];const j=job(`IA · reprocessando ${list.length} peça(s)`,{onCancel:()=>{stop=true}});
+  const worker=async()=>{while(q.length&&!stop){const id=q.shift();let r=false;try{r=await reanalyze(id,"throw")}catch(e){if(e?.code==="quota"){q.unshift(id);quota=true;stop=true;break}if(e?.code==="rate_limited"){q.push(id);await sleep(15000)}else if(e?.code==="images_unavailable"){stop=true}}
       r?ok++:bad++;done++;j.set(done,list.length,`${ok} concluída(s)${bad?` · ${bad} ainda com falha`:""}`)}};
-  (async()=>{await Promise.all([worker(),worker()]);if(stop&&q.length)j.finish(`Interrompido · ${ok} concluída(s), ${q.length} na fila`);else j.finish(`${ok} concluída(s)${bad?` · ${bad} ainda com falha`:""}`);
-    logAct("update",null,`Reprocessou com IA ${ok} peça(s)${bad?` (${bad} com falha)`:""}`);toast(`IA: ${ok} ficha(s) completada(s)${bad?`, ${bad} continuam em Pendências`:""}`,!!bad&&!ok)})()}
+  (async()=>{await Promise.all([worker(),worker()]);if(quota)j.finish(`Créditos da IA esgotados · ${ok} concluída(s); ${q.length} continuam em Pendências`);else if(stop&&q.length)j.finish(`Interrompido · ${ok} concluída(s), ${q.length} na fila`);else j.finish(`${ok} concluída(s)${bad?` · ${bad} ainda com falha`:""}`);
+    logAct("update",null,`Reprocessou com IA ${ok} peça(s)${bad?` (${bad} com falha)`:""}`);toast(quota?`Os créditos da IA acabaram. ${ok} ficha(s) completada(s); as outras continuam em Pendências — é só clicar em Reprocessar de novo quando os créditos voltarem.`:`IA: ${ok} ficha(s) completada(s)${bad?`, ${bad} continuam em Pendências`:""}`,quota||(!!bad&&!ok))})()}
 
 /* ---------- separar fotos em nova peça ---------- */
 function openSplit(id){if(!guardWrite())return;const it=S.items.get(id);const ph=it.photos||[];if(ph.length<2){toast("A peça precisa ter ao menos duas fotos.",true);return}
