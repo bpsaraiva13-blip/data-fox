@@ -27,7 +27,7 @@ class AppController extends Controller
         $boot = [
             'user' => ['id' => PageStore::uid($user), 'name' => ($user->profile['name'] ?? '') ?: $user->name, 'email' => $user->email, 'avatarUrl' => '', 'isAdmin' => $user->isAdmin()],
             'brand' => \App\Support\Site::public(),
-            'ai' => AiController::enabled() ? ['maxCount' => AiController::MAX_IMAGES] : null,
+            'ai' => AiController::enabled() ? ['maxCount' => AiController::MAX_IMAGES, 'short' => config('acervo.ai.ficha') !== 'completa'] : null,
             'csrf' => csrf_token(),
             'urls' => [
                 'account' => url('/admin/profile'), 'logout' => url('/admin/logout'), 'admin' => $user->isAdmin() ? url('/admin') : null,

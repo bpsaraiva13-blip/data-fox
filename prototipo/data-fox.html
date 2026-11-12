@@ -1494,6 +1494,10 @@ async function analyzeEd(){
   finally{btn.disabled=false;btn.innerHTML=ICON("spark")+"Analisar de novo";box.classList.remove("on")}
 }
 function aiAnalyze(blobs,ctx){
+  /* ficha curta (servidor com ACERVO_AI_FICHA=curta): só os campos principais, gasta bem menos */
+  if(window.DATAFOX_SERVER?.ai?.short)return S.sample.json(`Catalogue esta peça de um acervo brasileiro de antiguidades e colecionáveis. As fotos são da MESMA peça.${ctx?`\nJá anotado: ${ctx}`:""}
+Responda só com JSON em português, valores curtos (sem frases; use "c." se incerto):
+{"titulo":"nome curto e descritivo","categoria":"uma de: ${CATS.join(" | ")}","epoca":"","origem":"","material":"","estado":"uma de: ${CONDS.join(" | ")}","tags":["até 6 tags em minúsculas, sem acento, com hífen"]}`,{images:blobs,modelTier:"complex"});
   return S.sample.json(`Você é um perito em antiguidades, colecionismo e raridades, catalogando uma peça para um acervo brasileiro. As imagens anexas são fotos da MESMA peça (frente, verso, detalhes, marcas).${ctx?`\nInformações já anotadas pelo usuário: ${ctx}`:""}
 Identifique a peça com o máximo de precisão possível (estilo, fabricante, marcas, período). Quando houver incerteza, use "c." ou faixas e diga isso na descrição.
 Responda apenas com JSON, em português:

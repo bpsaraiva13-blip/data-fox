@@ -36,6 +36,9 @@ return [
         'api_key' => env('ANTHROPIC_API_KEY'),
         // Identificar a peça pelas fotos e conferir imagens: precisão importa
         'model' => env('ACERVO_AI_MODEL', 'claude-sonnet-5-5'),
+        // "curta" (padrão): título, época, origem, material, estado e tags — gasta bem menos.
+        // "completa": também descrição, palavras-chave e observação de autenticidade.
+        'ficha' => env('ACERVO_AI_FICHA', 'curta'),
         // Busca inteligente: modelo rápido e barato
         'search_model' => env('ACERVO_AI_SEARCH_MODEL', 'claude-haiku-5-5'),
         // Quantas peças a busca envia para a IA (pré-filtradas no banco)

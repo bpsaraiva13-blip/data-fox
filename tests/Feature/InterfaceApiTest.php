@@ -286,6 +286,14 @@ class InterfaceApiTest extends TestCase
         $this->actingAs($this->user())->postJson('/api/ai/json', ['prompt' => 'oi'])->assertStatus(503);
     }
 
+    public function test_ficha_curta_da_ia_e_o_padrao(): void
+    {
+        config(['acervo.ai.api_key' => 'sk-teste']);
+        $this->actingAs($this->user())->get('/')->assertOk()->assertSee('"short":true', false);
+        config(['acervo.ai.ficha' => 'completa']);
+        $this->actingAs($this->user())->get('/')->assertOk()->assertSee('"short":false', false);
+    }
+
     public function test_ia_sem_creditos_avisa_para_parar_o_lote(): void
     {
         config(['acervo.ai.api_key' => 'sk-teste']);
