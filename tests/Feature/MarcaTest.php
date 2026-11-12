@@ -64,4 +64,14 @@ class MarcaTest extends TestCase
         auth()->logout();
         $this->get('/entrar')->assertOk()->assertSee('window.DATAFOX_ACCENT="#1E4E79"', false);
     }
+
+    public function test_limite_de_uma_rota_nao_bloqueia_as_outras(): void
+    {
+        $admin = $this->user();
+        for ($i = 0; $i < 35; $i++) {
+            $this->actingAs($admin)->getJson('/api/people/lookup?email=x@x.com');
+        }
+        // antes, todas as rotas dividiam o mesmo contador e a marca dava "Too Many Attempts."
+        $this->actingAs($admin)->post('/api/site', ['name' => 'Azzurra'], ['Accept' => 'application/json'])->assertOk();
+    }
 }

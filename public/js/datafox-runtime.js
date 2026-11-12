@@ -58,9 +58,10 @@
       const where = String(url).split("?")[0];
       let msg = er.message || (data?.errors && Object.values(data.errors)[0]?.[0]) || data?.message;
       if (r.status === 413) msg = "O arquivo é grande demais para o servidor (erro 413).";
+     if (r.status === 429 && (!er.message)) msg = "Muitas solicitações seguidas. Aguarde um minuto e tente de novo.";
       if (!msg || msg === "Server Error") msg = `Algo deu errado no servidor (erro ${r.status} em ${where}).`;
       console.error("Data Fox:", r.status, where, raw.slice(0, 500));
-      throw { code: er.code || (r.status === 403 ? "permission_denied" : "server_error"), status: r.status, message: msg };
+      throw { code: er.code || (r.status === 403 ? "permission_denied" : r.status === 429 ? "rate_limited" : "server_error"), status: r.status, message: msg };
     }
     return data;
   }

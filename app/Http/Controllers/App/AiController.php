@@ -27,7 +27,7 @@ class AiController extends Controller
         }
         $request->validate(['prompt' => ['required', 'string', 'max:200000'], 'images' => ['array', 'max:'.self::MAX_IMAGES], 'images.*' => ['file', 'max:8192']]);
         $key = 'ai:'.$request->user()->id;
-        if (RateLimiter::tooManyAttempts($key, 40)) {
+        if (RateLimiter::tooManyAttempts($key, 90)) {
             return response()->json(['error' => ['code' => 'rate_limited', 'message' => 'Muitas solicitações à IA. Aguarde alguns segundos.']], 429);
         }
         RateLimiter::hit($key, 60);
