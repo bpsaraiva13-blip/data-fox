@@ -157,6 +157,21 @@ Apple: veja a seção no `README.md` (exige conta Apple Developer).
    ids da versão web. Pode repetir sem duplicar. Os nomes de quem cadastrou aparecem no histórico.
    As pessoas da equipe precisam de conta no Laravel: convide cada uma pela tela **Equipe**.
 
+### Pastas de fotos (ex.: MEGA)
+
+Copie as pastas para o bucket com o [rclone](https://rclone.org) (uma pasta por acervo, uma subpasta por caixa):
+`rclone copy mega:MEGAsync datafox:<bucket>/imports/mega --include "/NOME DO ACERVO/**" --progress`.
+Depois, em **Commands**:
+
+```sh
+php artisan datafox:import-folder imports/mega --user=voce@email.com --dry-run   # confere
+php artisan datafox:import-folder imports/mega --user=voce@email.com             # importa (fila)
+php artisan datafox:import-folder imports/mega --report                          # acompanha
+```
+
+Cada foto vira uma peça na caixa da pasta; a subpasta abaixo da caixa vira a categoria. As peças entram em
+**Pendências → Reprocessar com IA** para a IA completar as fichas. Repetir o comando só traz o que falta.
+
 Backup diário: às 03:15 o servidor grava um JSON de cada acervo em `backups/interface/<acervo>/` no bucket
 (últimos 14). O **Backup completo (.zip)** da interface continua funcionando para baixar tudo com as fotos.
 
